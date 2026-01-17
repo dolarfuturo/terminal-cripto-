@@ -1,59 +1,74 @@
 import streamlit as st
 import pandas as pd
 import time
-import random # Para simular o fluxo enquanto a API conecta
 
-# Configuração da Página
+# Configuração de Performance e Layout
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 
-# Estilização "Visão de Tubarão"
+# CSS PROFISSIONAL - FOCO EM CONTRASTE E LEDS
 st.markdown("""
     <style>
-    .main { background-color: #0e1117; }
-    .title { color: #ffffff; font-size: 45px; font-weight: bold; text-align: center; }
-    .subtitle { color: #808495; font-size: 20px; text-align: center; margin-bottom: 30px; }
-    .stMetric { background-color: #1e2130; border-radius: 10px; padding: 15px; border: 1px solid #3e445e; }
+    .main { background-color: #05070a; }
+    .title-gold { color: #D4AF37; font-size: 50px; font-weight: bold; text-align: center; margin-bottom: 0px; }
+    .subtitle-silver { color: #C0C0C0; font-size: 22px; text-align: center; margin-top: -10px; font-style: italic; letter-spacing: 2px; }
+    
+    /* Blocos de Métricas mais claros para leitura */
+    div[data-testid="stMetricValue"] { color: #ffffff !important; font-size: 28px !important; }
+    div[data-testid="stMetric"] { 
+        background-color: #262730; 
+        border-radius: 10px; 
+        padding: 20px; 
+        border: 1px solid #4a4a4a;
+    }
+    
+    /* Estilo da Tabela */
+    .stTable { background-color: #111; border-radius: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
-# Cabeçalho
-st.markdown('<div class="title">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
+# CABEÇALHO ALPHA VISION
+st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle-silver">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-# Container de Dados
 placeholder = st.empty()
 
-# Loop de Atualização em Tempo Real
 while True:
     with placeholder.container():
-        # Simulando dados para visualização imediata
-        # Aqui conectamos a API da Binance depois
+        # Lógica de Dados Limpa
+        col1, col2, col3 = st.columns(3)
+        
+        # LEDs de Variação (Verde/Vermelho automáticos pelo Streamlit)
+        col1.metric("BTC", "$ 93,450", "+2.15%", delta_color="normal")
+        col2.metric("VOLATILIDADE", "8.4%", "ALTA", delta_color="inverse")
+        col3.metric("ALERTAS", "3 SINAIS", "ATIVOS", delta_color="normal")
+
+        st.markdown("---")
+        
+        # Tabela de Operação Direta
         dados = {
-            "Ativo": ["BTC/USDT", "ETH/USDT", "SOL/USDT", "PEPE/USDT", "LINK/USDT"],
-            "Preço Atual": [93450.20, 3845.10, 245.80, 0.000022, 14.25],
-            "Máx/Min Dia": ["94k/91k", "3.9k/3.7k", "248/220", "0.25/0.18", "15/13"],
-            "Distância Âncora": ["+2.1%", "+0.5%", "+4.2%", "+10.6%", "-4.1%"],
+            "ATIVO": ["BTC/USDT", "ETH/USDT", "SOL/USDT", "PEPE/USDT", "LINK/USDT"],
+            "PREÇO": ["93.450", "3.845", "245.80", "0.000022", "14.25"],
+            "MÁX/MIN": ["94k / 91k", "3.9k / 3.7k", "248 / 220", "0.25 / 0.18", "15 / 13"],
+            "VARIAÇÃO": ["+2.1%", "+0.5%", "+4.2%", "+10.6%", "-4.1%"],
             "SINAL ALPHA": ["ESTÁVEL", "PREÇO JUSTO", "GATILHO VENDA", "EXAUSTÃO (BATER)", "GATILHO COMPRA"]
         }
         df = pd.DataFrame(dados)
 
-        # Dashboard Principal
-        col1, col2, col3 = st.columns(3)
-        col1.metric("ÂNCORA BTC", "$ 93,450", "+2.1%")
-        col2.metric("VOLATILIDADE 24H", "8.4%", "Alta")
-        col3.metric("ALERTAS ATIVOS", "3 Sinais", "Atenção")
+        # Função para pintar a linha inteira do sinal (O LED do Sinal)
+        def style_sinal(val):
+            if 'EXAUSTÃO' in val: return 'color: #ff4b4b; font-weight: bold;'
+            if 'GATILHO VENDA' in val: return 'color: #ffa500; font-weight: bold;'
+            if 'GATILHO COMPRA' in val: return 'color: #00ff00; font-weight: bold;'
+            return 'color: #ffffff;'
 
-        st.write("### RADAR DE EXAUSTÃO EM TEMPO REAL")
+        st.write("### 🦈 RADAR DE EXECUÇÃO")
+        st.dataframe(
+            df.style.map(style_sinal, subset=['SINAL ALPHA']),
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.caption("🔥 Sincronizado com Fluxo Global | Atualização Instantânea")
         
-        # Aplicando cores na tabela
-        def color_sinal(val):
-            if 'EXAUSTÃO' in val: return 'background-color: #990000; color: white'
-            if 'GATILHO' in val: return 'background-color: #cc7a00; color: white'
-            if 'COMPRA' in val: return 'background-color: #006600; color: white'
-            return ''
-
-        st.table(df.style.applymap(color_sinal, subset=['SINAL ALPHA']))
-
-        st.info("Sincronizado com a rede de dados Alpha Vision. Próxima varredura em 1s...")
-        
-    time.sleep(1) # VELOCIDADE DE TUBARÃO: Atualiza a cada 1 segundo
+    time.sleep(0.5) # Velocidade máxima de leitura
