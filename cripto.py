@@ -10,27 +10,27 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&display=swap');
     
-    .block-container { padding: 0.5rem !important; }
+    /* REMOVE BARRA SUPERIOR E ESPAÇOS VAZIOS */
+    .block-container { padding-top: 0rem !important; padding-bottom: 0rem !important; }
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    
     .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
     
-    /* CABEÇALHO PRINCIPAL ALPHA VISION */
-    .title-gold { color: #D4AF37; font-size: 34px; font-weight: 900; text-align: center; margin-bottom: 0px; text-shadow: 0px 0px 15px rgba(212, 175, 55, 0.5); }
-    .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 20px; font-weight: 700; }
+    /* TÍTULO NO TOPO ABSOLUTO */
+    .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; text-shadow: 0px 0px 15px rgba(212, 175, 55, 0.5); }
+    .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 15px; font-weight: 700; }
     
-    /* CABEÇALHO DAS COLUNAS */
     .header-container { display: flex; width: 100%; padding: 10px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
     .h-col { font-size: 9px; font-weight: 800; color: #BBB; text-transform: uppercase; text-align: center; }
     
-    /* LINHAS ALINHADAS */
     .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; gap: 0px; }
     
-    /* LARGURAS E FONTES AJUSTADAS */
     .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
     .w-price { width: 12%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
     .w-target { width: 10%; text-align: center; font-size: 14px; font-weight: 800; }
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
 
-    /* ESTILOS DE ALVO ATIVO */
     .t-active { border-radius: 2px; padding: 2px 4px; }
     .t-y { background-color: #FFFF00; color: #000 !important; }
     .t-o { background-color: #FFA500; color: #000 !important; }
@@ -48,13 +48,14 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# LISTA DE 20 MOEDAS
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
-    'NEAR-USD':'NEAR/USDT','PEPE-USD':'PEPE/USDT','EGLD-USD':'EGLD/USDT','GALA-USD':'GALA/USDT','FET-USD':'FET/USDT'
+    'NEAR-USD':'NEAR/USDT','PEPE-USD':'PEPE/USDT','EGLD-USD':'EGLD/USDT','GALA-USD':'GALA/USDT','FET-USD':'FET/USDT',
+    'AAVE-USD':'AAVE/USDT','RENDER-USD':'RENDER/USDT','SUI-USD':'SUI/USDT','TIA-USD':'TIA/USDT','INJ-USD':'INJ/USDT'
 }
 
-# TÍTULOS DE COMANDO
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
