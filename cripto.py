@@ -9,30 +9,34 @@ st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
+    
+    /* REMOVE MARGENS DA PÁGINA STREAMLIT PARA GANHAR ESPAÇO */
+    .block-container { padding-top: 1rem; padding-bottom: 0rem; padding-left: 0.5rem; padding-right: 0.5rem; }
+    
     .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
-    .title-gold { color: #D4AF37; font-size: 32px; font-weight: 800; text-align: center; margin-bottom: 0px; }
-    .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 6px; margin-bottom: 15px; }
+    .title-gold { color: #D4AF37; font-size: 28px; font-weight: 800; text-align: center; margin-bottom: 0px; }
+    .subtitle-vision { color: #C0C0C0; font-size: 14px; text-align: center; margin-top: -5px; letter-spacing: 4px; margin-bottom: 10px; }
     
-    /* CABEÇALHO ULTRA COMPACTO */
-    .header-container { display: flex; align-items: center; padding: 8px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
-    .col-head { font-size: 8px; flex: 1; text-align: center; font-weight: 800; color: #888; text-transform: uppercase; padding: 0 2px; }
+    /* CABEÇALHO COM ESPAÇO MÍNIMO */
+    .header-container { display: flex; align-items: center; padding: 5px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
+    .col-head { font-size: 7px; flex: 1; text-align: center; font-weight: 800; color: #777; text-transform: uppercase; padding: 0 1px; line-height: 1; }
     
-    /* LINHAS COM COLUNAS PRÓXIMAS */
-    .row-container { display: flex; align-items: center; padding: 5px 0; border-bottom: 1px solid #111; }
-    .col-ativo { color: #EEE; font-size: 12px; flex: 1.1; font-weight: 700; padding-left: 8px; }
+    /* LINHAS ULTRA COMPACTAS */
+    .row-container { display: flex; align-items: center; padding: 4px 0; border-bottom: 1px solid #111; gap: 2px; }
+    .col-ativo { color: #EEE; font-size: 11px; flex: 1; font-weight: 700; padding-left: 2px; overflow: hidden; }
     .col-price { color: #FF8C00; font-weight: 800; font-size: 13px; flex: 1.2; text-align: center; }
-    .col-target { flex: 0.9; text-align: center; font-size: 11px; font-weight: 700; }
-    .col-sinal { flex: 1.2; }
+    .col-target { flex: 1; text-align: center; font-size: 12px; font-weight: 700; }
+    .col-sinal { flex: 1.3; }
 
     /* ESTILOS DE ATIVAÇÃO */
-    .target-yellow { background-color: #FFFF00; color: #000 !important; border-radius: 2px; padding: 1px 2px; }
-    .target-orange { background-color: #FFA500; color: #000 !important; border-radius: 2px; padding: 1px 2px; }
-    .target-blink-red { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; border-radius: 2px; padding: 1px 2px; }
-    .target-blink-green { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; border-radius: 2px; padding: 1px 2px; }
+    .target-yellow { background-color: #FFFF00; color: #000 !important; border-radius: 1px; padding: 1px 1px; }
+    .target-orange { background-color: #FFA500; color: #000 !important; border-radius: 1px; padding: 1px 1px; }
+    .target-blink-red { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; border-radius: 1px; padding: 1px 1px; }
+    .target-blink-green { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; border-radius: 1px; padding: 1px 1px; }
     
     @keyframes blinker { 50% { opacity: 0.1; } }
 
-    .status-box { padding: 4px; border-radius: 3px; font-weight: 800; font-size: 8px; width: 95%; margin: auto; text-align: center; color: white; }
+    .status-box { padding: 3px 1px; border-radius: 2px; font-weight: 800; font-size: 7px; width: 100%; text-align: center; color: white; }
     .bg-estavel { background-color: #00CED1; color: #000; } 
     .bg-yellow { background-color: #FFFF00; color: #000; }
     .bg-orange { background-color: #FFA500; color: #000; }
@@ -48,7 +52,7 @@ assets = {
     'AAVE-USD':'AAVE/USDT','RENDER-USD':'RENDER/USDT','SUI-USD':'SUI/USDT','TIA-USD':'TIA/USDT','INJ-USD':'INJ/USDT'
 }
 
-st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
+st.markdown('<div class="title-gold">ALPHA VISION</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
 placeholder = st.empty()
@@ -59,15 +63,15 @@ while True:
         with placeholder.container():
             st.markdown("""
                 <div class="header-container">
-                    <div class="col-head" style="flex:1.1; text-align:left; padding-left:10px;">ATIVO</div>
-                    <div class="col-head" style="flex:1.2;">PREÇO ATUAL</div>
-                    <div class="col-head" style="flex:0.9;">RESISTÊNCIA</div>
-                    <div class="col-head" style="flex:0.9;">PRÓX TOPO</div>
-                    <div class="col-head" style="flex:0.9;">TETO EXAUST</div>
-                    <div class="col-head" style="flex:0.9;">SUPORTE</div>
-                    <div class="col-head" style="flex:0.9;">PRÓX FUNDO</div>
-                    <div class="col-head" style="flex:0.9;">CHÃO EXAUST</div>
-                    <div class="col-head" style="flex:1.2;">SINAL</div>
+                    <div class="col-head" style="flex:1; text-align:left;">ATIVO</div>
+                    <div class="col-head" style="flex:1.2;">PREÇO</div>
+                    <div class="col-head">RESIST</div>
+                    <div class="col-head">P.TOPO</div>
+                    <div class="col-head">TETO</div>
+                    <div class="col-head">SUPORTE</div>
+                    <div class="col-head">P.FUNDO</div>
+                    <div class="col-head">CHÃO</div>
+                    <div class="col-head" style="flex:1.3;">SINAL</div>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -88,15 +92,15 @@ while True:
                     if price >= v10:
                         s_txt = "EXAUSTÃO"; s_class = "bg-ex-red"; v10_c = "target-blink-red"
                     elif price >= v8:
-                        s_txt = "CUIDADO ALTA VOL"; s_class = "bg-orange"; v8_c = "target-orange"
+                        s_txt = "CUIDADO VOL"; s_class = "bg-orange"; v8_c = "target-orange"
                     elif price >= v4:
-                        s_txt = "PONTO DECISAO ATENÇÃO"; s_class = "bg-yellow"; v4_c = "target-yellow"
+                        s_txt = "DECISÃO ATENÇÃO"; s_class = "bg-yellow"; v4_c = "target-yellow"
                     elif price <= c10:
                         s_txt = "EXAUSTÃO"; s_class = "bg-ex-green"; c10_c = "target-blink-green"
                     elif price <= c8:
-                        s_txt = "CUIDADO ALTA VOL"; s_class = "bg-orange"; c8_c = "target-orange"
+                        s_txt = "CUIDADO VOL"; s_class = "bg-orange"; c8_c = "target-orange"
                     elif price <= c4:
-                        s_txt = "PONTO DECISAO ATENÇÃO"; s_class = "bg-yellow"; c4_c = "target-yellow"
+                        s_txt = "DECISÃO ATENÇÃO"; s_class = "bg-yellow"; c4_c = "target-yellow"
 
                     prec = 8 if price < 0.01 else (4 if price < 1 else 2)
                     seta = '▲' if price >= open_p else '▼'
@@ -106,7 +110,7 @@ while True:
                         <div class="row-container">
                             <div class="col-ativo">{name}</div>
                             <div class="col-price">
-                                {price:.{prec}f}<br><span style="font-size:8px; color:{seta_c};">{seta} {change:+.2f}%</span>
+                                {price:.{prec}f}<br><span style="font-size:7px; color:{seta_c};">{seta}{change:+.2f}%</span>
                             </div>
                             <div class="col-target" style="color:#FFFF00;"><span class="{v4_c}">{v4:.{prec}f}</span></div>
                             <div class="col-target" style="color:#FFA500;"><span class="{v8_c}">{v8:.{prec}f}</span></div>
