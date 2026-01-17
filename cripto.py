@@ -1,54 +1,73 @@
 import streamlit as st
 import ccxt
 import pandas as pd
+import time
 
-# Configuração de Página
-st.set_page_config(page_title="Mister Tesouraria", layout="wide")
+# Configuração da Página
+st.set_page_config(page_title="Alpha Vision Crypto", layout="wide")
 
-# CSS para visual Dark Profissional
-st.markdown("<style>#MainMenu {visibility: hidden;} footer {visibility: hidden;} .stApp {background-color: #0e1117; color: white;}</style>", unsafe_allow_html=True)
+# Estilização CSS para visual "Premium"
+st.markdown("""
+    <style>
+    .main { background-color: #0e1117; }
+    .title-main { color: #00ffcc; font-size: 40px; font-weight: bold; margin-bottom: 0px; }
+    .subtitle { color: #808495; font-size: 20px; font-style: italic; margin-top: -10px; margin-bottom: 30px; }
+    .stMetric { background-color: #1a1c24; border-radius: 10px; padding: 15px; border: 1px solid #2d2e35; }
+    </style>
+    """, unsafe_allow_html=True)
 
-@st.cache_data(ttl=60)
+# Identidade Visual no Topo
+st.markdown('<p class="title-main">ALPHA VISION CRYPTO</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Visão de Tubarão</p>', unsafe_allow_html=True)
+
+# Função para buscar dados com Tratamento de Erro (Anti-Erro Vermelho)
 def buscar_dados():
-    exchange = ccxt.binance()
-    moedas = ["BTC", "ETH", "SOL", "BNB", "LINK"]
-    res = []
-    for s in moedas:
-        try:
-            bars = exchange.fetch_ohlcv(f"{s}/USDT", timeframe='1h', limit=100)
-            df = pd.DataFrame(bars, columns=['ts', 'o', 'h', 'l', 'c', 'v'])
-            df['tp'] = (df['h'] + df['l'] + df['c']) / 3
-            vwap = (df['tp'] * df['v']).sum() / df['v'].sum()
-            atual = df['c'].iloc[-1]
-            desvio = ((atual / vwap) - 1) * 100
-            
-            status, cor = "NORMAL", "#00FF00"
-            if abs(desvio) >= 10: status, cor = "EXAUSTÃO", "#FF0000"
-            elif abs(desvio) >= 8: status, cor = "STRESS", "#FF8C00"
-            elif abs(desvio) >= 4: status, cor = "ATENÇÃO", "#FFFF00"
-            
-            res.append({"Ativo": s, "Preço": f"$ {atual:,.2f}", "Var": f"{desvio:+.2f}%", "Status": status, "cor": cor})
-        except: continue
-    return res
+    try:
+        exchange = ccxt.binance()
+        # Lista das moedas que você quer monitorar
+        simbolos = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT', 'ADA/USDT']
+        tickers = exchange.fetch_tickers(simbolos)
+        
+        dados_limpos = []
+        for simbolo in simbolos:
+            if simbolo in tickers:
+                t = tickers[simbolo]
+                dados_limpos.append({
+                    'Ativo': simbolo.split('/')[0],
+                    'Preço': t['last'],
+                    'Variação %': t['percentage'],
+                    'Volume': t['baseVolume']
+                })
+        return dados_limpos
+    except Exception as e:
+        return None # Retorna nada se houver falha na conexão
 
-st.title("🏛️ Mister Tesouraria: Terminal Cripto")
-
-if st.button('🔄 Atualizar Dados'):
-    st.cache_data.clear()
-    st.rerun()
-
+# Lógica de Exibição
 dados = buscar_dados()
-btc = dados[0]
 
-# Destaque BTC
-st.metric(label=f"ANCORA: {btc['Ativo']}", value=btc['Preço'], delta=btc['Var'])
-st.markdown(f"<h2 style='color:{btc['cor']};'>STATUS: {btc['Status']}</h2>", unsafe_allow_html=True)
+if dados:
+    # Cria as colunas de destaque (KPIs)
+    cols = st.columns(len(dados))
+    for idx, item in enumerate(dados):
+        cor_delta = "normal" if item['Variação %'] >= 0 else "inverse"
+        cols[idx].metric(
+            label=f" {item['Ativo']}", 
+            value=f"$ {item['Preço']:,}", 
+            delta=f"{item['Variação %']:.2f}%",
+            delta_color=cor_delta
+        )
+    
+    st.write("---")
+    st.subheader("📊 Monitor de Fluxo e Exaustão")
+    df = pd.DataFrame(dados)
+    st.dataframe(df, use_container_width=True)
+    
+    if st.button('🔄 Sincronizar Agora'):
+        st.rerun()
+else:
+    # Mensagem elegante em vez do erro vermelho
+    st.warning("⚠️ Sincronizando com a Exchange... Por favor, aguarde 5 segundos ou clique no botão abaixo.")
+    if st.button('Tentar Novamente'):
+        st.rerun()
 
-st.divider()
-
-# Grid Altcoins
-cols = st.columns(len(dados)-1)
-for i, alt in enumerate(dados[1:]):
-    with cols[i]:
-        st.write(f"**{alt['Ativo']}**")
-        st.markdown(f"<p style='color:{alt['cor']}; font-weight:bold;'>{alt['Status']}<br>{alt['Var']}</p>", unsafe_allow_html=True)
+st.sidebar.info("Acesso Restrito: Alpha Vision Crypto v1.0")
