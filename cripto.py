@@ -7,7 +7,7 @@ from datetime import datetime
 # 1. CONFIGURAÇÃO DE INTERFACE
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 
-# CSS ESTILO TERMINAL ALPHA VISION (LAYOUT 13:22)
+# CSS ESTILO TERMINAL ALPHA VISION
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
@@ -26,15 +26,21 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# LISTA COMPLETA DE ATIVOS
+# LISTA MASSIVA DE ATIVOS (TOP 60+)
 assets = {
-    'BTC-USD': 'BTC/USDT', 'ETH-USD': 'ETH/USDT', 'SOL-USD': 'SOL/USDT', 
-    'BNB-USD': 'BNB/USDT', 'XRP-USD': 'XRP/USDT', 'DOGE-USD': 'DOGE/USDT',
-    'ADA-USD': 'ADA/USDT', 'AVAX-USD': 'AVAX/USDT', 'DOT-USD': 'DOT/USDT',
-    'LINK-USD': 'LINK/USDT', 'TRX-USD': 'TRX/USDT', 'MATIC-USD': 'POL/USDT',
-    'SHIB-USD': 'SHIB/USDT', 'LTC-USD': 'LTC/USDT', 'BCH-USD': 'BCH/USDT',
-    'NEAR-USD': 'NEAR/USDT', 'GALA-USD': 'GALA/USDT', 'PEPE-USD': 'PEPE/USDT',
-    'SUI-USD': 'SUI/USDT', 'FET-USD': 'FET/USDT', 'AAVE-USD': 'AAVE/USDT'
+    'BTC-USD': 'BTC/USDT', 'ETH-USD': 'ETH/USDT', 'SOL-USD': 'SOL/USDT', 'BNB-USD': 'BNB/USDT', 
+    'XRP-USD': 'XRP/USDT', 'DOGE-USD': 'DOGE/USDT', 'ADA-USD': 'ADA/USDT', 'AVAX-USD': 'AVAX/USDT', 
+    'DOT-USD': 'DOT/USDT', 'LINK-USD': 'LINK/USDT', 'TRX-USD': 'TRX/USDT', 'MATIC-USD': 'POL/USDT', 
+    'SHIB-USD': 'SHIB/USDT', 'LTC-USD': 'LTC/USDT', 'BCH-USD': 'BCH/USDT', 'NEAR-USD': 'NEAR/USDT', 
+    'APT-USD': 'APT/USDT', 'ARB-USD': 'ARB/USDT', 'OP-USD': 'OP/USDT', 'SUI-USD': 'SUI/USDT', 
+    'PEPE-USD': 'PEPE/USDT', 'BONK-USD': 'BONK/USDT', 'FLOKI-USD': 'FLOKI/USDT', 'STX-USD': 'STX/USDT', 
+    'RENDER-USD': 'RENDER/USDT', 'TIA-USD': 'TIA/USDT', 'INJ-USD': 'INJ/USDT', 'ICP-USD': 'ICP/USDT', 
+    'FIL-USD': 'FIL/USDT', 'KAS-USD': 'KAS/USDT', 'FET-USD': 'FET/USDT', 'RUNE-USD': 'RUNE/USDT', 
+    'GALA-USD': 'GALA/USDT', 'LDO-USD': 'LDO/USDT', 'ENA-USD': 'ENA/USDT', 'WIF-USD': 'WIF/USDT', 
+    'AR-USD': 'AR/USDT', 'AAVE-USD': 'AAVE/USDT', 'EGLD-USD': 'EGLD/USDT', 'THETA-USD': 'THETA/USDT',
+    'HBAR-USD': 'HBAR/USDT', 'ATOM-USD': 'ATOM/USDT', 'IMX-USD': 'IMX/USDT', 'ALGO-USD': 'ALGO/USDT',
+    'MKR-USD': 'MKR/USDT', 'GRT-USD': 'GRT/USDT', 'SEI-USD': 'SEI/USDT', 'JUP-USD': 'JUP/USDT',
+    'BEAM-USD': 'BEAM/USDT', 'PYTH-USD': 'PYTH/USDT', 'FLOW-USD': 'FLOW/USDT', 'DYDX-USD': 'DYDX/USDT'
 }
 
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
@@ -50,34 +56,31 @@ while True:
                 <div class="header-container">
                     <div class="col-head" style="flex:1.2;">ATIVO</div>
                     <div class="col-head" style="flex:1.5;">PREÇO (VAR%)</div>
-                    <div class="col-head" style="color:#FFFF00;">PONTO DECISÃO (4%)</div>
-                    <div class="col-head" style="color:#FFA500;">PRÓX TOPO (8%)</div>
-                    <div class="col-head" style="color:#FF0000;">TETO EXAUSTÃO (10%)</div>
-                    <div class="col-head" style="color:#FFFF00;">SUPORTE (4%)</div>
-                    <div class="col-head" style="color:#FFA500;">FUNDO (8%)</div>
-                    <div class="col-head" style="color:#00FF00;">CHÃO EXAUSTÃO (10%)</div>
+                    <div class="col-head" style="color:#FFFF00;">PONTO DECISÃO</div>
+                    <div class="col-head" style="color:#FFA500;">PRÓX TOPO</div>
+                    <div class="col-head" style="color:#FF0000;">TETO EXAUSTÃO</div>
+                    <div class="col-head" style="color:#FFFF00;">SUPORTE</div>
+                    <div class="col-head" style="color:#FFA500;">FUNDO</div>
+                    <div class="col-head" style="color:#00FF00;">CHÃO EXAUSTÃO</div>
                     <div class="col-head">SINAL</div>
                 </div>
                 """, unsafe_allow_html=True)
 
             for tid, name in assets.items():
                 try:
-                    t_obj = tickers.tickers[tid]
-                    info = t_obj.fast_info
+                    info = tickers.tickers[tid].fast_info
                     price = info.last_price
                     open_p = info.open
                     
                     if price is None or open_p is None: continue
                     change = ((price - open_p) / open_p) * 100
                     
-                    # ALVOS FIXOS BASEADOS NO RESET DO DIA (ABERTURA)
+                    # Alvos Fixos (4, 8, 10% da abertura)
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
-                    # Decimais dinâmicos
                     prec = 8 if price < 0.01 else (4 if price < 1 else 2)
                     
-                    # LÓGICA DE STATUS: Só pisca EXAUSTÃO se o preço bater/cruzar os 10% (v10 ou c10)
                     s_txt = "ESTÁVEL"; s_class = "bg-estavel"
                     if price >= v10 or price <= c10:
                         s_txt = "EXAUSTÃO"; s_class = "bg-exaustao"
