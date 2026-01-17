@@ -10,19 +10,17 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&display=swap');
     
-    /* REMOVE BARRA SUPERIOR E ESPAÇOS VAZIOS */
     .block-container { padding-top: 0rem !important; padding-bottom: 0rem !important; }
     header {visibility: hidden;}
     footer {visibility: hidden;}
     
     .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
     
-    /* TÍTULO NO TOPO ABSOLUTO */
-    .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; text-shadow: 0px 0px 15px rgba(212, 175, 55, 0.5); }
+    .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; }
     .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 15px; font-weight: 700; }
     
     .header-container { display: flex; width: 100%; padding: 10px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
-    .h-col { font-size: 9px; font-weight: 800; color: #BBB; text-transform: uppercase; text-align: center; }
+    .h-col { font-size: 9px; font-weight: 800; color: #004A8D; text-transform: uppercase; text-align: center; }
     
     .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; gap: 0px; }
     
@@ -48,12 +46,24 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# LISTA DE 20 MOEDAS
+# LISTA MASSIVA - 80 ATIVOS
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
     'NEAR-USD':'NEAR/USDT','PEPE-USD':'PEPE/USDT','EGLD-USD':'EGLD/USDT','GALA-USD':'GALA/USDT','FET-USD':'FET/USDT',
-    'AAVE-USD':'AAVE/USDT','RENDER-USD':'RENDER/USDT','SUI-USD':'SUI/USDT','TIA-USD':'TIA/USDT','INJ-USD':'INJ/USDT'
+    'AAVE-USD':'AAVE/USDT','RENDER-USD':'RENDER/USDT','SUI-USD':'SUI/USDT','TIA-USD':'TIA/USDT','INJ-USD':'INJ/USDT',
+    'MATIC-USD':'POL/USDT','SHIB-USD':'SHIB/USDT','LTC-USD':'LTC/USDT','BCH-USD':'BCH/USDT','APT-USD':'APT/USDT',
+    'STX-USD':'STX/USDT','KAS-USD':'KAS/USDT','ARB-USD':'ARB/USDT','OP-USD':'OP/USDT','SEI-USD':'SEI/USDT',
+    'FIL-USD':'FIL/USDT','HBAR-USD':'HBAR/USDT','KAS-USD':'KAS/USDT','ETC-USD':'ETC/USDT','ICP-USD':'ICP/USDT',
+    'RNDR-USD':'RNDR/USDT','BONK-USD':'BONK/USDT','FLOKI-USD':'FLOKI/USDT','WIF-USD':'WIF/USDT','PYTH-USD':'PYTH/USDT',
+    'JUP-USD':'JUP/USDT','RAY-USD':'RAY/USDT','ORDI-USD':'ORDI/USDT','BEAM-USD':'BEAM/USDT','IMX-USD':'IMX/USDT',
+    'GNS-USD':'GNS/USDT','DYDX-USD':'DYDX/USDT','LDO-USD':'LDO/USDT','PENDLE-USD':'PENDLE/USDT','ENA-USD':'ENA/USDT',
+    'TRX-USD':'TRX/USDT','ATOM-USD':'ATOM/USDT','MKR-USD':'MKR/USDT','GRT-USD':'GRT/USDT','THETA-USD':'THETA/USDT',
+    'FTM-USD':'FTM/USDT','VET-USD':'VET/USDT','ALGO-USD':'ALGO/USDT','FLOW-USD':'FLOW/USDT','QNT-USD':'QNT/USDT',
+    'SNX-USD':'SNX/USDT','EOS-USD':'EOS/USDT','NEO-USD':'NEO/USDT','IOTA-USD':'IOTA/USDT','CFX-USD':'CFX/USDT',
+    'AXS-USD':'AXS/USDT','MANA-USD':'MANA/USDT','SAND-USD':'SAND/USDT','APE-USD':'APE/USDT','RUNE-USD':'RUNE/USDT',
+    'EGLD-USD':'EGLD/USDT','CHZ-USD':'CHZ/USDT','MINA-USD':'MINA/USDT','ROSE-USD':'ROSE/USDT','WOO-USD':'WOO/USDT',
+    'ANKR-USD':'ANKR/USDT','1INCH-USD':'1INCH/USDT','ZIL-USD':'ZIL/USDT','LRC-USD':'LRC/USDT','CRV-USD':'CRV/USDT'
 }
 
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
@@ -69,12 +79,12 @@ while True:
                 <div class="header-container">
                     <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
                     <div class="h-col" style="width:12%;">PREÇO ATUAL</div>
-                    <div class="h-col" style="width:10%; color:#FFFF00;">RESISTÊNCIA</div>
-                    <div class="h-col" style="width:10%; color:#FFA500;">PRÓX AO TOPO</div>
-                    <div class="h-col" style="width:10%; color:#FF0000;">TETO EXAUSTÃO</div>
-                    <div class="h-col" style="width:10%; color:#FFFF00;">SUPORTE</div>
-                    <div class="h-col" style="width:10%; color:#FFA500;">PRÓX FUNDO</div>
-                    <div class="h-col" style="width:10%; color:#00FF00;">CHÃO EXAUSTÃO</div>
+                    <div class="h-col" style="width:10%;">RESISTÊNCIA</div>
+                    <div class="h-col" style="width:10%;">PRÓX AO TOPO</div>
+                    <div class="h-col" style="width:10%;">TETO EXAUSTÃO</div>
+                    <div class="h-col" style="width:10%;">SUPORTE</div>
+                    <div class="h-col" style="width:10%;">PRÓX FUNDO</div>
+                    <div class="h-col" style="width:10%;">CHÃO EXAUSTÃO</div>
                     <div class="h-col" style="width:14%;">SINALIZADOR</div>
                 </div>
                 """, unsafe_allow_html=True)
