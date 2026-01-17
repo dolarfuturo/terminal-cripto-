@@ -3,17 +3,17 @@ import pandas as pd
 import time
 from datetime import datetime
 
-# CONFIGURAÇÃO DE INTERFACE DE ELITE
+# CONFIGURAÇÃO DE INTERFACE DE ALTA PERFORMANCE
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 
-# CSS PARA MANTER O LAYOUT (Fundo Preto, Letras Brancas, Preços Laranja)
+# CSS PARA LAYOUT BLACK & LEDS PISCANTES
 st.markdown("""
     <style>
     .stApp { background-color: #000000; }
     .title-gold { color: #D4AF37; font-size: 48px; font-weight: bold; text-align: center; margin-bottom: 0px; }
     .subtitle-silver { color: #C0C0C0; font-size: 20px; text-align: center; margin-top: -10px; font-style: italic; letter-spacing: 3px; }
     
-    /* Blocos Superiores */
+    /* Blocos Superiores com Preço Laranja */
     [data-testid="stMetricLabel"] p { color: #FFFFFF !important; font-weight: bold !important; font-size: 22px !important; }
     [data-testid="stMetricValue"] { color: #FFA500 !important; font-weight: bold !important; }
     div[data-testid="stMetric"] { 
@@ -23,56 +23,89 @@ st.markdown("""
         padding: 15px; 
     }
     
-    /* Tabela All Black */
-    .stDataFrame { background-color: #000000 !important; }
+    /* Efeito Piscante para Exaustão */
+    @keyframes blinker {  
+        50% { opacity: 0.2; }
+    }
+    .blink-exaustao {
+        background-color: #FF0000 !important;
+        color: white !important;
+        font-weight: bold !important;
+        animation: blinker 0.6s linear infinite;
+        text-align: center;
+        border-radius: 5px;
+    }
+    .gatilho-aviso {
+        background-color: #CC7A00 !important;
+        color: white !important;
+        font-weight: bold !important;
+        text-align: center;
+        border-radius: 5px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# CABEÇALHO FIXO
+# CABEÇALHO
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-silver">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
 placeholder = st.empty()
 
-# MOCK DE DADOS (Simulando a Conexão que faremos com a API)
 while True:
     with placeholder.container():
-        # Lógica Automática de Tempo
         agora_utc = datetime.utcnow().strftime('%H:%M:%S')
         
         col1, col2, col3 = st.columns(3)
-        # Preços em Laranja, Nomes em Branco (via CSS acima)
         col1.metric("BTC", "$ 93,450.20", "+2.1%")
         col2.metric("VOLATILIDADE", "8.4%", "ALTA")
-        col3.metric("ALERTAS", "3 SINAIS", "ATIVOS")
+        col3.metric("ALERTAS", "SINAL ATIVO", "EXAUSTÃO")
 
-        st.markdown("<hr style='border: 0.5px solid #222'>", unsafe_allow_html=True)
+        st.markdown("<hr style='border: 1px solid #222'>", unsafe_allow_html=True)
         
-        # TABELA DE EXECUÇÃO - LÓGICA WAP 00:00 UTC
-        # Os valores de MÁX/MIN aqui são projetados (Wap + 10%)
+        # TABELA FOCO TOTAL: PREÇO, ALVOS E SINAIS
         dados = {
             "ATIVO": ["BTC/USDT", "ETH/USDT", "SOL/USDT", "PEPE/USDT", "LINK/USDT"],
-            "PREÇO": ["93.450", "3.845", "245.80", "0.000022", "14.25"],
-            "WAP ATUAL": ["91.200", "3.810", "232.10", "0.000020", "14.80"],
-            "MÁX PROJETADA": ["100.320", "4.191", "255.31", "0.000024", "16.28"],
-            "SINAL ALPHA": ["ESTÁVEL", "PREÇO JUSTO", "GATILHO VENDA", "EXAUSTÃO (BATER)", "GATILHO COMPRA"]
+            "PREÇO ATUAL": ["93.450", "3.845", "245.80", "0.000022", "14.25"],
+            "ALVO MÍNIMO (COMPRA)": ["82.080", "3.429", "208.89", "0.000018", "13.32"],
+            "ALVO MÁXIMO (VENDA)": ["100.320", "4.191", "255.31", "0.000024", "16.28"],
+            "SINAL DE ALERTA": ["ESTÁVEL", "PREÇO JUSTO", "GATILHO (4%)", "EXAUSTÃO (10%)", "PREÇO JUSTO"]
         }
-        df = pd.DataFrame(dados)
-
-        def color_sinal(val):
-            if 'EXAUSTÃO' in val: return 'color: #FF0000; font-weight: bold;'
-            if 'GATILHO VENDA' in val: return 'color: #FFA500; font-weight: bold;'
-            if 'GATILHO COMPRA' in val: return 'color: #00FF00; font-weight: bold;'
-            return 'color: #FFFFFF;'
-
-        st.write(f"### 🦈 RADAR DE EXAUSTÃO (Sincronizado UTC: {agora_utc})")
-        st.dataframe(
-            df.style.map(color_sinal, subset=['SINAL ALPHA']),
-            use_container_width=True,
-            hide_index=True
-        )
-
-        st.caption("A Wap reseta automaticamente às 00:00 UTC. Monitorando estiramento de 4% e 10%.")
         
-    time.sleep(1) # Atualização automática
+        # Para simular o "piscar" na tabela, usamos HTML dentro do dataframe
+        def formatar_sinal(sinal):
+            if "EXAUSTÃO" in sinal:
+                return f'<div class="blink-exaustao">{sinal}</div>'
+            elif "GATILHO" in sinal:
+                return f'<div class="gatilho-aviso">{sinal}</div>'
+            return sinal
+
+        df = pd.DataFrame(dados)
+        df_html = df.to_html(escape=False, index=False)
+        df_html = df_html.replace('<table>', '<table style="width:100%; color:white; background-color:black; border-collapse: collapse;">')
+        
+        # Estilização da tabela via HTML para permitir o sinal piscante
+        st.write("### 🦈 RADAR DE EXECUÇÃO")
+        st.markdown(
+            df.style.apply(lambda x: ["background-color: black" for i in x], axis=1).to_html(), 
+            unsafe_allow_html=True
+        )
+        
+        # Versão simplificada para garantir o sinal chamativo
+        for i, row in df.iterrows():
+            col_a, col_b, col_c, col_d, col_e = st.columns([1, 1, 1.2, 1.2, 1.5])
+            col_a.write(f"**{row['ATIVO']}**")
+            col_b.write(f"**{row['PREÇO ATUAL']}**")
+            col_c.write(f"<span style='color:#00FF00'>{row['ALVO MÍNIMO (COMPRA)']}</span>", unsafe_allow_html=True)
+            col_d.write(f"<span style='color:#FF4B4B'>{row['ALVO MÁXIMO (VENDA)']}</span>", unsafe_allow_html=True)
+            
+            if "EXAUSTÃO" in row['SINAL DE ALERTA']:
+                col_e.markdown(f'<div class="blink-exaustao">{row["SINAL DE ALERTA"]}</div>', unsafe_allow_html=True)
+            elif "GATILHO" in row['SINAL DE ALERTA']:
+                col_e.markdown(f'<div class="gatilho-aviso">{row["SINAL DE ALERTA"]}</div>', unsafe_allow_html=True)
+            else:
+                col_e.write(row['SINAL DE ALERTA'])
+
+        st.caption(f"Atualização Instantânea UTC: {agora_utc} | Alvos baseados na Wap do dia.")
+        
+    time.sleep(0.5)
