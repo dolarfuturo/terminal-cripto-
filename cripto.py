@@ -26,7 +26,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# LISTA MASSIVA DE ATIVOS (TOP 60+)
+# LISTA COMPLETA DE ATIVOS
 assets = {
     'BTC-USD': 'BTC/USDT', 'ETH-USD': 'ETH/USDT', 'SOL-USD': 'SOL/USDT', 'BNB-USD': 'BNB/USDT', 
     'XRP-USD': 'XRP/USDT', 'DOGE-USD': 'DOGE/USDT', 'ADA-USD': 'ADA/USDT', 'AVAX-USD': 'AVAX/USDT', 
@@ -39,8 +39,7 @@ assets = {
     'GALA-USD': 'GALA/USDT', 'LDO-USD': 'LDO/USDT', 'ENA-USD': 'ENA/USDT', 'WIF-USD': 'WIF/USDT', 
     'AR-USD': 'AR/USDT', 'AAVE-USD': 'AAVE/USDT', 'EGLD-USD': 'EGLD/USDT', 'THETA-USD': 'THETA/USDT',
     'HBAR-USD': 'HBAR/USDT', 'ATOM-USD': 'ATOM/USDT', 'IMX-USD': 'IMX/USDT', 'ALGO-USD': 'ALGO/USDT',
-    'MKR-USD': 'MKR/USDT', 'GRT-USD': 'GRT/USDT', 'SEI-USD': 'SEI/USDT', 'JUP-USD': 'JUP/USDT',
-    'BEAM-USD': 'BEAM/USDT', 'PYTH-USD': 'PYTH/USDT', 'FLOW-USD': 'FLOW/USDT', 'DYDX-USD': 'DYDX/USDT'
+    'MKR-USD': 'MKR/USDT', 'GRT-USD': 'GRT/USDT', 'SEI-USD': 'SEI/USDT', 'JUP-USD': 'JUP/USDT'
 }
 
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
@@ -75,7 +74,11 @@ while True:
                     if price is None or open_p is None: continue
                     change = ((price - open_p) / open_p) * 100
                     
-                    # Alvos Fixos (4, 8, 10% da abertura)
+                    # LOGICA DA SETA BASEADA NA VWAP (ABERTURA)
+                    seta_char = '▲' if price >= open_p else '▼'
+                    seta_color = '#00FF00' if price >= open_p else '#FF0000'
+                    
+                    # Alvos
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
@@ -89,8 +92,8 @@ while True:
                         <div class="row-container">
                             <div class="col-ativo">{name}</div>
                             <div class="col-price">
-                                {price:.{prec}f} 
-                                <span style="color:{'#00FF00' if change>=0 else '#FF0000'}; font-size:10px;">({change:+.2f}%)</span>
+                                {price:.{prec}f} <span style="color:{seta_color}; font-size:16px;">{seta_char}</span>
+                                <div style="color:{'#00FF00' if change>=0 else '#FF0000'}; font-size:9px;">({change:+.2f}%)</div>
                             </div>
                             <div style="flex:1; text-align:center; color:#FFFF00; font-size:11px;">{v4:.{prec}f}</div>
                             <div style="flex:1; text-align:center; color:#FFA500; font-size:11px;">{v8:.{prec}f}</div>
