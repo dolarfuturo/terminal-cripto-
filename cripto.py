@@ -13,33 +13,44 @@ st.markdown("""
     header {visibility: hidden;}
     footer {visibility: hidden;}
     .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
+    
     .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; }
     .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 15px; font-weight: 700; }
+    
     .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
     .h-col { font-size: 11px; font-weight: 400; color: #FFFFFF; text-transform: uppercase; text-align: center; }
+    
     .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; gap: 0px; }
     .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
     .w-price { width: 12%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
     .w-target { width: 10%; text-align: center; font-size: 14px; font-weight: 800; }
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
+
+    /* CLASSES DE ESTADO */
     .t-active { border-radius: 2px; padding: 2px 4px; }
     .t-y { background-color: #FFFF00; color: #000 !important; }
     .t-o { background-color: #FFA500; color: #000 !important; }
-    .t-r { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; }
-    .t-g { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; }
-    .t-p { background-color: #8A2BE2; color: #FFF !important; animation: blinker 0.2s linear infinite; } /* MODO PARABÓLICO */
+    
+    /* EXAUSTÃO (PISCA) */
+    .t-blink-r { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; }
+    .t-blink-g { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; }
+    
+    /* PARABÓLICO (ESTÁTICO ROXO) */
+    .t-purple { background-color: #8A2BE2; color: #FFF !important; font-weight: 900; }
+    
     @keyframes blinker { 50% { opacity: 0.2; } }
+
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     .bg-estavel { background-color: #00CED1; color: #000; } 
     .bg-yellow { background-color: #FFFF00; color: #000; }
     .bg-orange { background-color: #FFA500; color: #000; }
-    .bg-ex-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
-    .bg-ex-green { background-color: #00FF00; color: #000; animation: blinker 0.4s linear infinite; }
-    .bg-parabolic { background-color: #8A2BE2; color: #FFF; animation: blinker 0.2s linear infinite; }
+    .bg-blink-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
+    .bg-blink-green { background-color: #00FF00; color: #000; animation: blinker 0.4s linear infinite; }
+    .bg-purple { background-color: #8A2BE2; color: #FFF; }
     </style>
     """, unsafe_allow_html=True)
 
-# 80 ATIVOS
+# LISTA DOS 80 ATIVOS
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
@@ -96,16 +107,17 @@ while True:
                     s_txt, s_class = "ESTÁVEL", "bg-estavel"
                     v4_c, v8_c, v10_c, c4_c, c8_c, c10_c = "", "", "", "", "", ""
 
-                    # LÓGICA DE ALTA
-                    if change >= 15: s_txt, s_class, v10_c = "ALTA PARABÓLICA", "bg-parabolic", "t-active t-p"
-                    elif price >= v10: s_txt, s_class, v10_c = "EXAUSTÃO MÁXIMA", "bg-ex-red", "t-active t-r"
-                    elif price >= v8: s_txt, s_class, v8_c = "CUIDADO ALTA VOL", "bg-orange", "t-active t-o"
-                    elif price >= v4: s_txt, s_class, v4_c = "DECISÃO ATENÇÃO", "bg-yellow", "t-active t-y"
-                    # LÓGICA DE QUEDA
-                    elif change <= -15: s_txt, s_class, c10_c = "QUEDA LIVRE", "bg-parabolic", "t-active t-p"
-                    elif price <= c10: s_txt, s_class, c10_c = "EXAUSTÃO MÁXIMA", "bg-ex-green", "t-active t-g"
-                    elif price <= c8: s_txt, s_class, c8_c = "CUIDADO ALTA VOL", "bg-orange", "t-active t-o"
-                    elif price <= c4: s_txt, s_class, c4_c = "DECISÃO ATENÇÃO", "bg-yellow", "t-active t-y"
+                    # ALTA
+                    if change >= 15: s_txt, s_class, v10_c = "ALTA PARABÓLICA", "bg-purple", "t-purple"
+                    elif change >= 10: s_txt, s_class, v10_c = "EXAUSTÃO MÁXIMA", "bg-blink-red", "t-blink-r"
+                    elif price >= v8: s_txt, s_class, v8_c = "CUIDADO ALTA VOL", "bg-orange", "t-o"
+                    elif price >= v4: s_txt, s_class, v4_c = "DECISÃO ATENÇÃO", "bg-yellow", "t-y"
+                    
+                    # QUEDA
+                    elif change <= -15: s_txt, s_class, c10_c = "QUEDA PARABÓLICA", "bg-purple", "t-purple"
+                    elif change <= -10: s_txt, s_class, c10_c = "EXAUSTÃO MÁXIMA", "bg-blink-green", "t-blink-g"
+                    elif price <= c8: s_txt, s_class, c8_c = "CUIDADO ALTA VOL", "bg-orange", "t-o"
+                    elif price <= c4: s_txt, s_class, c4_c = "DECISÃO ATENÇÃO", "bg-yellow", "t-y"
 
                     prec = 6 if price < 0.1 else (4 if price < 10 else 2)
                     seta = '▲' if price >= open_p else '▼'
