@@ -8,36 +8,36 @@ st.set_page_config(page_title="ALPHA VISION", layout="wide")
 
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&display=swap');
     
-    .block-container { padding: 0.5rem !important; }
+    .block-container { padding: 0.2rem !important; }
     .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
     
-    .title-gold { color: #D4AF37; font-size: 24px; font-weight: 800; text-align: center; margin: 0; }
-    .subtitle-vision { color: #C0C0C0; font-size: 12px; text-align: center; margin-bottom: 8px; letter-spacing: 3px; }
+    .title-gold { color: #D4AF37; font-size: 26px; font-weight: 900; text-align: center; margin: 0; }
+    .subtitle-vision { color: #C0C0C0; font-size: 14px; text-align: center; margin-bottom: 5px; letter-spacing: 5px; }
     
     /* CABEÇALHO COLADO */
-    .header-container { display: flex; align-items: center; padding: 4px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
-    .col-head { font-size: 7px; flex: 1; text-align: center; font-weight: 800; color: #666; text-transform: uppercase; line-height: 1; }
+    .header-container { display: flex; align-items: center; padding: 2px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
+    .col-head { font-size: 7px; flex: 1; text-align: center; font-weight: 800; color: #555; text-transform: uppercase; line-height: 1; margin: 0 -2px; }
     
-    /* LINHAS COM NÚMEROS GRANDES E SEM ESPAÇO */
-    .row-container { display: flex; align-items: center; padding: 2px 0; border-bottom: 1px solid #111; gap: 0px !important; }
-    .col-ativo { color: #EEE; font-size: 11px; flex: 0.9; font-weight: 700; padding-left: 2px; white-space: nowrap; }
-    .col-price { color: #FF8C00; font-weight: 800; font-size: 14px; flex: 1.2; text-align: center; line-height: 1; }
+    /* LINHAS COM NÚMEROS BRUTAIS */
+    .row-container { display: flex; align-items: center; padding: 1px 0; border-bottom: 1px solid #151515; gap: 0px !important; }
+    .col-ativo { color: #AAA; font-size: 10px; flex: 0.8; font-weight: 400; padding-left: 5px; white-space: nowrap; }
+    .col-price { color: #FF8C00; font-weight: 900; font-size: 16px !important; flex: 1.3; text-align: center; line-height: 1; margin: 0 -5px; }
     
-    /* ALVOS GIGANTES */
-    .col-target { flex: 1; text-align: center; font-size: 15px !important; font-weight: 800; letter-spacing: -0.5px; }
-    .col-sinal { flex: 1.3; padding-left: 2px; }
+    /* ALVOS GIGANTES E COLADOS */
+    .col-target { flex: 1; text-align: center; font-size: 16px !important; font-weight: 900 !important; margin: 0 -3px; letter-spacing: -1px; }
+    .col-sinal { flex: 1.4; padding: 0 2px; }
 
     /* ESTILOS DE ATIVAÇÃO */
-    .target-yellow { background-color: #FFFF00; color: #000 !important; border-radius: 1px; }
-    .target-orange { background-color: #FFA500; color: #000 !important; border-radius: 1px; }
-    .target-blink-red { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; border-radius: 1px; }
-    .target-blink-green { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; border-radius: 1px; }
+    .target-yellow { background-color: #FFFF00; color: #000 !important; border-radius: 0px; }
+    .target-orange { background-color: #FFA500; color: #000 !important; border-radius: 0px; }
+    .target-blink-red { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; border-radius: 0px; }
+    .target-blink-green { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; border-radius: 0px; }
     
     @keyframes blinker { 50% { opacity: 0.1; } }
 
-    .status-box { padding: 5px 1px; border-radius: 2px; font-weight: 800; font-size: 7px; width: 100%; text-align: center; line-height: 1; }
+    .status-box { padding: 8px 1px; border-radius: 1px; font-weight: 900; font-size: 8px; width: 100%; text-align: center; line-height: 1; text-transform: uppercase; }
     .bg-estavel { background-color: #00CED1; color: #000; } 
     .bg-yellow { background-color: #FFFF00; color: #000; }
     .bg-orange { background-color: #FFA500; color: #000; }
@@ -47,13 +47,13 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 assets = {
-    'BTC-USD':'BTC','ETH-USD':'ETH','SOL-USD':'SOL','BNB-USD':'BNB','XRP-USD':'XRP',
-    'DOGE-USD':'DOGE','ADA-USD':'ADA','AVAX-USD':'AVAX','DOT-USD':'DOT','LINK-USD':'LINK',
-    'NEAR-USD':'NEAR','PEPE-USD':'PEPE','EGLD-USD':'EGLD','GALA-USD':'GALA','FET-USD':'FET',
-    'AAVE-USD':'AAVE','RENDER-USD':'RENDER','SUI-USD':'SUI','TIA-USD':'TIA','INJ-USD':'INJ'
+    'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
+    'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
+    'NEAR-USD':'NEAR/USDT','PEPE-USD':'PEPE/USDT','EGLD-USD':'EGLD/USDT','GALA-USD':'GALA/USDT','FET-USD':'FET/USDT',
+    'AAVE-USD':'AAVE/USDT','RENDER-USD':'RENDER/USDT','SUI-USD':'SUI/USDT','TIA-USD':'TIA/USDT','INJ-USD':'INJ/USDT'
 }
 
-st.markdown('<div class="title-gold">ALPHA VISION</div>', unsafe_allow_html=True)
+st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
 placeholder = st.empty()
@@ -64,15 +64,15 @@ while True:
         with placeholder.container():
             st.markdown("""
                 <div class="header-container">
-                    <div class="col-head" style="flex:0.9; text-align:left;">ATIVO</div>
-                    <div class="col-head" style="flex:1.2;">PREÇO</div>
-                    <div class="col-head">RES</div>
+                    <div class="col-head" style="flex:0.8; text-align:left; padding-left:5px;">ATIVO</div>
+                    <div class="col-head" style="flex:1.3;">PREÇO ATUAL</div>
+                    <div class="col-head">RESIST</div>
                     <div class="col-head">TOPO</div>
                     <div class="col-head">TETO</div>
-                    <div class="col-head">SUP</div>
-                    <div class="col-head">FUND</div>
+                    <div class="col-head">SUPORTE</div>
+                    <div class="col-head">FUNDO</div>
                     <div class="col-head">CHÃO</div>
-                    <div class="col-head" style="flex:1.3;">SINAL</div>
+                    <div class="col-head" style="flex:1.4;">ALERTA OPERACIONAL</div>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -93,15 +93,15 @@ while True:
                     if price >= v10:
                         s_txt = "EXAUSTÃO"; s_class = "bg-ex-red"; v10_c = "target-blink-red"
                     elif price >= v8:
-                        s_txt = "CUIDADO VOL"; s_class = "bg-orange"; v8_c = "target-orange"
+                        s_txt = "CUIDADO ALTA VOL"; s_class = "bg-orange"; v8_c = "target-orange"
                     elif price >= v4:
-                        s_txt = "DECISÃO ATENÇÃO"; s_class = "bg-yellow"; v4_c = "target-yellow"
+                        s_txt = "PONTO DECISAO ATENÇÃO"; s_class = "bg-yellow"; v4_c = "target-yellow"
                     elif price <= c10:
                         s_txt = "EXAUSTÃO"; s_class = "bg-ex-green"; c10_c = "target-blink-green"
                     elif price <= c8:
-                        s_txt = "CUIDADO VOL"; s_class = "bg-orange"; c8_c = "target-orange"
+                        s_txt = "CUIDADO ALTA VOL"; s_class = "bg-orange"; c8_c = "target-orange"
                     elif price <= c4:
-                        s_txt = "DECISÃO ATENÇÃO"; s_class = "bg-yellow"; c4_c = "target-yellow"
+                        s_txt = "PONTO DECISAO ATENÇÃO"; s_class = "bg-yellow"; c4_c = "target-yellow"
 
                     prec = 6 if price < 0.1 else (4 if price < 10 else 2)
                     seta = '▲' if price >= open_p else '▼'
@@ -111,7 +111,7 @@ while True:
                         <div class="row-container">
                             <div class="col-ativo">{name}</div>
                             <div class="col-price">
-                                {price:.{prec}f}<br><span style="font-size:7px; color:{seta_c};">{seta}{change:+.2f}%</span>
+                                {price:.{prec}f}<br><span style="font-size:8px; color:{seta_c};">{seta}{change:+.2f}%</span>
                             </div>
                             <div class="col-target" style="color:#FFFF00;"><span class="{v4_c}">{v4:.{prec}f}</span></div>
                             <div class="col-target" style="color:#FFA500;"><span class="{v8_c}">{v8:.{prec}f}</span></div>
