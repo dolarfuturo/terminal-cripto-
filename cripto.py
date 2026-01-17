@@ -26,13 +26,20 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# Lista Expandida de Ativos
+# LISTA MASSIVA DE ATIVOS (TOP MARKET CAP)
 assets = {
     'BTC-USD': 'BTC/USDT', 'ETH-USD': 'ETH/USDT', 'SOL-USD': 'SOL/USDT', 
     'BNB-USD': 'BNB/USDT', 'XRP-USD': 'XRP/USDT', 'DOGE-USD': 'DOGE/USDT',
-    'ADA-USD': 'ADA/USDT', 'MATIC-USD': 'MATIC/USDT', 'DOT-USD': 'DOT/USDT',
-    'LINK-USD': 'LINK/USDT', 'AVAX-USD': 'AVAX/USDT', 'SHIB-USD': 'SHIB/USDT',
-    'TRX-USD': 'TRX/USDT', 'LTC-USD': 'LTC/USDT', 'BCH-USD': 'BCH/USDT'
+    'ADA-USD': 'ADA/USDT', 'AVAX-USD': 'AVAX/USDT', 'DOT-USD': 'DOT/USDT',
+    'LINK-USD': 'LINK/USDT', 'TRX-USD': 'TRX/USDT', 'MATIC-USD': 'POL/USDT',
+    'SHIB-USD': 'SHIB/USDT', 'LTC-USD': 'LTC/USDT', 'BCH-USD': 'BCH/USDT',
+    'NEAR-USD': 'NEAR/USDT', 'APT-USD': 'APT/USDT', 'ARB-USD': 'ARB/USDT',
+    'OP-USD': 'OP/USDT', 'SUI-USD': 'SUI/USDT', 'PEPE-USD': 'PEPE/USDT',
+    'BONK-USD': 'BONK/USDT', 'FLOKI-USD': 'FLOKI/USDT', 'STX-USD': 'STX/USDT',
+    'RENDER-USD': 'RENDER/USDT', 'TIA-USD': 'TIA/USDT', 'INJ-USD': 'INJ/USDT',
+    'ICP-USD': 'ICP/USDT', 'FIL-USD': 'FIL/USDT', 'KAS-USD': 'KAS/USDT',
+    'FET-USD': 'FET/USDT', 'RUNE-USD': 'RUNE/USDT', 'GALA-USD': 'GALA/USDT',
+    'LDO-USD': 'LDO/USDT', 'ENA-USD': 'ENA/USDT', 'WIF-USD': 'WIF/USDT'
 }
 
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
@@ -42,7 +49,6 @@ placeholder = st.empty()
 
 while True:
     try:
-        # Busca dados em lote para evitar lentidão
         tickers = yf.Tickers(' '.join(assets.keys()))
         
         with placeholder.container():
@@ -62,25 +68,29 @@ while True:
 
             for ticker_id, display_name in assets.items():
                 try:
-                    t_info = tickers.tickers[ticker_id].fast_info
-                    price = t_info.last_price
-                    open_price = t_info.open
+                    # Coleta segura de dados
+                    t_obj = tickers.tickers[ticker_id]
+                    info = t_obj.fast_info
                     
-                    if price is None or open_price is None:
+                    price = info.last_price
+                    open_price = info.open
+                    
+                    if price is None or open_price is None or price == 0:
                         continue
 
                     change = ((price - open_price) / open_price) * 100
                     
-                    # Seta Diária (Preço vs Abertura)
+                    # SETA ESTATÍSTICA (Abertura Diária Yahoo)
                     seta = '▲' if price >= open_price else '▼'
                     color_seta = "#00FF00" if price >= open_price else "#FF0000"
                     color_var = "#00FF00" if change >= 0 else "#FF0000"
                     
-                    # Cálculos Estatísticos
+                    # PRECISÃO DECIMAL PARA MEMES E MOEDAS CARAS
+                    prec = 8 if price < 0.01 else (4 if price < 1 else 2)
+                    
+                    # ALVOS ESTATÍSTICOS (4, 8, 10%)
                     v4, v8, v10 = price*1.04, price*1.08, price*1.10
                     c4, c8, c10 = price*0.96, price*0.92, price*0.90
-                    
-                    prec = 6 if price < 1 else 2
                     
                     s_txt = "ESTÁVEL"; s_class = "bg-estavel"
                     if abs(change) >= 10: s_txt = "EXAUSTÃO"; s_class = "bg-exaustao"
@@ -103,6 +113,6 @@ while True:
                     """, unsafe_allow_html=True)
                 except:
                     continue
-        time.sleep(10)
+        time.sleep(15)
     except Exception as e:
         time.sleep(10)
