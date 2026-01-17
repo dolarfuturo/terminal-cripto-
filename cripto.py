@@ -7,10 +7,10 @@ from datetime import datetime, timedelta
 # 1. CONFIGURAÇÃO DE INTERFACE
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 
-# Inicializa exchange via CCXT (Mais estável para nuvem)
-exchange = ccxt.binance()
+# Inicializa exchange (Conexão robusta)
+exchange = ccxt.binance({'enableRateLimit': True})
 
-# 2. CSS ESTILO TERMINAL ALPHA VISION
+# 2. CSS TERMINAL ALPHA VISION (PRETO E OURO)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
@@ -28,6 +28,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# Função de Alerta Sonoro
 def play_alert():
     audio_html = '<audio autoplay><source src="https://www.soundjay.com/buttons/beep-01a.mp3" type="audio/mpeg"></audio>'
     st.components.v1.html(audio_html, height=0)
@@ -37,11 +38,10 @@ placeholder = st.empty()
 
 while True:
     try:
-        # Busca dados de mercado
+        # Puxa os tickers e filtra Top 50 USDT por volume
         tickers = exchange.fetch_tickers()
-        # Filtra Top 50 USDT por volume
-        data = [t for t in tickers.values() if t['symbol'].endswith('/USDT')]
-        top_data = sorted(data, key=lambda x: x['quoteVolume'], reverse=True)[:50]
+        usdt_pairs = [t for t in tickers.values() if t['symbol'].endswith('/USDT')]
+        top_data = sorted(usdt_pairs, key=lambda x: x['quoteVolume'], reverse=True)[:50]
         
         trigger_sound = False
         
@@ -61,16 +61,19 @@ while True:
                 """, unsafe_allow_html=True)
 
             for t in top_data:
-                sym = t['symbol'].replace('/USDT', '')
+                sym = t['symbol']
                 price = t['last']
-                vwap = t['vwap'] if t['vwap'] else price # Usa preço atual se VWAP não disponível
+                vwap = t['vwap'] if t['vwap'] else price
                 change = t['percentage']
                 
+                # SETA ESTATÍSTICA (PREÇO VS VWAP)
                 seta = '<span style="color:#00FF00;">▲</span>' if price >= vwap else '<span style="color:#FF0000;">▼</span>'
                 color_var = "#00FF00" if change >= 0 else "#FF0000"
+                
+                # Decimais dinâmicos (Moedas baratas vs caras)
                 prec = 8 if price < 1 else 2
                 
-                # Alvos
+                # Cálculos de Alvos (4%, 8%, 10%)
                 v4, v8, v10 = price*1.04, price*1.08, price*1.10
                 c4, c8, c10 = price*0.96, price*0.92, price*0.90
                 
@@ -81,8 +84,11 @@ while True:
 
                 st.markdown(f"""
                     <div class="row-container">
-                        <div class="col-ativo">{sym}/USDT</div>
-                        <div class="col-price">{price:.{prec}f}{seta}<span style="color:{color_var}; font-size:10px;">({change:+.2f}%)</span></div>
+                        <div class="col-ativo">{sym}</div>
+                        <div class="col-price">
+                            {price:.{prec}f}{seta} 
+                            <span style="color:{color_var}; font-size:10px;">({change:+.2f}%)</span>
+                        </div>
                         <div style="flex:1; text-align:center; color:#FFFF00; font-size:12px;">{v4:.{prec}f}</div>
                         <div style="flex:1; text-align:center; color:#FFA500; font-size:12px;">{v8:.{prec}f}</div>
                         <div style="flex:1; text-align:center; color:#FF0000; font-size:12px;">{v10:.{prec}f}</div>
@@ -93,10 +99,10 @@ while True:
                     </div>
                 """, unsafe_allow_html=True)
             
-            if trigger_sound: play_alert()
+            if trigger_sound:
+                play_alert()
                 
-        time.sleep(5) # Delay maior para evitar block
+        time.sleep(5) # Delay seguro para não ser bloqueado
     except Exception as e:
-        st.error(f"Sincronizando com a rede...")
+        st.warning("Reconectando ao fluxo de dados...")
         time.sleep(10)
-
