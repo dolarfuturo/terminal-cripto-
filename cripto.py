@@ -2,12 +2,11 @@ import streamlit as st
 import pandas as pd
 import time
 import yfinance as yf
-from datetime import datetime
 
 # 1. CONFIGURAÇÃO DE INTERFACE
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 
-# CSS ESTILO TERMINAL COM PISCA-PISCA SINCRONIZADO
+# CSS ESTILO TERMINAL ALPHA VISION
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
@@ -18,29 +17,27 @@ st.markdown("""
     .col-head { font-size: 9px; flex: 1; text-align: center; font-weight: 800; color: #BBB; text-transform: uppercase; }
     .row-container { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #111; }
     .col-ativo { color: #EEE; font-size: 13px; flex: 1.2; font-weight: 700; padding-left: 10px; }
-    .col-price { font-weight: 800; font-size: 14px; flex: 1.5; text-align: center; }
+    .col-price { color: #FF8C00; font-weight: 800; font-size: 14px; flex: 1.5; text-align: center; }
     
-    /* ANIMAÇÕES DE EXAUSTÃO */
-    .blink-alta { color: #FF0000 !important; animation: blinker 0.6s linear infinite; font-size: 16px !important; }
-    .blink-baixa { color: #00FFFF !important; animation: blinker 0.8s linear infinite; font-size: 16px !important; }
-    
+    /* EFEITO DE PISCAR APENAS PARA EXAUSTÃO */
+    .blink-exaustao { animation: blinker 0.5s linear infinite; font-weight: 900 !important; }
+    @keyframes blinker { 50% { opacity: 0.1; } }
+
     .status-box { padding: 4px; border-radius: 4px; font-weight: 800; font-size: 9px; width: 95%; margin: auto; text-align: center; color: white; }
     .bg-estavel { background-color: #00CED1; color: #000; } 
-    .bg-exaust-alta { background-color: #FF0000; animation: blinker 0.6s linear infinite; }
-    .bg-exaust-baixa { background-color: #0000FF; animation: blinker 0.8s linear infinite; }
-
-    @keyframes blinker { 50% { opacity: 0.1; } }
+    .bg-decisao { background-color: #FFFF00; color: #000; } /* Sólido */
+    .bg-topo-fundo { background-color: #FFA500; color: #000; } /* Sólido */
+    .bg-exaustao-alta { background-color: #FF0000; color: white; } /* Vai piscar via classe */
+    .bg-exaustao-baixa { background-color: #00FF00; color: #000; } /* Vai piscar via classe */
     </style>
     """, unsafe_allow_html=True)
 
-# LISTA DE ATIVOS EXPANDIDA
+# LISTA COMPLETA DE ATIVOS
 assets = {
     'BTC-USD': 'BTC/USDT', 'ETH-USD': 'ETH/USDT', 'SOL-USD': 'SOL/USDT', 'BNB-USD': 'BNB/USDT', 
     'XRP-USD': 'XRP/USDT', 'DOGE-USD': 'DOGE/USDT', 'ADA-USD': 'ADA/USDT', 'AVAX-USD': 'AVAX/USDT', 
-    'DOT-USD': 'DOT/USDT', 'LINK-USD': 'LINK/USDT', 'TRX-USD': 'TRX/USDT', 'MATIC-USD': 'POL/USDT', 
-    'SHIB-USD': 'SHIB/USDT', 'LTC-USD': 'LTC/USDT', 'BCH-USD': 'BCH/USDT', 'NEAR-USD': 'NEAR/USDT', 
-    'GALA-USD': 'GALA/USDT', 'PEPE-USD': 'PEPE/USDT', 'EGLD-USD': 'EGLD/USDT', 'AAVE-USD': 'AAVE/USDT',
-    'RENDER-USD': 'RENDER/USDT', 'SUI-USD': 'SUI/USDT', 'FET-USD': 'FET/USDT', 'FIL-USD': 'FIL/USDT'
+    'DOT-USD': 'DOT/USDT', 'LINK-USD': 'LINK/USDT', 'NEAR-USD': 'NEAR/USDT', 'GALA-USD': 'GALA/USDT', 
+    'PEPE-USD': 'PEPE/USDT', 'EGLD-USD': 'EGLD/USDT', 'SUI-USD': 'SUI/USDT', 'FET-USD': 'FET/USDT'
 }
 
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
@@ -72,22 +69,30 @@ while True:
                     price = info.last_price
                     open_p = info.open
                     if price is None or open_p is None: continue
-                    change = ((price - open_p) / open_p) * 100
                     
-                    # Alvos
+                    change = ((price - open_p) / open_p) * 100
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
-                    # LÓGICA DE ALERTA E PISCA-PISCA
-                    s_txt = "ESTÁVEL"; s_class = "bg-estavel"; p_class = ""
-                    teto_style = ""; chao_style = ""
-                    
+                    # Lógica de Visual
+                    s_txt = "ESTÁVEL"; s_class = "bg-estavel"; blink_class = ""
+                    t_blink = ""; c_blink = "" # Classes de piscar para colunas
+
+                    # ALTA
                     if price >= v10:
-                        s_txt = "EXAUST. ALTA"; s_class = "bg-exaust-alta"; p_class = "blink-alta"
-                        teto_style = "font-weight:900; font-size:14px; text-decoration:underline;"
+                        s_txt = "EXAUST. ALTA"; s_class = "bg-exaustao-alta blink-exaustao"; t_blink = "blink-exaustao"
+                    elif price >= v8:
+                        s_txt = "PRÓX. TOPO"; s_class = "bg-topo-fundo"
+                    elif price >= v4:
+                        s_txt = "DECISÃO ALTA"; s_class = "bg-decisao"
+                    
+                    # BAIXA
                     elif price <= c10:
-                        s_txt = "EXAUST. BAIXA"; s_class = "bg-exaust-baixa"; p_class = "blink-baixa"
-                        chao_style = "font-weight:900; font-size:14px; text-decoration:underline;"
+                        s_txt = "EXAUST. BAIXA"; s_class = "bg-exaustao-baixa blink-exaustao"; c_blink = "blink-exaustao"
+                    elif price <= c8:
+                        s_txt = "PRÓX. FUNDO"; s_class = "bg-topo-fundo"
+                    elif price <= c4:
+                        s_txt = "DECISÃO BAIXA"; s_class = "bg-decisao"
 
                     prec = 8 if price < 0.01 else (4 if price < 1 else 2)
                     seta = '▲' if price >= open_p else '▼'
@@ -96,16 +101,13 @@ while True:
                     st.markdown(f"""
                         <div class="row-container">
                             <div class="col-ativo">{name}</div>
-                            <div class="col-price {p_class}" style="color:#FF8C00;">
-                                {price:.{prec}f} <span style="color:{seta_c};">{seta}</span>
-                                <div style="font-size:9px; color:{seta_c};">({change:+.2f}%)</div>
-                            </div>
+                            <div class="col-price">{price:.{prec}f} <span style="color:{seta_c};">{seta}</span></div>
                             <div style="flex:1; text-align:center; color:#FFFF00; font-size:11px;">{v4:.{prec}f}</div>
                             <div style="flex:1; text-align:center; color:#FFA500; font-size:11px;">{v8:.{prec}f}</div>
-                            <div style="flex:1; text-align:center; color:#FF0000; font-size:11px; {teto_style}">{v10:.{prec}f}</div>
+                            <div style="flex:1; text-align:center; color:#FF0000; font-size:11px;" class="{t_blink}">{v10:.{prec}f}</div>
                             <div style="flex:1; text-align:center; color:#FFFF00; font-size:11px;">{c4:.{prec}f}</div>
                             <div style="flex:1; text-align:center; color:#FFA500; font-size:11px;">{c8:.{prec}f}</div>
-                            <div style="flex:1; text-align:center; color:#00FF00; font-size:11px; {chao_style}">{c10:.{prec}f}</div>
+                            <div style="flex:1; text-align:center; color:#00FF00; font-size:11px;" class="{c_blink}">{c10:.{prec}f}</div>
                             <div style="flex:1;"><div class="status-box {s_class}">{s_txt}</div></div>
                         </div>
                     """, unsafe_allow_html=True)
