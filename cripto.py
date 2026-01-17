@@ -4,7 +4,7 @@ import time
 import yfinance as yf
 
 # 1. CONFIGURAÇÃO DE INTERFACE
-st.set_page_config(page_title="ALPHA VISION", layout="wide")
+st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 
 st.markdown("""
     <style>
@@ -13,17 +13,17 @@ st.markdown("""
     .block-container { padding: 0.5rem !important; }
     .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
     
-    .title-gold { color: #D4AF37; font-size: 28px; font-weight: 900; text-align: center; margin: 0; }
-    .subtitle-vision { color: #C0C0C0; font-size: 14px; text-align: center; margin-bottom: 10px; letter-spacing: 5px; }
+    .title-gold { color: #D4AF37; font-size: 30px; font-weight: 900; text-align: center; margin: 0; }
+    .subtitle-vision { color: #C0C0C0; font-size: 15px; text-align: center; margin-bottom: 15px; letter-spacing: 5px; }
     
-    /* CABEÇALHO COM LARGURAS FIXAS PARA NÃO DESALINHAR */
-    .header-container { display: flex; width: 100%; padding: 8px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
-    .h-col { font-size: 9px; font-weight: 800; color: #888; text-transform: uppercase; text-align: center; }
+    /* CABEÇALHO RESTAURADO */
+    .header-container { display: flex; width: 100%; padding: 10px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
+    .h-col { font-size: 9px; font-weight: 800; color: #BBB; text-transform: uppercase; text-align: center; }
     
-    /* LINHAS COM ALINHAMENTO MILIMÉTRICO */
-    .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; }
+    /* LINHAS COM ALINHAMENTO FIXO */
+    .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; gap: 0px; }
     
-    /* DEFINIÇÃO DE LARGURA POR COLUNA (%) */
+    /* LARGURAS FIXAS PARA NADA SUMIR */
     .w-ativo { width: 12%; text-align: left; padding-left: 10px; color: #EEE; font-size: 12px; font-weight: 700; }
     .w-price { width: 13%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
     .w-target { width: 10%; text-align: center; font-size: 14px; font-weight: 800; }
@@ -62,18 +62,17 @@ while True:
     try:
         tickers = yf.Tickers(' '.join(assets.keys()))
         with placeholder.container():
-            # CABEÇALHO COM LARGURAS FIXAS
             st.markdown("""
                 <div class="header-container">
                     <div class="h-col" style="width:12%; text-align:left; padding-left:10px;">ATIVO</div>
                     <div class="h-col" style="width:13%;">PREÇO ATUAL</div>
-                    <div class="h-col" style="width:10%;">RESIST.</div>
-                    <div class="h-col" style="width:10%;">TOPO</div>
-                    <div class="h-col" style="width:10%;">TETO</div>
-                    <div class="h-col" style="width:10%;">SUPORTE</div>
-                    <div class="h-col" style="width:10%;">FUNDO</div>
-                    <div class="h-col" style="width:10%;">CHÃO</div>
-                    <div class="h-col" style="width:15%;">ALERTA OPERACIONAL</div>
+                    <div class="h-col" style="width:10%; color:#FFFF00;">RESISTÊNCIA</div>
+                    <div class="h-col" style="width:10%; color:#FFA500;">PRÓX AO TOPO</div>
+                    <div class="h-col" style="width:10%; color:#FF0000;">TETO EXAUSTÃO</div>
+                    <div class="h-col" style="width:10%; color:#FFFF00;">SUPORTE</div>
+                    <div class="h-col" style="width:10%; color:#FFA500;">PRÓX FUNDO</div>
+                    <div class="h-col" style="width:10%; color:#00FF00;">CHÃO EXAUSTÃO</div>
+                    <div class="h-col" style="width:15%;">SINALIZADOR</div>
                 </div>
                 """, unsafe_allow_html=True)
 
