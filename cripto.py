@@ -1,13 +1,10 @@
 import streamlit as st
 import ccxt
 import pandas as pd
-from streamlit_autorefresh import st_autorefresh
+import time
 
 # Configuração de Identidade Visual
 st.set_page_config(page_title="Alpha Vision Crypto", layout="wide")
-
-# Atualização automática a cada 30 segundos
-st_autorefresh(interval=30000, key="datarefresh")
 
 st.markdown("""
     <style>
@@ -21,16 +18,19 @@ st.markdown("""
 st.markdown('<p class="title-main">ALPHA VISION CRYPTO</p>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Visão de Tubarão: Operacional Institucional</p>', unsafe_allow_html=True)
 
-def buscar_dados_prontos():
+def buscar_dados_vitoria():
     try:
         exchange = ccxt.binance()
+        # Moedas principais para o operador
         moedas = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT']
         lista_final = []
         
         for m in moedas:
-            # Cálculo direto da VWAP 100p
+            # Cálculo de 100 períodos de 1h
             bars = exchange.fetch_ohlcv(m, timeframe='1h', limit=100)
             df = pd.DataFrame(bars, columns=['t', 'o', 'h', 'l', 'c', 'v'])
+            
+            # Matemática da VWAP
             vwap = ( ((df['h'] + df['l'] + df['c']) / 3) * df['v']).sum() / df['v'].sum()
             preco = df['c'].iloc[-1]
             desvio = ((preco / vwap) - 1) * 100
@@ -42,15 +42,15 @@ def buscar_dados_prontos():
             lista_final.append({
                 "ATIVO": m.replace('/USDT', ''),
                 "PREÇO ATUAL": f"$ {preco:,.2f}",
-                "ALVO DE SAÍDA": f"$ {vwap:,.2f}",
+                "ALVO (VWAP)": f"$ {vwap:,.2f}",
                 "STATUS": status
             })
         return lista_final
     except:
         return None
 
-# Exibição dos Dados Prontos
-dados = buscar_dados_prontos()
+# Execução Direta
+dados = buscar_dados_vitoria()
 
 if dados:
     st.write("---")
@@ -58,13 +58,18 @@ if dados:
     for i, item in enumerate(dados):
         with cols[i]:
             st.metric(label=item['ATIVO'], value=item['PREÇO ATUAL'], delta=item['STATUS'], delta_color="normal")
-            st.caption(f"🎯 Alvo: {item['ALVO DE SAÍDA']}")
+            st.caption(f"🎯 Alvo: {item['ALVO (VWAP)']}")
     
     st.write("---")
-    st.subheader("🚀 Scanner de Oportunidades em Tempo Real")
+    st.subheader("🚀 Dados Prontos para Operação")
     st.table(pd.DataFrame(dados))
 else:
-    st.warning("Reconectando aos servidores da Binance... os dados aparecerão em instantes.")
+    st.warning("Sincronizando com a Binance... Aguarde 5 segundos.")
+    time.sleep(5)
+    st.rerun()
+
+if st.button('⚡ ATUALIZAR AGORA'):
+    st.rerun()
 
 st.sidebar.markdown("### ALPHA VISION v1.0")
-st.sidebar.write("Atualização automática ativa (30s).")
+st.sidebar.write("Visão Institucional Ativa.")
