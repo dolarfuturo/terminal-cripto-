@@ -13,21 +13,22 @@ st.markdown("""
     .block-container { padding: 0.5rem !important; }
     .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
     
-    .title-gold { color: #D4AF37; font-size: 30px; font-weight: 900; text-align: center; margin: 0; }
-    .subtitle-vision { color: #C0C0C0; font-size: 15px; text-align: center; margin-bottom: 15px; letter-spacing: 5px; }
+    /* CABEÇALHO PRINCIPAL ALPHA VISION */
+    .title-gold { color: #D4AF37; font-size: 34px; font-weight: 900; text-align: center; margin-bottom: 0px; text-shadow: 0px 0px 15px rgba(212, 175, 55, 0.5); }
+    .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 20px; font-weight: 700; }
     
-    /* CABEÇALHO RESTAURADO */
+    /* CABEÇALHO DAS COLUNAS */
     .header-container { display: flex; width: 100%; padding: 10px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
     .h-col { font-size: 9px; font-weight: 800; color: #BBB; text-transform: uppercase; text-align: center; }
     
-    /* LINHAS COM ALINHAMENTO FIXO */
+    /* LINHAS ALINHADAS */
     .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; gap: 0px; }
     
-    /* LARGURAS FIXAS PARA NADA SUMIR */
-    .w-ativo { width: 12%; text-align: left; padding-left: 10px; color: #EEE; font-size: 12px; font-weight: 700; }
-    .w-price { width: 13%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
+    /* LARGURAS E FONTES AJUSTADAS */
+    .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
+    .w-price { width: 12%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
     .w-target { width: 10%; text-align: center; font-size: 14px; font-weight: 800; }
-    .w-sinal { width: 15%; text-align: center; padding-right: 5px; }
+    .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
 
     /* ESTILOS DE ALVO ATIVO */
     .t-active { border-radius: 2px; padding: 2px 4px; }
@@ -38,7 +39,7 @@ st.markdown("""
     
     @keyframes blinker { 50% { opacity: 0.2; } }
 
-    .status-box { padding: 6px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
+    .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     .bg-estavel { background-color: #00CED1; color: #000; } 
     .bg-yellow { background-color: #FFFF00; color: #000; }
     .bg-orange { background-color: #FFA500; color: #000; }
@@ -53,6 +54,7 @@ assets = {
     'NEAR-USD':'NEAR/USDT','PEPE-USD':'PEPE/USDT','EGLD-USD':'EGLD/USDT','GALA-USD':'GALA/USDT','FET-USD':'FET/USDT'
 }
 
+# TÍTULOS DE COMANDO
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
@@ -64,15 +66,15 @@ while True:
         with placeholder.container():
             st.markdown("""
                 <div class="header-container">
-                    <div class="h-col" style="width:12%; text-align:left; padding-left:10px;">ATIVO</div>
-                    <div class="h-col" style="width:13%;">PREÇO ATUAL</div>
+                    <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
+                    <div class="h-col" style="width:12%;">PREÇO ATUAL</div>
                     <div class="h-col" style="width:10%; color:#FFFF00;">RESISTÊNCIA</div>
                     <div class="h-col" style="width:10%; color:#FFA500;">PRÓX AO TOPO</div>
                     <div class="h-col" style="width:10%; color:#FF0000;">TETO EXAUSTÃO</div>
                     <div class="h-col" style="width:10%; color:#FFFF00;">SUPORTE</div>
                     <div class="h-col" style="width:10%; color:#FFA500;">PRÓX FUNDO</div>
                     <div class="h-col" style="width:10%; color:#00FF00;">CHÃO EXAUSTÃO</div>
-                    <div class="h-col" style="width:15%;">SINALIZADOR</div>
+                    <div class="h-col" style="width:14%;">SINALIZADOR</div>
                 </div>
                 """, unsafe_allow_html=True)
 
