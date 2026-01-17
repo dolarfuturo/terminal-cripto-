@@ -10,34 +10,35 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&display=swap');
     
-    .block-container { padding: 0.2rem !important; }
+    .block-container { padding: 0.5rem !important; }
     .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
     
-    .title-gold { color: #D4AF37; font-size: 26px; font-weight: 900; text-align: center; margin: 0; }
-    .subtitle-vision { color: #C0C0C0; font-size: 14px; text-align: center; margin-bottom: 5px; letter-spacing: 5px; }
+    .title-gold { color: #D4AF37; font-size: 28px; font-weight: 900; text-align: center; margin: 0; }
+    .subtitle-vision { color: #C0C0C0; font-size: 14px; text-align: center; margin-bottom: 10px; letter-spacing: 5px; }
     
-    /* CABEÇALHO COLADO */
-    .header-container { display: flex; align-items: center; padding: 2px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
-    .col-head { font-size: 7px; flex: 1; text-align: center; font-weight: 800; color: #555; text-transform: uppercase; line-height: 1; margin: 0 -2px; }
+    /* CABEÇALHO COM LARGURAS FIXAS PARA NÃO DESALINHAR */
+    .header-container { display: flex; width: 100%; padding: 8px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
+    .h-col { font-size: 9px; font-weight: 800; color: #888; text-transform: uppercase; text-align: center; }
     
-    /* LINHAS COM NÚMEROS BRUTAIS */
-    .row-container { display: flex; align-items: center; padding: 1px 0; border-bottom: 1px solid #151515; gap: 0px !important; }
-    .col-ativo { color: #AAA; font-size: 10px; flex: 0.8; font-weight: 400; padding-left: 5px; white-space: nowrap; }
-    .col-price { color: #FF8C00; font-weight: 900; font-size: 16px !important; flex: 1.3; text-align: center; line-height: 1; margin: 0 -5px; }
+    /* LINHAS COM ALINHAMENTO MILIMÉTRICO */
+    .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; }
     
-    /* ALVOS GIGANTES E COLADOS */
-    .col-target { flex: 1; text-align: center; font-size: 16px !important; font-weight: 900 !important; margin: 0 -3px; letter-spacing: -1px; }
-    .col-sinal { flex: 1.4; padding: 0 2px; }
+    /* DEFINIÇÃO DE LARGURA POR COLUNA (%) */
+    .w-ativo { width: 12%; text-align: left; padding-left: 10px; color: #EEE; font-size: 12px; font-weight: 700; }
+    .w-price { width: 13%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
+    .w-target { width: 10%; text-align: center; font-size: 14px; font-weight: 800; }
+    .w-sinal { width: 15%; text-align: center; padding-right: 5px; }
 
-    /* ESTILOS DE ATIVAÇÃO */
-    .target-yellow { background-color: #FFFF00; color: #000 !important; border-radius: 0px; }
-    .target-orange { background-color: #FFA500; color: #000 !important; border-radius: 0px; }
-    .target-blink-red { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; border-radius: 0px; }
-    .target-blink-green { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; border-radius: 0px; }
+    /* ESTILOS DE ALVO ATIVO */
+    .t-active { border-radius: 2px; padding: 2px 4px; }
+    .t-y { background-color: #FFFF00; color: #000 !important; }
+    .t-o { background-color: #FFA500; color: #000 !important; }
+    .t-r { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; }
+    .t-g { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; }
     
-    @keyframes blinker { 50% { opacity: 0.1; } }
+    @keyframes blinker { 50% { opacity: 0.2; } }
 
-    .status-box { padding: 8px 1px; border-radius: 1px; font-weight: 900; font-size: 8px; width: 100%; text-align: center; line-height: 1; text-transform: uppercase; }
+    .status-box { padding: 6px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     .bg-estavel { background-color: #00CED1; color: #000; } 
     .bg-yellow { background-color: #FFFF00; color: #000; }
     .bg-orange { background-color: #FFA500; color: #000; }
@@ -49,8 +50,7 @@ st.markdown("""
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
-    'NEAR-USD':'NEAR/USDT','PEPE-USD':'PEPE/USDT','EGLD-USD':'EGLD/USDT','GALA-USD':'GALA/USDT','FET-USD':'FET/USDT',
-    'AAVE-USD':'AAVE/USDT','RENDER-USD':'RENDER/USDT','SUI-USD':'SUI/USDT','TIA-USD':'TIA/USDT','INJ-USD':'INJ/USDT'
+    'NEAR-USD':'NEAR/USDT','PEPE-USD':'PEPE/USDT','EGLD-USD':'EGLD/USDT','GALA-USD':'GALA/USDT','FET-USD':'FET/USDT'
 }
 
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
@@ -62,17 +62,18 @@ while True:
     try:
         tickers = yf.Tickers(' '.join(assets.keys()))
         with placeholder.container():
+            # CABEÇALHO COM LARGURAS FIXAS
             st.markdown("""
                 <div class="header-container">
-                    <div class="col-head" style="flex:0.8; text-align:left; padding-left:5px;">ATIVO</div>
-                    <div class="col-head" style="flex:1.3;">PREÇO ATUAL</div>
-                    <div class="col-head">RESIST</div>
-                    <div class="col-head">TOPO</div>
-                    <div class="col-head">TETO</div>
-                    <div class="col-head">SUPORTE</div>
-                    <div class="col-head">FUNDO</div>
-                    <div class="col-head">CHÃO</div>
-                    <div class="col-head" style="flex:1.4;">ALERTA OPERACIONAL</div>
+                    <div class="h-col" style="width:12%; text-align:left; padding-left:10px;">ATIVO</div>
+                    <div class="h-col" style="width:13%;">PREÇO ATUAL</div>
+                    <div class="h-col" style="width:10%;">RESIST.</div>
+                    <div class="h-col" style="width:10%;">TOPO</div>
+                    <div class="h-col" style="width:10%;">TETO</div>
+                    <div class="h-col" style="width:10%;">SUPORTE</div>
+                    <div class="h-col" style="width:10%;">FUNDO</div>
+                    <div class="h-col" style="width:10%;">CHÃO</div>
+                    <div class="h-col" style="width:15%;">ALERTA OPERACIONAL</div>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -87,21 +88,15 @@ while True:
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
-                    s_txt = "ESTÁVEL"; s_class = "bg-estavel"
+                    s_txt, s_class = "ESTÁVEL", "bg-estavel"
                     v4_c, v8_c, v10_c, c4_c, c8_c, c10_c = "", "", "", "", "", ""
 
-                    if price >= v10:
-                        s_txt = "EXAUSTÃO"; s_class = "bg-ex-red"; v10_c = "target-blink-red"
-                    elif price >= v8:
-                        s_txt = "CUIDADO ALTA VOL"; s_class = "bg-orange"; v8_c = "target-orange"
-                    elif price >= v4:
-                        s_txt = "PONTO DECISAO ATENÇÃO"; s_class = "bg-yellow"; v4_c = "target-yellow"
-                    elif price <= c10:
-                        s_txt = "EXAUSTÃO"; s_class = "bg-ex-green"; c10_c = "target-blink-green"
-                    elif price <= c8:
-                        s_txt = "CUIDADO ALTA VOL"; s_class = "bg-orange"; c8_c = "target-orange"
-                    elif price <= c4:
-                        s_txt = "PONTO DECISAO ATENÇÃO"; s_class = "bg-yellow"; c4_c = "target-yellow"
+                    if price >= v10: s_txt, s_class, v10_c = "EXAUSTÃO", "bg-ex-red", "t-active t-r"
+                    elif price >= v8: s_txt, s_class, v8_c = "CUIDADO ALTA VOL", "bg-orange", "t-active t-o"
+                    elif price >= v4: s_txt, s_class, v4_c = "PONTO DECISAO ATENÇÃO", "bg-yellow", "t-active t-y"
+                    elif price <= c10: s_txt, s_class, c10_c = "EXAUSTÃO", "bg-ex-green", "t-active t-g"
+                    elif price <= c8: s_txt, s_class, c8_c = "CUIDADO ALTA VOL", "bg-orange", "t-active t-o"
+                    elif price <= c4: s_txt, s_class, c4_c = "PONTO DECISAO ATENÇÃO", "bg-yellow", "t-active t-y"
 
                     prec = 6 if price < 0.1 else (4 if price < 10 else 2)
                     seta = '▲' if price >= open_p else '▼'
@@ -109,17 +104,15 @@ while True:
 
                     st.markdown(f"""
                         <div class="row-container">
-                            <div class="col-ativo">{name}</div>
-                            <div class="col-price">
-                                {price:.{prec}f}<br><span style="font-size:8px; color:{seta_c};">{seta}{change:+.2f}%</span>
-                            </div>
-                            <div class="col-target" style="color:#FFFF00;"><span class="{v4_c}">{v4:.{prec}f}</span></div>
-                            <div class="col-target" style="color:#FFA500;"><span class="{v8_c}">{v8:.{prec}f}</span></div>
-                            <div class="col-target" style="color:#FF0000;"><span class="{v10_c}">{v10:.{prec}f}</span></div>
-                            <div class="col-target" style="color:#FFFF00;"><span class="{c4_c}">{c4:.{prec}f}</span></div>
-                            <div class="col-target" style="color:#FFA500;"><span class="{c8_c}">{c8:.{prec}f}</span></div>
-                            <div class="col-target" style="color:#00FF00;"><span class="{c10_c}">{c10:.{prec}f}</span></div>
-                            <div class="col-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
+                            <div class="w-ativo">{name}</div>
+                            <div class="w-price">{price:.{prec}f}<br><span style="font-size:9px; color:{seta_c};">{seta}{change:+.2f}%</span></div>
+                            <div class="w-target" style="color:#FFFF00;"><span class="{v4_c}">{v4:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#FFA500;"><span class="{v8_c}">{v8:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#FF0000;"><span class="{v10_c}">{v10:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#FFFF00;"><span class="{c4_c}">{c4:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#FFA500;"><span class="{c8_c}">{c8:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#00FF00;"><span class="{c10_c}">{c10:.{prec}f}</span></div>
+                            <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
                         </div>
                     """, unsafe_allow_html=True)
                 except: continue
