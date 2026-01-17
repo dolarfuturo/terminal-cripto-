@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 # 1. CONFIGURAÇÃO DE INTERFACE
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 
-# 2. CSS ESTILO TERMINAL QUANTI (TERMUX / BLOOMBERG)
+# 2. CSS ESTILO TERMINAL QUANTI (NITIDEZ TOTAL)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
@@ -16,29 +16,23 @@ st.markdown("""
     .title-gold { color: #D4AF37; font-size: 45px; font-weight: 700; text-align: center; margin-bottom: 0px; letter-spacing: 2px; }
     .subtitle-vision { color: #C0C0C0; font-size: 20px; text-align: center; margin-top: -5px; font-weight: 400; letter-spacing: 8px; text-transform: uppercase; }
     
-    /* CABEÇALHO DISCRETO */
     .header-container { display: flex; align-items: center; padding: 12px 0; border-bottom: 2px solid #D4AF37; background-color: #050505; margin-top: 25px; }
     .col-head { color: #666; font-weight: 400; font-size: 13px; flex: 1; text-align: center; text-transform: uppercase; }
 
-    /* LINHAS ESTILO TERMINAL */
     .row-container { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #111; }
     .col-ativo { color: #EEE; font-size: 15px; flex: 1; text-align: center; font-weight: 700; }
     .col-orange { color: #FF8C00; font-weight: 700; font-size: 16px; flex: 1; text-align: center; }
     .col-num { color: #CCC; font-size: 15px; flex: 1; text-align: center; }
-    
-    /* MÁXIMA E MÍNIMA */
     .col-max { color: #FF4B4B; font-weight: 700; font-size: 16px; flex: 1; text-align: center; }
     .col-min { color: #00FF00; font-weight: 700; font-size: 16px; flex: 1; text-align: center; }
 
-    /* SINAIS COLORIDOS E PREENCHIDOS COM PORCENTAGEM */
-    .status-box { padding: 6px; border-radius: 4px; font-weight: 700; font-size: 12px; width: 90%; margin: auto; text-align: center; color: white; }
-    .bg-estavel { background-color: #008080; } /* Azul Turquesa */
-    .bg-gatilho { background-color: #FF8C00; } /* Laranja */
-    .bg-exaustao { background-color: #FF0000; animation: blinker 0.5s linear infinite; } /* Vermelho Piscante */
+    .status-box { padding: 8px; border-radius: 4px; font-weight: 700; font-size: 13px; width: 90%; margin: auto; text-align: center; color: white; text-transform: uppercase; }
+    .bg-estavel { background-color: #008080; } 
+    .bg-gatilho { background-color: #FF8C00; } 
+    .bg-exaustao { background-color: #FF0000; animation: blinker 0.5s linear infinite; } 
     
     @keyframes blinker { 50% { opacity: 0.3; } }
 
-    /* LIVE STATUS VERDE NEON */
     .live-text { color: #00FF00; font-weight: 700; font-size: 13px; }
     .live-point { height: 9px; width: 9px; background-color: #00FF00; border-radius: 50%; display: inline-block; margin-right: 5px; animation: blink-live 1s infinite; }
     @keyframes blink-live { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
@@ -47,37 +41,38 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. CABEÇALHO DO TERMINAL
 st.markdown('<div class="title-gold">ALPHA VISION</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
 placeholder = st.empty()
 
-# 4. LOOP DE EXECUÇÃO
 while True:
     with placeholder.container():
         agora = datetime.utcnow() - timedelta(hours=3)
         horario_br = agora.strftime('%H:%M:%S')
         data_br = agora.strftime('%d/%m/%Y')
         
-        # Lista de Ativos Principais
-        ativos_top = [
-            {"ativo": "BTC/USDT", "p": 93450.12, "f": 91200.0, "a": 92100.0, "mx": 101310.0, "mi": 82890.0, "s": "ESTÁVEL"},
-            {"ativo": "ETH/USDT", "p": 3845.50, "f": 3710.0, "a": 3750.0, "mx": 4125.0, "mi": 3375.0, "s": "ESTÁVEL"},
-            {"ativo": "SOL/USDT", "p": 148.88, "f": 142.1, "a": 144.5, "mx": 158.9, "mi": 130.0, "s": "GATILHO (4%)"},
-            {"ativo": "XRP/USDT", "p": 1.12, "f": 1.05, "a": 1.08, "mx": 1.23, "mi": 0.97, "s": "ESTÁVEL"},
-            {"ativo": "BNB/USDT", "p": 612.40, "f": 590.0, "a": 600.0, "mx": 660.0, "mi": 540.0, "s": "ESTÁVEL"},
-            {"ativo": "PEPE/USDT", "p": 0.000022, "f": 0.000019, "a": 0.000020, "mx": 0.000022, "mi": 0.000018, "s": "EXAUSTÃO (10%)"},
-            {"ativo": "ADA/USDT", "p": 0.58, "f": 0.55, "a": 0.56, "mx": 0.64, "mi": 0.52, "s": "ESTÁVEL"},
-            {"ativo": "DOGE/USDT", "p": 0.16, "f": 0.14, "a": 0.15, "mx": 0.18, "mi": 0.13, "s": "GATILHO (4%)"},
+        # LISTA REAL DE ATIVOS (ORDEM POR MARKET CAP)
+        nomes_reais = [
+            "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT", "DOGE/USDT", "ADA/USDT", "TRX/USDT", 
+            "LINK/USDT", "AVAX/USDT", "SHIB/USDT", "DOT/USDT", "BCH/USDT", "NEAR/USDT", "MATIC/USDT", "LTC/USDT",
+            "PEPE/USDT", "UNI/USDT", "APT/USDT", "SUI/USDT", "RENDER/USDT", "HBAR/USDT", "ARB/USDT", "FIL/USDT"
         ]
         
-        # Gerando mais moedas para completar 100 sem repetir o nome "TOKEN"
-        outras_moedas = [
-            {"ativo": f"COIN_{i}/USDT", "p": 10.5 + i, "f": 10.0 + i, "a": 10.2 + i, "mx": 11.5 + i, "mi": 9.2 + i, "s": "ESTÁVEL"}
-            for i in range(1, 93)
-        ]
-        moedas_100 = ativos_top + outras_moedas
+        # Gerando 100 itens com nomes reais e complementos
+        moedas_100 = []
+        for i in range(100):
+            nome = nomes_reais[i] if i < len(nomes_reais) else f"ASSET_{i}/USDT"
+            
+            # Simulando alguns gatilhos para teste visual
+            status = "ESTÁVEL"
+            if i == 2: status = "GATILHO"
+            if i == 16: status = "EXAUSTÃO"
+            
+            moedas_100.append({
+                "ativo": nome, "p": 100.0 / (i+1), "f": 98.0 / (i+1), "a": 99.0 / (i+1), 
+                "mx": 110.0 / (i+1), "mi": 90.0 / (i+1), "s": status
+            })
 
         st.markdown("""
             <div class="header-container">
@@ -93,12 +88,10 @@ while True:
 
         for item in moedas_100:
             status_class = "bg-estavel"
-            if "GATILHO" in item['s']:
-                status_class = "bg-gatilho"
-            elif "EXAUSTÃO" in item['s']:
-                status_class = "bg-exaustao"
+            if "GATILHO" in item['s']: status_class = "bg-gatilho"
+            elif "EXAUSTÃO" in item['s']: status_class = "bg-exaustao"
 
-            fmt = ".2f" if item['p'] > 0.01 else ".6f"
+            fmt = ".2f" if item['p'] > 0.1 else ".6f"
 
             st.markdown(f"""
                 <div class="row-container">
@@ -114,7 +107,6 @@ while True:
                 </div>
                 """, unsafe_allow_html=True)
 
-        # 5. RODAPÉ ESTILO TERMINAL
         st.markdown(f"""
             <br>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-top: 1px solid #222;">
