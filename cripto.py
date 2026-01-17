@@ -1,73 +1,76 @@
 import streamlit as st
 import ccxt
 import pandas as pd
-import time
 
-# Configuração da Página
+# Configuração Visual Alpha Vision
 st.set_page_config(page_title="Alpha Vision Crypto", layout="wide")
-
-# Estilização CSS para visual "Premium"
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
-    .title-main { color: #00ffcc; font-size: 40px; font-weight: bold; margin-bottom: 0px; }
-    .subtitle { color: #808495; font-size: 20px; font-style: italic; margin-top: -10px; margin-bottom: 30px; }
-    .stMetric { background-color: #1a1c24; border-radius: 10px; padding: 15px; border: 1px solid #2d2e35; }
+    .stMetric { background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 15px; }
+    .title-main { color: #00ffcc; font-size: 42px; font-weight: bold; margin-bottom: 0px; }
+    .subtitle { color: #8b949e; font-size: 18px; font-style: italic; margin-top: -10px; }
     </style>
     """, unsafe_allow_html=True)
 
-# Identidade Visual no Topo
+# Cabeçalho Identidade
 st.markdown('<p class="title-main">ALPHA VISION CRYPTO</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Visão de Tubarão</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Visão de Tubarão: Operacional Institucional</p>', unsafe_allow_html=True)
+st.write("---")
 
-# Função para buscar dados com Tratamento de Erro (Anti-Erro Vermelho)
-def buscar_dados():
+# Motor de Cálculo: VWAP Institucional
+def motor_de_calculo(simbolo):
     try:
         exchange = ccxt.binance()
-        # Lista das moedas que você quer monitorar
-        simbolos = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT', 'ADA/USDT']
-        tickers = exchange.fetch_tickers(simbolos)
+        # Busca 100 períodos de 1h conforme planejado
+        bars = exchange.fetch_ohlcv(simbolo, timeframe='1h', limit=100)
+        df = pd.DataFrame(bars, columns=['t', 'o', 'h', 'l', 'c', 'v'])
         
-        dados_limpos = []
-        for simbolo in simbolos:
-            if simbolo in tickers:
-                t = tickers[simbolo]
-                dados_limpos.append({
-                    'Ativo': simbolo.split('/')[0],
-                    'Preço': t['last'],
-                    'Variação %': t['percentage'],
-                    'Volume': t['baseVolume']
-                })
-        return dados_limpos
-    except Exception as e:
-        return None # Retorna nada se houver falha na conexão
+        # Cálculo da Média Ponderada (VWAP)
+        vwap_inst = ( ((df['h'] + df['l'] + df['c']) / 3) * df['v']).sum() / df['v'].sum()
+        preco_atual = df['c'].iloc[-1]
+        desvio = ((preco_atual / vwap_inst) - 1) * 100
 
-# Lógica de Exibição
-dados = buscar_dados()
+        # Regra de Negócio para o Operador
+        if desvio > 1.8:
+            status, acao = "🔥 EXAUSTÃO COMPRA", "VENDER / SHORT"
+        elif desvio < -1.8:
+            status, acao = "❄️ EXAUSTÃO VENDA", "COMPRAR / LONG"
+        else:
+            status, acao = "⚖️ MERCADO NEUTRO", "AGUARDAR"
 
-if dados:
-    # Cria as colunas de destaque (KPIs)
-    cols = st.columns(len(dados))
-    for idx, item in enumerate(dados):
-        cor_delta = "normal" if item['Variação %'] >= 0 else "inverse"
-        cols[idx].metric(
-            label=f" {item['Ativo']}", 
-            value=f"$ {item['Preço']:,}", 
-            delta=f"{item['Variação %']:.2f}%",
-            delta_color=cor_delta
-        )
-    
-    st.write("---")
-    st.subheader("📊 Monitor de Fluxo e Exaustão")
-    df = pd.DataFrame(dados)
-    st.dataframe(df, use_container_width=True)
-    
-    if st.button('🔄 Sincronizar Agora'):
-        st.rerun()
-else:
-    # Mensagem elegante em vez do erro vermelho
-    st.warning("⚠️ Sincronizando com a Exchange... Por favor, aguarde 5 segundos ou clique no botão abaixo.")
-    if st.button('Tentar Novamente'):
-        st.rerun()
+        return {
+            "ATIVO": simbolo.split('/')[0],
+            "PREÇO": round(preco_atual, 2),
+            "ALVO (VWAP)": round(vwap_inst, 2),
+            "STATUS": status,
+            "AÇÃO": acao
+        }
+    except:
+        return None
 
-st.sidebar.info("Acesso Restrito: Alpha Vision Crypto v1.0")
+# Interface de Operação
+moedas = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT']
+resumos = []
+
+cols = st.columns(4)
+for i, m in enumerate(moedas):
+    dado = motor_de_calculo(m)
+    if dado:
+        resumos.append(dado)
+        with cols[i]:
+            st.metric(dado['ATIVO'], f"$ {dado['PREÇO']:,}")
+            st.write(f"**{dado['STATUS']}**")
+            st.caption(f"🎯 Alvo: {dado['ALVO (VWAP)']}")
+
+st.write("---")
+st.subheader("🚀 Scanner de Oportunidades")
+if resumos:
+    st.table(pd.DataFrame(resumos))
+
+# Botão de Comando do Operador
+if st.button('⚡ ATUALIZAR SCANNER (VISÃO DE TUBARÃO)'):
+    st.rerun()
+
+st.sidebar.markdown("### ALPHA VISION v1.0")
+st.sidebar.info("Cálculos baseados em volume institucional (VWAP 100p).")
