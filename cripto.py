@@ -2,19 +2,20 @@ import streamlit as st
 import pandas as pd
 import time
 import yfinance as yf
+from datetime import datetime
 
 # 1. CONFIGURAÇÃO DE INTERFACE
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 
-# CSS ESTILO TERMINAL
+# CSS ESTILO TERMINAL ALPHA VISION (LAYOUT 13:22)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
     .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
-    .title-gold { color: #D4AF37; font-size: 38px; font-weight: 700; text-align: center; margin-bottom: 0px; }
-    .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 5px; margin-bottom: 20px; }
+    .title-gold { color: #D4AF37; font-size: 40px; font-weight: 700; text-align: center; margin-bottom: 0px; text-shadow: 0px 0px 15px rgba(212, 175, 55, 0.6); }
+    .subtitle-vision { color: #C0C0C0; font-size: 18px; text-align: center; margin-top: -5px; letter-spacing: 8px; margin-bottom: 20px; }
     .header-container { display: flex; align-items: center; padding: 12px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
-    .col-head { font-size: 8px; flex: 1; text-align: center; font-weight: 800; color: #BBB; text-transform: uppercase; line-height: 1.2; }
+    .col-head { font-size: 9px; flex: 1; text-align: center; font-weight: 800; color: #BBB; text-transform: uppercase; }
     .row-container { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #111; }
     .col-ativo { color: #EEE; font-size: 13px; flex: 1.2; font-weight: 700; padding-left: 10px; }
     .col-price { color: #FF8C00; font-weight: 800; font-size: 14px; flex: 1.5; text-align: center; }
@@ -25,14 +26,15 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# LISTA DE ATIVOS
+# LISTA COMPLETA DE ATIVOS
 assets = {
     'BTC-USD': 'BTC/USDT', 'ETH-USD': 'ETH/USDT', 'SOL-USD': 'SOL/USDT', 
     'BNB-USD': 'BNB/USDT', 'XRP-USD': 'XRP/USDT', 'DOGE-USD': 'DOGE/USDT',
     'ADA-USD': 'ADA/USDT', 'AVAX-USD': 'AVAX/USDT', 'DOT-USD': 'DOT/USDT',
     'LINK-USD': 'LINK/USDT', 'TRX-USD': 'TRX/USDT', 'MATIC-USD': 'POL/USDT',
     'SHIB-USD': 'SHIB/USDT', 'LTC-USD': 'LTC/USDT', 'BCH-USD': 'BCH/USDT',
-    'NEAR-USD': 'NEAR/USDT', 'GALA-USD': 'GALA/USDT', 'PEPE-USD': 'PEPE/USDT'
+    'NEAR-USD': 'NEAR/USDT', 'GALA-USD': 'GALA/USDT', 'PEPE-USD': 'PEPE/USDT',
+    'SUI-USD': 'SUI/USDT', 'FET-USD': 'FET/USDT', 'AAVE-USD': 'AAVE/USDT'
 }
 
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
@@ -47,33 +49,35 @@ while True:
             st.markdown("""
                 <div class="header-container">
                     <div class="col-head" style="flex:1.2;">ATIVO</div>
-                    <div class="col-head" style="flex:1.5;">PREÇO ATUAL</div>
-                    <div class="col-head" style="color:#FFFF00;">ALVO ALTA (4%)</div>
-                    <div class="col-head" style="color:#FFA500;">ALVO ALTA (8%)</div>
-                    <div class="col-head" style="color:#FF0000;">TETO DIÁRIO (10%)</div>
-                    <div class="col-head" style="color:#FFFF00;">ALVO QUEDA (4%)</div>
-                    <div class="col-head" style="color:#FFA500;">ALVO QUEDA (8%)</div>
-                    <div class="col-head" style="color:#00FF00;">CHÃO DIÁRIO (10%)</div>
-                    <div class="col-head">STATUS</div>
+                    <div class="col-head" style="flex:1.5;">PREÇO (VAR%)</div>
+                    <div class="col-head" style="color:#FFFF00;">PONTO DECISÃO (4%)</div>
+                    <div class="col-head" style="color:#FFA500;">PRÓX TOPO (8%)</div>
+                    <div class="col-head" style="color:#FF0000;">TETO EXAUSTÃO (10%)</div>
+                    <div class="col-head" style="color:#FFFF00;">SUPORTE (4%)</div>
+                    <div class="col-head" style="color:#FFA500;">FUNDO (8%)</div>
+                    <div class="col-head" style="color:#00FF00;">CHÃO EXAUSTÃO (10%)</div>
+                    <div class="col-head">SINAL</div>
                 </div>
                 """, unsafe_allow_html=True)
 
             for tid, name in assets.items():
                 try:
-                    info = tickers.tickers[tid].fast_info
+                    t_obj = tickers.tickers[tid]
+                    info = t_obj.fast_info
                     price = info.last_price
-                    open_p = info.open # Preço de Abertura (Reset 00:00)
+                    open_p = info.open
                     
                     if price is None or open_p is None: continue
                     change = ((price - open_p) / open_p) * 100
                     
-                    # ALVOS FIXOS BASEADOS NA ABERTURA DO DIA
+                    # ALVOS FIXOS BASEADOS NO RESET DO DIA (ABERTURA)
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
+                    # Decimais dinâmicos
                     prec = 8 if price < 0.01 else (4 if price < 1 else 2)
                     
-                    # LÓGICA DO OPERADOR: Só acende se bater nos alvos de 10%
+                    # LÓGICA DE STATUS: Só pisca EXAUSTÃO se o preço bater/cruzar os 10% (v10 ou c10)
                     s_txt = "ESTÁVEL"; s_class = "bg-estavel"
                     if price >= v10 or price <= c10:
                         s_txt = "EXAUSTÃO"; s_class = "bg-exaustao"
@@ -81,7 +85,10 @@ while True:
                     st.markdown(f"""
                         <div class="row-container">
                             <div class="col-ativo">{name}</div>
-                            <div class="col-price">{price:.{prec}f} <span style="font-size:9px; color:{'#00FF00' if change>=0 else '#FF0000'}">({change:+.2f}%)</span></div>
+                            <div class="col-price">
+                                {price:.{prec}f} 
+                                <span style="color:{'#00FF00' if change>=0 else '#FF0000'}; font-size:10px;">({change:+.2f}%)</span>
+                            </div>
                             <div style="flex:1; text-align:center; color:#FFFF00; font-size:11px;">{v4:.{prec}f}</div>
                             <div style="flex:1; text-align:center; color:#FFA500; font-size:11px;">{v8:.{prec}f}</div>
                             <div style="flex:1; text-align:center; color:#FF0000; font-size:11px;">{v10:.{prec}f}</div>
