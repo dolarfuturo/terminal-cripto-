@@ -4,39 +4,40 @@ import time
 import yfinance as yf
 
 # 1. CONFIGURAÇÃO DE INTERFACE
-st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
+st.set_page_config(page_title="ALPHA VISION", layout="wide")
 
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
     
-    /* REMOVE MARGENS DA PÁGINA STREAMLIT PARA GANHAR ESPAÇO */
-    .block-container { padding-top: 1rem; padding-bottom: 0rem; padding-left: 0.5rem; padding-right: 0.5rem; }
-    
+    .block-container { padding: 0.5rem !important; }
     .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
-    .title-gold { color: #D4AF37; font-size: 28px; font-weight: 800; text-align: center; margin-bottom: 0px; }
-    .subtitle-vision { color: #C0C0C0; font-size: 14px; text-align: center; margin-top: -5px; letter-spacing: 4px; margin-bottom: 10px; }
     
-    /* CABEÇALHO COM ESPAÇO MÍNIMO */
-    .header-container { display: flex; align-items: center; padding: 5px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
-    .col-head { font-size: 7px; flex: 1; text-align: center; font-weight: 800; color: #777; text-transform: uppercase; padding: 0 1px; line-height: 1; }
+    .title-gold { color: #D4AF37; font-size: 24px; font-weight: 800; text-align: center; margin: 0; }
+    .subtitle-vision { color: #C0C0C0; font-size: 12px; text-align: center; margin-bottom: 8px; letter-spacing: 3px; }
     
-    /* LINHAS ULTRA COMPACTAS */
-    .row-container { display: flex; align-items: center; padding: 4px 0; border-bottom: 1px solid #111; gap: 2px; }
-    .col-ativo { color: #EEE; font-size: 11px; flex: 1; font-weight: 700; padding-left: 2px; overflow: hidden; }
-    .col-price { color: #FF8C00; font-weight: 800; font-size: 13px; flex: 1.2; text-align: center; }
-    .col-target { flex: 1; text-align: center; font-size: 12px; font-weight: 700; }
-    .col-sinal { flex: 1.3; }
+    /* CABEÇALHO COLADO */
+    .header-container { display: flex; align-items: center; padding: 4px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
+    .col-head { font-size: 7px; flex: 1; text-align: center; font-weight: 800; color: #666; text-transform: uppercase; line-height: 1; }
+    
+    /* LINHAS COM NÚMEROS GRANDES E SEM ESPAÇO */
+    .row-container { display: flex; align-items: center; padding: 2px 0; border-bottom: 1px solid #111; gap: 0px !important; }
+    .col-ativo { color: #EEE; font-size: 11px; flex: 0.9; font-weight: 700; padding-left: 2px; white-space: nowrap; }
+    .col-price { color: #FF8C00; font-weight: 800; font-size: 14px; flex: 1.2; text-align: center; line-height: 1; }
+    
+    /* ALVOS GIGANTES */
+    .col-target { flex: 1; text-align: center; font-size: 15px !important; font-weight: 800; letter-spacing: -0.5px; }
+    .col-sinal { flex: 1.3; padding-left: 2px; }
 
     /* ESTILOS DE ATIVAÇÃO */
-    .target-yellow { background-color: #FFFF00; color: #000 !important; border-radius: 1px; padding: 1px 1px; }
-    .target-orange { background-color: #FFA500; color: #000 !important; border-radius: 1px; padding: 1px 1px; }
-    .target-blink-red { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; border-radius: 1px; padding: 1px 1px; }
-    .target-blink-green { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; border-radius: 1px; padding: 1px 1px; }
+    .target-yellow { background-color: #FFFF00; color: #000 !important; border-radius: 1px; }
+    .target-orange { background-color: #FFA500; color: #000 !important; border-radius: 1px; }
+    .target-blink-red { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; border-radius: 1px; }
+    .target-blink-green { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; border-radius: 1px; }
     
     @keyframes blinker { 50% { opacity: 0.1; } }
 
-    .status-box { padding: 3px 1px; border-radius: 2px; font-weight: 800; font-size: 7px; width: 100%; text-align: center; color: white; }
+    .status-box { padding: 5px 1px; border-radius: 2px; font-weight: 800; font-size: 7px; width: 100%; text-align: center; line-height: 1; }
     .bg-estavel { background-color: #00CED1; color: #000; } 
     .bg-yellow { background-color: #FFFF00; color: #000; }
     .bg-orange { background-color: #FFA500; color: #000; }
@@ -46,10 +47,10 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 assets = {
-    'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
-    'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
-    'NEAR-USD':'NEAR/USDT','PEPE-USD':'PEPE/USDT','EGLD-USD':'EGLD/USDT','GALA-USD':'GALA/USDT','FET-USD':'FET/USDT',
-    'AAVE-USD':'AAVE/USDT','RENDER-USD':'RENDER/USDT','SUI-USD':'SUI/USDT','TIA-USD':'TIA/USDT','INJ-USD':'INJ/USDT'
+    'BTC-USD':'BTC','ETH-USD':'ETH','SOL-USD':'SOL','BNB-USD':'BNB','XRP-USD':'XRP',
+    'DOGE-USD':'DOGE','ADA-USD':'ADA','AVAX-USD':'AVAX','DOT-USD':'DOT','LINK-USD':'LINK',
+    'NEAR-USD':'NEAR','PEPE-USD':'PEPE','EGLD-USD':'EGLD','GALA-USD':'GALA','FET-USD':'FET',
+    'AAVE-USD':'AAVE','RENDER-USD':'RENDER','SUI-USD':'SUI','TIA-USD':'TIA','INJ-USD':'INJ'
 }
 
 st.markdown('<div class="title-gold">ALPHA VISION</div>', unsafe_allow_html=True)
@@ -63,13 +64,13 @@ while True:
         with placeholder.container():
             st.markdown("""
                 <div class="header-container">
-                    <div class="col-head" style="flex:1; text-align:left;">ATIVO</div>
+                    <div class="col-head" style="flex:0.9; text-align:left;">ATIVO</div>
                     <div class="col-head" style="flex:1.2;">PREÇO</div>
-                    <div class="col-head">RESIST</div>
-                    <div class="col-head">P.TOPO</div>
+                    <div class="col-head">RES</div>
+                    <div class="col-head">TOPO</div>
                     <div class="col-head">TETO</div>
-                    <div class="col-head">SUPORTE</div>
-                    <div class="col-head">P.FUNDO</div>
+                    <div class="col-head">SUP</div>
+                    <div class="col-head">FUND</div>
                     <div class="col-head">CHÃO</div>
                     <div class="col-head" style="flex:1.3;">SINAL</div>
                 </div>
@@ -102,7 +103,7 @@ while True:
                     elif price <= c4:
                         s_txt = "DECISÃO ATENÇÃO"; s_class = "bg-yellow"; c4_c = "target-yellow"
 
-                    prec = 8 if price < 0.01 else (4 if price < 1 else 2)
+                    prec = 6 if price < 0.1 else (4 if price < 10 else 2)
                     seta = '▲' if price >= open_p else '▼'
                     seta_c = '#00FF00' if price >= open_p else '#FF0000'
 
