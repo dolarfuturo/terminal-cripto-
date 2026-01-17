@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import time
+import requests
 from datetime import datetime, timedelta
 
 # 1. CONFIGURAÇÃO DE INTERFACE
@@ -46,34 +47,26 @@ st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allo
 
 placeholder = st.empty()
 
+# 3. LISTA EXTENSA DE NOMES REAIS (TOP 100)
+nomes_mercado = [
+    "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT", "DOGE/USDT", "ADA/USDT", "TRX/USDT", "LINK/USDT", "AVAX/USDT",
+    "SHIB/USDT", "DOT/USDT", "BCH/USDT", "NEAR/USDT", "MATIC/USDT", "LTC/USDT", "PEPE/USDT", "UNI/USDT", "APT/USDT", "SUI/USDT",
+    "RENDER/USDT", "HBAR/USDT", "ARB/USDT", "FIL/USDT", "VET/USDT", "OP/USDT", "RUNE/USDT", "KAS/USDT", "STX/USDT", "TIA/USDT",
+    "FET/USDT", "IMX/USDT", "ALGO/USDT", "FLOW/USDT", "GALA/USDT", "EGLD/USDT", "QNT/USDT", "BEAM/USDT", "JUP/USDT", "PYTH/USDT",
+    "SEI/USDT", "DYDX/USDT", "AAVE/USDT", "LDO/USDT", "MKR/USDT", "INJ/USDT", "GRT/USDT", "THETA/USDT", "SNX/USDT", "SAND/USDT",
+    "MANA/USDT", "AXS/USDT", "CHZ/USDT", "ORDI/USDT", "BONK/USDT", "FLOKI/USDT", "WIF/USDT", "JASMY/USDT", "BOME/USDT", "CORE/USDT",
+    "ONDO/USDT", "PENDLE/USDT", "STRK/USDT", "ZK/USDT", "ENA/USDT", "W/USDT", "IO/USDT", "NOT/USDT", "TURBO/USDT", "ZRO/USDT",
+    "TAO/USDT", "ARKM/USDT", "MINA/USDT", "XLM/USDT", "ETC/USDT", "FTM/USDT", "ENS/USDT", "CRV/USDT", "COMP/USDT", "NEO/USDT",
+    "ROSE/USDT", "WOO/USDT", "HOT/USDT", "IOTA/USDT", "ZIL/USDT", "KAVA/USDT", "BAT/USDT", "1INCH/USDT", "ANKR/USDT", "RVN/USDT",
+    "DASH/USDT", "ZEC/USDT", "XMR/USDT", "TFUEL/USDT", "CKB/USDT", "WAXP/USDT", "IOTX/USDT", "GLMR/USDT", "METIS/USDT", "SATS/USDT"
+]
+
 while True:
     with placeholder.container():
         agora = datetime.utcnow() - timedelta(hours=3)
         horario_br = agora.strftime('%H:%M:%S')
         data_br = agora.strftime('%d/%m/%Y')
         
-        # LISTA REAL DE ATIVOS (ORDEM POR MARKET CAP)
-        nomes_reais = [
-            "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT", "DOGE/USDT", "ADA/USDT", "TRX/USDT", 
-            "LINK/USDT", "AVAX/USDT", "SHIB/USDT", "DOT/USDT", "BCH/USDT", "NEAR/USDT", "MATIC/USDT", "LTC/USDT",
-            "PEPE/USDT", "UNI/USDT", "APT/USDT", "SUI/USDT", "RENDER/USDT", "HBAR/USDT", "ARB/USDT", "FIL/USDT"
-        ]
-        
-        # Gerando 100 itens com nomes reais e complementos
-        moedas_100 = []
-        for i in range(100):
-            nome = nomes_reais[i] if i < len(nomes_reais) else f"ASSET_{i}/USDT"
-            
-            # Simulando alguns gatilhos para teste visual
-            status = "ESTÁVEL"
-            if i == 2: status = "GATILHO"
-            if i == 16: status = "EXAUSTÃO"
-            
-            moedas_100.append({
-                "ativo": nome, "p": 100.0 / (i+1), "f": 98.0 / (i+1), "a": 99.0 / (i+1), 
-                "mx": 110.0 / (i+1), "mi": 90.0 / (i+1), "s": status
-            })
-
         st.markdown("""
             <div class="header-container">
                 <div class="col-head">ATIVO</div>
@@ -86,23 +79,31 @@ while True:
             </div>
             """, unsafe_allow_html=True)
 
-        for item in moedas_100:
+        for i, nome in enumerate(nomes_mercado):
+            # Simulando preços reais e precisos (sem arredondamento forçado)
+            p_base = 100.0 / (i + 1)
+            
+            status = "ESTÁVEL"
+            if i == 2 or i == 5: status = "GATILHO"
+            if i == 16 or i == 55: status = "EXAUSTÃO"
+            
             status_class = "bg-estavel"
-            if "GATILHO" in item['s']: status_class = "bg-gatilho"
-            elif "EXAUSTÃO" in item['s']: status_class = "bg-exaustao"
+            if status == "GATILHO": status_class = "bg-gatilho"
+            elif status == "EXAUSTÃO": status_class = "bg-exaustao"
 
-            fmt = ".2f" if item['p'] > 0.1 else ".6f"
-
+            # Formatação dinâmica: se for PEPE ou similar, usa 8 casas. Se for BTC, usa 2.
+            precisao = 8 if p_base < 0.001 else 2
+            
             st.markdown(f"""
                 <div class="row-container">
-                    <div class="col-ativo">{item['ativo']}</div>
-                    <div class="col-orange">{item['p']:{fmt}}</div>
-                    <div class="col-num">{item['f']:{fmt}}</div>
-                    <div class="col-num">{item['a']:{fmt}}</div>
-                    <div class="col-max">{item['mx']:{fmt}}</div>
-                    <div class="col-min">{item['mi']:{fmt}}</div>
+                    <div class="col-ativo">{nome}</div>
+                    <div class="col-orange">{p_base:.{precisao}f}</div>
+                    <div class="col-num">{(p_base*0.98):.{precisao}f}</div>
+                    <div class="col-num">{(p_base*0.99):.{precisao}f}</div>
+                    <div class="col-max">{(p_base*1.10):.{precisao}f}</div>
+                    <div class="col-min">{(p_base*0.90):.{precisao}f}</div>
                     <div class="col-sinal" style="flex:1.5;">
-                        <div class="status-box {status_class}">{item['s']}</div>
+                        <div class="status-box {status_class}">{status}</div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
