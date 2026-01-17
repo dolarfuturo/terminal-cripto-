@@ -3,54 +3,22 @@ import pandas as pd
 import time
 import yfinance as yf
 
-# CONFIGURAÇÃO DE INTERFACE
-st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
+st.set_page_config(page_title="ALPHA VISION", layout="wide")
 
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&display=swap');
-    .block-container { padding-top: 0rem !important; padding-bottom: 0rem !important; }
+    .block-container { padding-top: 0rem !important; }
     header {visibility: hidden;}
-    footer {visibility: hidden;}
-    .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
-    
-    .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; }
-    .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 15px; font-weight: 700; }
-    
-    .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
-    .h-col { font-size: 11px; font-weight: 400; color: #FFFFFF; text-transform: uppercase; text-align: center; }
-    
-    .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; gap: 0px; }
-    .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
-    .w-price { width: 12%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
-    .w-target { width: 10%; text-align: center; font-size: 14px; font-weight: 800; }
-    .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
-
-    /* CLASSES DE ESTADO */
-    .t-active { border-radius: 2px; padding: 2px 4px; }
-    .t-y { background-color: #FFFF00; color: #000 !important; }
-    .t-o { background-color: #FFA500; color: #000 !important; }
-    
-    /* EXAUSTÃO (PISCA) */
-    .t-blink-r { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; }
-    .t-blink-g { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; }
-    
-    /* PARABÓLICO (ESTÁTICO ROXO) */
-    .t-purple { background-color: #8A2BE2; color: #FFF !important; font-weight: 900; }
-    
-    @keyframes blinker { 50% { opacity: 0.2; } }
-
-    .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
-    .bg-estavel { background-color: #00CED1; color: #000; } 
-    .bg-yellow { background-color: #FFFF00; color: #000; }
-    .bg-orange { background-color: #FFA500; color: #000; }
-    .bg-blink-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
-    .bg-blink-green { background-color: #00FF00; color: #000; animation: blinker 0.4s linear infinite; }
-    .bg-purple { background-color: #8A2BE2; color: #FFF; }
+    .stApp { background-color: #000000; font-family: monospace; }
+    .row-container { display: flex; width: 100%; align-items: center; border-bottom: 1px solid #151515; padding: 5px 0; }
+    .w-col { flex: 1; text-align: center; font-size: 13px; color: #EEE; }
+    .blink-red { background-color: #FF0000; color: white; animation: blinker 0.4s linear infinite; padding: 5px; border-radius: 2px; }
+    .blink-green { background-color: #00FF00; color: black; animation: blinker 0.4s linear infinite; padding: 5px; border-radius: 2px; }
+    .bg-purple { background-color: #8A2BE2; color: white; padding: 5px; border-radius: 2px; font-weight: bold; }
+    @keyframes blinker { 50% { opacity: 0.3; } }
     </style>
     """, unsafe_allow_html=True)
 
-# LISTA DOS 80 ATIVOS
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
@@ -70,72 +38,33 @@ assets = {
     'LRC-USD':'LRC/USDT','CRV-USD':'CRV/USDT'
 }
 
-st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
-
 placeholder = st.empty()
 
 while True:
     try:
         tickers = yf.Tickers(' '.join(assets.keys()))
         with placeholder.container():
-            st.markdown("""
-                <div class="header-container">
-                    <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
-                    <div class="h-col" style="width:12%;">PREÇO ATUAL</div>
-                    <div class="h-col" style="width:10%;">RESISTÊNCIA</div>
-                    <div class="h-col" style="width:10%;">PRÓX AO TOPO</div>
-                    <div class="h-col" style="width:10%;">TETO EXAUSTÃO</div>
-                    <div class="h-col" style="width:10%;">SUPORTE</div>
-                    <div class="h-col" style="width:10%;">PRÓX FUNDO</div>
-                    <div class="h-col" style="width:10%;">CHÃO EXAUSTÃO</div>
-                    <div class="h-col" style="width:14%;">SINALIZADOR</div>
-                </div>
-                """, unsafe_allow_html=True)
-
+            st.write("### ALPHA VISION CRYPTO")
             for tid, name in assets.items():
                 try:
                     info = tickers.tickers[tid].fast_info
-                    price = info.last_price
-                    open_p = info.open
-                    if price is None: continue
+                    p, o = info.last_price, info.open
+                    var = ((p - o) / o) * 100
                     
-                    change = ((price - open_p) / open_p) * 100
-                    v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
-                    c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
-                    
-                    s_txt, s_class = "ESTÁVEL", "bg-estavel"
-                    v4_c, v8_c, v10_c, c4_c, c8_c, c10_c = "", "", "", "", "", ""
+                    s_txt, s_class = "ESTÁVEL", ""
+                    if var >= 15: s_txt, s_class = "ALTA PARABÓLICA", "bg-purple"
+                    elif var >= 10: s_txt, s_class = "EXAUSTÃO MÁXIMA", "blink-red"
+                    elif var <= -15: s_txt, s_class = "QUEDA PARABÓLICA", "bg-purple"
+                    elif var <= -10: s_txt, s_class = "EXAUSTÃO MÁXIMA", "blink-green"
 
-                    # ALTA
-                    if change >= 15: s_txt, s_class, v10_c = "ALTA PARABÓLICA", "bg-purple", "t-purple"
-                    elif change >= 10: s_txt, s_class, v10_c = "EXAUSTÃO MÁXIMA", "bg-blink-red", "t-blink-r"
-                    elif price >= v8: s_txt, s_class, v8_c = "CUIDADO ALTA VOL", "bg-orange", "t-o"
-                    elif price >= v4: s_txt, s_class, v4_c = "DECISÃO ATENÇÃO", "bg-yellow", "t-y"
-                    
-                    # QUEDA
-                    elif change <= -15: s_txt, s_class, c10_c = "QUEDA PARABÓLICA", "bg-purple", "t-purple"
-                    elif change <= -10: s_txt, s_class, c10_c = "EXAUSTÃO MÁXIMA", "bg-blink-green", "t-blink-g"
-                    elif price <= c8: s_txt, s_class, c8_c = "CUIDADO ALTA VOL", "bg-orange", "t-o"
-                    elif price <= c4: s_txt, s_class, c4_c = "DECISÃO ATENÇÃO", "bg-yellow", "t-y"
-
-                    prec = 6 if price < 0.1 else (4 if price < 10 else 2)
-                    seta = '▲' if price >= open_p else '▼'
-                    seta_c = '#00FF00' if price >= open_p else '#FF0000'
-
-                    st.markdown(f"""
+                    st.markdown(f'''
                         <div class="row-container">
-                            <div class="w-ativo">{name}</div>
-                            <div class="w-price">{price:.{prec}f}<br><span style="font-size:9px; color:{seta_c};">{seta}{change:+.2f}%</span></div>
-                            <div class="w-target" style="color:#FFFF00;"><span class="{v4_c}">{v4:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#FFA500;"><span class="{v8_c}">{v8:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#FF0000;"><span class="{v10_c}">{v10:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#FFFF00;"><span class="{c4_c}">{c4:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#FFA500;"><span class="{c8_c}">{c8:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#00FF00;"><span class="{c10_c}">{c10:.{prec}f}</span></div>
-                            <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
+                            <div class="w-col">{name}</div>
+                            <div class="w-col">{p:.4f}</div>
+                            <div class="w-col">{var:+.2f}%</div>
+                            <div class="w-col"><span class="{s_class}">{s_txt}</span></div>
                         </div>
-                    """, unsafe_allow_html=True)
+                    ''', unsafe_allow_html=True)
                 except: continue
         time.sleep(10)
     except: time.sleep(10)
