@@ -1,9 +1,13 @@
 import streamlit as st
 import ccxt
 import pandas as pd
+from streamlit_autorefresh import st_autorefresh
 
-# 1. Configuração de Identidade
+# Configuração de Identidade Visual
 st.set_page_config(page_title="Alpha Vision Crypto", layout="wide")
+
+# Atualização automática a cada 30 segundos
+st_autorefresh(interval=30000, key="datarefresh")
 
 st.markdown("""
     <style>
@@ -17,57 +21,50 @@ st.markdown("""
 st.markdown('<p class="title-main">ALPHA VISION CRYPTO</p>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Visão de Tubarão: Operacional Institucional</p>', unsafe_allow_html=True)
 
-# 2. Motor de Cálculo (A Regra dos 100 períodos de 1h)
-def buscar_oportunidades():
+def buscar_dados_prontos():
     try:
         exchange = ccxt.binance()
         moedas = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT']
-        resultados = []
+        lista_final = []
         
         for m in moedas:
-            # Busca os 100 candles de 1h planejados
+            # Cálculo direto da VWAP 100p
             bars = exchange.fetch_ohlcv(m, timeframe='1h', limit=100)
             df = pd.DataFrame(bars, columns=['t', 'o', 'h', 'l', 'c', 'v'])
-            
-            # Cálculo da VWAP Institucional
             vwap = ( ((df['h'] + df['l'] + df['c']) / 3) * df['v']).sum() / df['v'].sum()
-            preco_atual = df['c'].iloc[-1]
-            desvio = ((preco_atual / vwap) - 1) * 100
+            preco = df['c'].iloc[-1]
+            desvio = ((preco / vwap) - 1) * 100
             
-            status = "⚖️ Neutro"
-            if desvio > 1.5: status = "🔥 Exaustão Compra"
-            elif desvio < -1.5: status = "❄️ Exaustão Venda"
+            status = "⚖️ Estável"
+            if desvio > 1.5: status = "🔥 Venda (Exaustão)"
+            elif desvio < -1.5: status = "❄️ Compra (Exaustão)"
             
-            resultados.append({
-                "Ativo": m.replace('/USDT', ''),
-                "Preço": f"{preco_atual:,.2f}",
-                "Alvo": f"{vwap:,.2f}",
-                "Status": status
+            lista_final.append({
+                "ATIVO": m.replace('/USDT', ''),
+                "PREÇO ATUAL": f"$ {preco:,.2f}",
+                "ALVO DE SAÍDA": f"$ {vwap:,.2f}",
+                "STATUS": status
             })
-        return resultados
-    except Exception as e:
+        return lista_final
+    except:
         return None
 
-# 3. Exibição Direta dos Números
-dados = buscar_oportunidades()
+# Exibição dos Dados Prontos
+dados = buscar_dados_prontos()
 
 if dados:
-    # Exibe os preços em colunas grandes (Cards)
-    cols = st.columns(len(dados))
+    st.write("---")
+    cols = st.columns(4)
     for i, item in enumerate(dados):
         with cols[i]:
-            st.metric(label=item['Ativo'], value=f"$ {item['Preço']}", delta=item['Status'], delta_color="off")
-            st.write(f"🎯 **Alvo: {item['Alvo']}**")
+            st.metric(label=item['ATIVO'], value=item['PREÇO ATUAL'], delta=item['STATUS'], delta_color="normal")
+            st.caption(f"🎯 Alvo: {item['ALVO DE SAÍDA']}")
     
     st.write("---")
-    st.subheader("🚀 Scanner de Oportunidades")
-    st.dataframe(pd.DataFrame(dados), use_container_width=True)
+    st.subheader("🚀 Scanner de Oportunidades em Tempo Real")
+    st.table(pd.DataFrame(dados))
 else:
-    st.error("Erro ao conectar. Por favor, clique no botão abaixo para tentar novamente.")
+    st.warning("Reconectando aos servidores da Binance... os dados aparecerão em instantes.")
 
-if st.button('⚡ ATUALIZAR SCANNER'):
-    st.rerun()
-
-# Sidebar de Identidade
 st.sidebar.markdown("### ALPHA VISION v1.0")
-st.sidebar.info("Cálculos baseados em volume institucional (VWAP 100p).")
+st.sidebar.write("Atualização automática ativa (30s).")
