@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import time
 import ccxt
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # 1. CONFIGURAÇÃO DE INTERFACE
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
@@ -12,7 +12,7 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
     .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
-    .title-gold { color: #D4AF37; font-size: 35px; font-weight: 700; text-align: center; text-shadow: 0px 0px 10px rgba(212,175,55,0.5); }
+    .title-gold { color: #D4AF37; font-size: 35px; font-weight: 700; text-align: center; }
     .header-container { display: flex; align-items: center; padding: 10px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
     .col-head { font-size: 9px; flex: 1; text-align: center; font-weight: 800; color: #BBB; text-transform: uppercase; }
     .row-container { display: flex; align-items: center; padding: 6px 0; border-bottom: 1px solid #111; }
@@ -25,22 +25,25 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# Inicializa exchange com timeout longo
+# Inicialização com parâmetros de segurança
 @st.cache_resource
-def get_exchange():
-    return ccxt.binance({'timeout': 30000, 'enableRateLimit': True})
+def init_ex():
+    return ccxt.binance({
+        'enableRateLimit': True,
+        'options': {'defaultType': 'spot'}
+    })
 
-ex = get_exchange()
+ex = init_ex()
+# Lista das principais moedas para garantir que o sistema carregue sem erro de IP
+symbols = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT', 'XRP/USDT', 'ADA/USDT', 'DOGE/USDT', 'MATIC/USDT', 'DOT/USDT', 'LINK/USDT']
 
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 placeholder = st.empty()
 
 while True:
     try:
-        # Puxa tickers de forma otimizada
-        tickers = ex.fetch_tickers()
-        data = [t for t in tickers.values() if t['symbol'].endswith('/USDT')]
-        top_data = sorted(data, key=lambda x: x['quoteVolume'], reverse=True)[:50]
+        # Busca apenas os preços necessários (mais rápido e seguro)
+        raw_data = ex.fetch_tickers(symbols)
         
         with placeholder.container():
             st.markdown("""
@@ -57,15 +60,19 @@ while True:
                 </div>
                 """, unsafe_allow_html=True)
 
-            for t in top_data:
+            for sym in symbols:
+                t = raw_data[sym]
                 price = t['last']
                 change = t['percentage']
                 vwap = t['vwap'] if t['vwap'] else price
+                
+                # Seta vs VWAP (Reset Binance 00:00 UTC)
                 seta = '▲' if price >= vwap else '▼'
                 color_seta = "#00FF00" if price >= vwap else "#FF0000"
                 color_var = "#00FF00" if change >= 0 else "#FF0000"
                 prec = 6 if price < 1 else 2
                 
+                # Cálculos Estatísticos
                 v4, v8, v10 = price*1.04, price*1.08, price*1.10
                 c4, c8, c10 = price*0.96, price*0.92, price*0.90
                 
@@ -74,7 +81,7 @@ while True:
 
                 st.markdown(f"""
                     <div class="row-container">
-                        <div class="col-ativo">{t['symbol']}</div>
+                        <div class="col-ativo">{sym}</div>
                         <div class="col-price">
                             {price:.{prec}f}<span style="color:{color_seta};">{seta}</span> 
                             <span style="color:{color_var}; font-size:9px;">({change:+.2f}%)</span>
@@ -88,7 +95,7 @@ while True:
                         <div style="flex:1;"><div class="status-box {s_class}">{s_txt}</div></div>
                     </div>
                 """, unsafe_allow_html=True)
-        time.sleep(10) # Frequência maior para evitar bloqueio de IP
+        time.sleep(15) # Intervalo seguro para nuvem
     except Exception as e:
-        st.write("Tentando restabelecer conexão...")
-        time.sleep(15)
+        st.info("Aguardando estabilização da rede...")
+        time.sleep(20)
