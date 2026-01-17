@@ -1,4 +1,5 @@
-python-binance
+ccxt
 streamlit
 pandas
+
 
