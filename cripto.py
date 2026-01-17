@@ -30,7 +30,7 @@ st.markdown("""
     .col-max { color: #FF4B4B; font-weight: 700; font-size: 16px; flex: 1; text-align: center; }
     .col-min { color: #00FF00; font-weight: 700; font-size: 16px; flex: 1; text-align: center; }
 
-    /* SINAIS COLORIDOS E PREENCHIDOS */
+    /* SINAIS COLORIDOS E PREENCHIDOS COM PORCENTAGEM */
     .status-box { padding: 6px; border-radius: 4px; font-weight: 700; font-size: 12px; width: 90%; margin: auto; text-align: center; color: white; }
     .bg-estavel { background-color: #008080; } /* Azul Turquesa */
     .bg-gatilho { background-color: #FF8C00; } /* Laranja */
@@ -60,17 +60,24 @@ while True:
         horario_br = agora.strftime('%H:%M:%S')
         data_br = agora.strftime('%d/%m/%Y')
         
-        # Simulação de Lista Única de 100 Ativos Reais (Mock)
-        ativos_lista = [
+        # Lista de Ativos Principais
+        ativos_top = [
             {"ativo": "BTC/USDT", "p": 93450.12, "f": 91200.0, "a": 92100.0, "mx": 101310.0, "mi": 82890.0, "s": "ESTÁVEL"},
             {"ativo": "ETH/USDT", "p": 3845.50, "f": 3710.0, "a": 3750.0, "mx": 4125.0, "mi": 3375.0, "s": "ESTÁVEL"},
-            {"ativo": "SOL/USDT", "p": 148.88, "f": 142.1, "a": 144.5, "mx": 158.9, "mi": 130.0, "s": "GATILHO 4%"},
+            {"ativo": "SOL/USDT", "p": 148.88, "f": 142.1, "a": 144.5, "mx": 158.9, "mi": 130.0, "s": "GATILHO (4%)"},
             {"ativo": "XRP/USDT", "p": 1.12, "f": 1.05, "a": 1.08, "mx": 1.23, "mi": 0.97, "s": "ESTÁVEL"},
             {"ativo": "BNB/USDT", "p": 612.40, "f": 590.0, "a": 600.0, "mx": 660.0, "mi": 540.0, "s": "ESTÁVEL"},
-            {"ativo": "PEPE/USDT", "p": 0.000022, "f": 0.000019, "a": 0.000020, "mx": 0.000022, "mi": 0.000018, "s": "EXAUSTÃO 10%"},
+            {"ativo": "PEPE/USDT", "p": 0.000022, "f": 0.000019, "a": 0.000020, "mx": 0.000022, "mi": 0.000018, "s": "EXAUSTÃO (10%)"},
+            {"ativo": "ADA/USDT", "p": 0.58, "f": 0.55, "a": 0.56, "mx": 0.64, "mi": 0.52, "s": "ESTÁVEL"},
+            {"ativo": "DOGE/USDT", "p": 0.16, "f": 0.14, "a": 0.15, "mx": 0.18, "mi": 0.13, "s": "GATILHO (4%)"},
         ]
-        # Completa a lista até 100 para teste de scroll
-        moedas_100 = ativos_lista + [{"ativo": f"TOKEN_{i}/USDT", "p": 1.0, "f": 0.9, "a": 0.95, "mx": 1.1, "mi": 0.8, "s": "ESTÁVEL"} for i in range(94)]
+        
+        # Gerando mais moedas para completar 100 sem repetir o nome "TOKEN"
+        outras_moedas = [
+            {"ativo": f"COIN_{i}/USDT", "p": 10.5 + i, "f": 10.0 + i, "a": 10.2 + i, "mx": 11.5 + i, "mi": 9.2 + i, "s": "ESTÁVEL"}
+            for i in range(1, 93)
+        ]
+        moedas_100 = ativos_top + outras_moedas
 
         st.markdown("""
             <div class="header-container">
@@ -85,14 +92,13 @@ while True:
             """, unsafe_allow_html=True)
 
         for item in moedas_100:
-            # Lógica de cor do sinal
             status_class = "bg-estavel"
             if "GATILHO" in item['s']:
                 status_class = "bg-gatilho"
             elif "EXAUSTÃO" in item['s']:
                 status_class = "bg-exaustao"
 
-            fmt = ".2f" if item['p'] > 1 else ".6f"
+            fmt = ".2f" if item['p'] > 0.01 else ".6f"
 
             st.markdown(f"""
                 <div class="row-container">
