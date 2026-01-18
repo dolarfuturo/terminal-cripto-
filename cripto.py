@@ -14,9 +14,6 @@ st.markdown("""
     .block-container { padding: 0rem 1rem !important; }
     header, footer { visibility: hidden; }
     
-    /* Login Clean */
-    .login-box { max-width: 400px; margin: 100px auto; padding: 20px; background: #080808; border: 1px solid #D4AF37; border-radius: 10px; }
-    
     .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; }
     .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 25px; font-weight: 700; }
     
@@ -32,8 +29,8 @@ st.markdown("""
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     
     .bg-estavel { background-color: #00CED1; color: #000; }
-    .bg-4 { background-color: #FFFF00; color: #000; }
-    .bg-8 { background-color: #FFA500; color: #000; }
+    .bg-amarelo { background-color: #FFFF00; color: #000; }
+    .bg-laranja { background-color: #FFA500; color: #000; }
     .bg-parabolica { background-color: #800080; color: #FFF; animation: none !important; }
     
     .blink-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
@@ -44,30 +41,28 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. SISTEMA DE LOGIN SEM SOMBRA
+# LOGIN
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
 if not st.session_state.autenticado:
-    with st.container():
-        st.markdown('<div class="title-gold">ALPHA VISION</div>', unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([1,2,1])
-        with col2:
-            u = st.text_input("USUÁRIO")
-            p = st.text_input("SENHA", type="password")
-            if st.button("LIBERAR ACESSO"):
-                try:
-                    conn = st.connection("gsheets", type=GSheetsConnection)
-                    df_users = conn.read(ttl=10)
-                    df_users.columns = [str(c).strip().lower() for c in df_users.columns]
-                    user_row = df_users[df_users['user'].astype(str) == u]
-                    if not user_row.empty and str(p) == str(user_row.iloc[0]['password']).strip():
-                        st.session_state.autenticado = True
-                        st.rerun()
-                except: st.error("Erro na conexão.")
+    st.markdown('<div class="title-gold">ALPHA VISION</div>', unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        u = st.text_input("USUÁRIO")
+        p = st.text_input("SENHA", type="password")
+        if st.button("LIBERAR ACESSO"):
+            try:
+                conn = st.connection("gsheets", type=GSheetsConnection)
+                df_users = conn.read(ttl=10)
+                df_users.columns = [str(c).strip().lower() for c in df_users.columns]
+                user_row = df_users[df_users['user'].astype(str) == u]
+                if not user_row.empty and str(p) == str(user_row.iloc[0]['password']).strip():
+                    st.session_state.autenticado = True
+                    st.rerun()
+            except: st.error("Erro na conexão.")
     st.stop()
 
-# 3. INTERFACE PRINCIPAL (SÓ APARECE APÓS LOGIN)
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
@@ -85,61 +80,4 @@ assets = {
     'MKR-USD':'MKR/USDT','GRT-USD':'GRT/USDT','THETA-USD':'THETA/USDT','FTM-USD':'FTM/USDT','VET-USD':'VET/USDT',
     'ALGO-USD':'ALGO/USDT','FLOW-USD':'FLOW/USDT','QNT-USD':'QNT/USDT','SNX-USD':'SNX/USDT','EOS-USD':'EOS/USDT',
     'NEO-USD':'NEO/USDT','IOTA-USD':'IOTA/USDT','CFX-USD':'CFX/USDT','AXS-USD':'AXS/USDT','MANA-USD':'MANA/USDT',
-    'SAND-USD':'SAND/USDT','APE-USD':'APE/USDT','RUNE-USD':'RUNE/USDT','CHZ-USD':'CHZ/USDT','MINA-USD':'MINA/USDT',
-    'ROSE-USD':'ROSE/USDT','WOO-USD':'WOO/USDT','ANKR-USD':'ANKR/USDT','1INCH-USD':'1INCH/USDT','ZIL-USD':'ZIL/USDT',
-    'LRC-USD':'LRC/USDT','CRV-USD':'CRV/USDT'
-}
-
-placeholder = st.empty()
-
-while True:
-    try:
-        data_batch = yf.download(list(assets.keys()), period="2d", interval="1m", group_by='ticker', progress=False)
-        with placeholder.container():
-            st.markdown("""<div class="header-container">
-                <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
-                <div class="h-col" style="width:12%;">PREÇO ATUAL</div>
-                <div class="h-col" style="width:10%;">RESISTÊNCIA</div>
-                <div class="h-col" style="width:10%;">PRÓX AO TOPO</div>
-                <div class="h-col" style="width:10%;">TETO EXAUSTÃO</div>
-                <div class="h-col" style="width:10%;">SUPORTE</div>
-                <div class="h-col" style="width:10%;">PRÓX FUNDO</div>
-                <div class="h-col" style="width:10%;">CHÃO EXAUSTÃO</div>
-                <div class="h-col" style="width:14%;">SINALIZADOR</div></div>""", unsafe_allow_html=True)
-
-            for tid, name in assets.items():
-                try:
-                    df = data_batch[tid].dropna()
-                    if df.empty: continue
-                    price = float(df['Close'].iloc[-1]); open_p = float(df['Open'].iloc[0])
-                    change = ((price - open_p) / open_p) * 100
-                    v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
-                    c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
-                    
-                    s_txt, s_class, h4, h8, h10 = "ESTÁVEL", "bg-estavel", "", "", ""
-                    abs_c = abs(change)
-                    
-                    if abs_c >= 12: s_txt, s_class, h4, h8, h10 = "PARABÓLICA", "bg-parabolica", "highlight-target", "highlight-target", "highlight-target"
-                    elif abs_c >= 10: s_txt, s_class, h10 = "EXAUSTÃO", ("blink-red" if change > 0 else "blink-green"), "highlight-target"
-                    elif abs_c >= 8: s_txt, s_class, h8 = "ALERTA 8%", "bg-8", "highlight-target"
-                    elif abs_c >= 4: s_txt, s_class, h4 = "ALERTA 4%", "bg-4", "highlight-target"
-
-                    prec = 4 if price < 1 else 2
-                    color = "#00FF00" if change >= 0 else "#FF0000"
-
-                    st.markdown(f"""
-                        <div class="row-container">
-                            <div class="w-ativo">{name}</div>
-                            <div class="w-price">{price:.{prec}f}<br><span style="font-size:9px; color:{color};">{change:+.2f}%</span></div>
-                            <div class="w-target {h4}" style="color:#FFFF00;">{v4:.{prec}f}</div>
-                            <div class="w-target {h8}" style="color:#FFA500;">{v8:.{prec}f}</div>
-                            <div class="w-target {h10}" style="color:#FF0000;">{v10:.{prec}f}</div>
-                            <div class="w-target {h4}" style="color:#FFFF00;">{c4:.{prec}f}</div>
-                            <div class="w-target {h8}" style="color:#FFA500;">{c8:.{prec}f}</div>
-                            <div class="w-target {h10}" style="color:#00FF00;">{c10:.{prec}f}</div>
-                            <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
-                        </div>
-                    """, unsafe_allow_html=True)
-                except: continue
-        time.sleep(10)
-    except: time.sleep(5)
+    'SAND-USD':'SAND/USDT','APE-USD':'APE/USDT','RUNE-USD':'RUNE/USDT','CHZ-USD':'CHZ/USDT','MINA
