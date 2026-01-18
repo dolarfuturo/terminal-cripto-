@@ -24,9 +24,7 @@ st.markdown("""
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     
-    /* COR AZUL CLARINHO PARA O ESTÁVEL */
     .bg-estavel { background-color: #00CED1; color: #000; }
-    
     .bg-decisao { background-color: #FFFF00 !important; color: #000 !important; font-weight: 900; }
     .bg-atencao { background-color: #FFA500 !important; color: #000 !important; font-weight: 900; }
     .bg-parabolica { background-color: #800080; color: #FFF; }
@@ -37,7 +35,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LOGIN E CONEXÃO SEGURA
+# 2. LOGIN E CONEXÃO (BLINDADO)
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
@@ -66,11 +64,14 @@ if not st.session_state.autenticado:
                     st.session_state.autenticado = True
                     st.rerun()
                 else: st.error("Acesso negado.")
-            else: st.error("Erro de Servidor.")
+            else: st.error("Erro de conexão.")
         st.markdown(f'''<a href="https://wa.me/suporte" target="_blank" style="text-decoration:none;"><div style="width:100%; background:#262626; color:white; padding:10px; border-radius:5px; text-align:center; font-weight:bold; border:1px solid #444; margin-top:10px;">FALAR COM SUPORTE TÉCNICO</div></a>''', unsafe_allow_html=True)
     st.stop()
 
-# 3. MONITORAMENTO (BINANCE 00:00 UTC)
+# 3. MONITORAMENTO (RESTAURANDO O NOME NO TOPO)
+st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
+
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
@@ -119,18 +120,14 @@ while True:
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
-                    # Reset para o Azul Clarinho
                     s_txt, s_class, rh4, rh8, rh10 = "ESTÁVEL", "bg-estavel", "", "", ""
                     
-                    if abs_c >= 12:
-                        s_txt, s_class = "PARABÓLICA", "bg-parabolica"
+                    if abs_c >= 12: s_txt, s_class = "PARABÓLICA", "bg-parabolica"
                     elif 10.0 <= abs_c <= 11.0:
                         s_txt, s_class = "EXAUSTÃO", ("target-blink-red" if change > 0 else "target-blink-green")
                         rh10 = s_class
-                    elif 8.0 <= abs_c <= 9.0:
-                        s_txt, s_class, rh8 = "PRÓX TOPO", "bg-atencao", "bg-atencao"
-                    elif 4.0 <= abs_c <= 5.0:
-                        s_txt, s_class, rh4 = "ZONA DE DECISÃO", "bg-decisao", "bg-decisao"
+                    elif 8.0 <= abs_c <= 9.0: s_txt, s_class, rh8 = "PRÓX TOPO", "bg-atencao", "bg-atencao"
+                    elif 4.0 <= abs_c <= 5.0: s_txt, s_class, rh4 = "ZONA DE DECISÃO", "bg-decisao", "bg-decisao"
 
                     arrow = "▲" if change >= 0 else "▼"
                     t_color = "#00FF00" if change >= 0 else "#FF0000"
