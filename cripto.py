@@ -13,27 +13,36 @@ st.markdown("""
     .stApp { background-color: #000000; }
     .block-container { padding: 0rem 1rem !important; }
     header, footer { visibility: hidden; }
+    
     .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; }
     .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 25px; font-weight: 700; }
-    .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
-    .h-col { font-size: 10px; color: #FFFFFF; text-transform: uppercase; text-align: center; font-weight: 700; }
-    .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; }
-    .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
-    .w-price { width: 15%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
-    .w-target { width: 9%; text-align: center; font-size: 12px; font-weight: 800; border-radius: 4px; padding: 6px 0; }
+    
+    /* CABEÇALHO MAIOR E MAIS VISÍVEL */
+    .header-container { display: flex; width: 100%; padding: 15px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
+    .h-col { font-size: 13px; color: #FFFFFF; text-transform: uppercase; text-align: center; font-weight: 800; letter-spacing: 1px; }
+    
+    .row-container { display: flex; width: 100%; align-items: center; padding: 10px 0; border-bottom: 1px solid #151515; }
+    
+    /* NÚMEROS E LETRAS MAIORES NA TABELA */
+    .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 16px; font-weight: 700; }
+    .w-price { width: 15%; text-align: center; color: #FF8C00; font-size: 18px; font-weight: 900; }
+    .w-target { width: 9%; text-align: center; font-size: 14px; font-weight: 800; border-radius: 4px; padding: 6px 0; }
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
-    .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
+    
+    .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 10px; width: 100%; text-align: center; text-transform: uppercase; }
     
     .bg-estavel { background-color: #00CED1; color: #000; }
     .bg-decisao { background-color: #FFFF00 !important; color: #000 !important; font-weight: 900; }
     .bg-atencao { background-color: #FFA500 !important; color: #000 !important; font-weight: 900; }
     .bg-parabolica { background-color: #800080; color: #FFF; }
+    
     .target-blink-red { background-color: #FF0000 !important; color: #FFF !important; animation: blinker 0.6s linear infinite; }
     .target-blink-green { background-color: #00FF00 !important; color: #000 !important; animation: blinker 0.6s linear infinite; }
-    @keyframes blinker { 50% { opacity: 0.3; } }
-    .perc-val { font-size: 10px; display: block; margin-top: 2px; }
     
-    .footer-live { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #000; color: #00FF00; text-align: center; padding: 10px; font-size: 12px; font-weight: bold; border-top: 1px solid #333; z-index: 100; }
+    @keyframes blinker { 50% { opacity: 0.3; } }
+    .perc-val { font-size: 12px; display: block; margin-top: 2px; font-weight: 600; }
+    
+    .footer-live { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #000; color: #00FF00; text-align: center; padding: 10px; font-size: 13px; font-weight: bold; border-top: 1px solid #333; z-index: 100; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -137,7 +146,7 @@ while True:
                     st.markdown(f"""
                         <div class="row-container">
                             <div class="w-ativo">{name}</div>
-                            <div class="w-price">{price:.3f} <span style="color:{t_color}; font-size:12px;">{arrow}</span>
+                            <div class="w-price">{price:.3f} <span style="color:{t_color}; font-size:14px;">{arrow}</span>
                                 <span class="perc-val" style="color:{t_color};">{diff_pts:+.3f} ({change_pct:+.2f}%)</span></div>
                             <div class="w-target {rh4 if (change_pct > 0 and rh4) else ''}" style="color:#FFFF00;">{v4:.3f}</div>
                             <div class="w-target {rh8 if (change_pct > 0 and rh8) else ''}" style="color:#FFA500;">{v8:.3f}</div>
