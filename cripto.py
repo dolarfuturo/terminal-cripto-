@@ -1,94 +1,131 @@
 import streamlit as st
 import pandas as pd
+import time
 import yfinance as yf
-import random, string, time
+import random
+import string
 from streamlit_gsheets import GSheetsConnection
 
-st.set_page_config(page_title="ALPHA VISION", layout="wide", initial_sidebar_state="collapsed")
+# 1. CONFIGURAÇÃO DE TELA
+st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 
-# Estilo Simplificado para evitar erro de renderização
-st.markdown("""<style>
-    .stApp { background-color: #000; font-family: monospace; }
-    input { background-color: #111 !important; color: gold !important; border: 1px solid #D4AF37 !important; }
-    .title { color: #D4AF37; text-align: center; font-size: 28px; font-weight: bold; }
-    .header-table { display: flex; border-bottom: 2px solid #D4AF37; background: #080808; padding: 10px 0; }
-    .h-col { font-size: 9px; color: #FFF; text-align: center; width: 11%; font-weight: bold; }
-    .row-alpha { display: flex; align-items: center; padding: 5px 0; border-bottom: 1px solid #111; }
-    .c-ativo { width: 14%; padding-left: 10px; color: #FFF; font-size: 12px; }
-    .c-price { width: 12%; text-align: center; color: #FF8C00; font-weight: bold; }
-    .c-val { width: 10%; text-align: center; font-size: 11px; }
-    .bg-yellow { background-color: #FFFF00; color: #000; padding: 1px 3px; border-radius: 2px; }
-    .st-box { padding: 4px; border-radius: 3px; font-size: 9px; font-weight: bold; text-align: center; width: 90%; margin: auto; }
-</style>""", unsafe_allow_html=True)
+# ESTILOS CSS (REVISADOS PARA EVITAR QUEBRAS)
+st.markdown("""
+    <style>
+    .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
+    header, footer { visibility: hidden; }
+    input { background-color: #151515 !important; color: white !important; border: 1px solid #D4AF37 !important; }
+    section[data-testid="stSidebar"] { background-color: #050505; border-right: 1px solid #D4AF37; }
+    
+    .title-gold { color: #D4AF37; font-size: 32px; font-weight: 900; text-align: center; margin-bottom: 0px; }
+    .subtitle-vision { color: #C0C0C0; font-size: 14px; text-align: center; letter-spacing: 5px; margin-bottom: 15px; }
+    
+    .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
+    .h-col { font-size: 10px; color: #FFFFFF; text-transform: uppercase; text-align: center; font-weight: bold; width: 11%; }
+    
+    .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; }
+    .w-ativo { width: 14%; padding-left: 10px; color: #EEE; font-size: 13px; font-weight: 700; }
+    .w-price { width: 12%; text-align: center; color: #FF8C00; font-size: 14px; font-weight: 900; }
+    .w-target { width: 10%; text-align: center; font-size: 13px; font-weight: 800; }
+    
+    /* CORES DE ALERTA DINÂMICO */
+    .t-y { background-color: #FFFF00; color: #000 !important; border-radius: 2px; padding: 1px 3px; }
+    .t-o { background-color: #FFA500; color: #000 !important; border-radius: 2px; padding: 1px 3px; }
+    .t-r { background-color: #FF0000; color: #FFF !important; border-radius: 2px; padding: 1px 3px; animation: blinker 0.4s linear infinite; }
+    
+    @keyframes blinker { 50% { opacity: 0.3; } }
+    .status-box { padding: 6px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 90%; text-align: center; margin: auto; }
+    .bg-estavel { background-color: #00CED1; color: #000; }
+    .bg-yellow { background-color: #FFFF00; color: #000; }
+    </style>
+    """, unsafe_allow_html=True)
 
-# 1. GERADOR DE SENHA (SIDEBAR)
+# --- SIDEBAR: GERADOR DE ACESSO NUMÉRICO ---
 with st.sidebar:
-    st.title("ALPHA ADMIN")
-    if st.button("GERAR SENHA NUMÉRICA"):
-        senha = ''.join(random.choice(string.digits) for _ in range(6))
-        st.code(senha)
-    if st.button("LOGOUT"):
+    st.markdown("<h3 style='color:#D4AF37;'>ALPHA ADMIN</h3>", unsafe_allow_html=True)
+    if st.button("GERAR ACESSO (6 DÍGITOS)"):
+        senha_acesso = ''.join(random.choice(string.digits) for _ in range(6))
+        st.code(senha_acesso)
+        st.caption("Copie para o seu Google Sheets.")
+    st.markdown("---")
+    if st.button("SAIR / LOGOUT"):
         st.session_state.autenticado = False
         st.rerun()
 
-# 2. LOGIN
-if 'autenticado' not in st.session_state: st.session_state.autenticado = False
+# --- LÓGICA DE LOGIN ---
+if 'autenticado' not in st.session_state:
+    st.session_state.autenticado = False
+
 if not st.session_state.autenticado:
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
-        df = conn.read(ttl=5)
+        df_users = conn.read(ttl=5)
     except: st.stop()
-    st.markdown("<div class='title'>ALPHA VISION LOGIN</div>", unsafe_allow_html=True)
-    with st.form("login"):
-        u = st.text_input("USUÁRIO").strip()
-        p = st.text_input("SENHA", type="password").strip()
-        if st.form_submit_button("ENTRAR"):
-            match = df[df['user'].astype(str) == str(u)]
-            if not match.empty and str(p) == str(match.iloc[0]['password']):
-                st.session_state.autenticado = True
-                st.rerun()
-            else: st.error("Erro nos dados")
+
+    st.markdown("<h1 style='text-align:center;'>ALPHA VISION LOGIN</h1>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        with st.form("login_form"):
+            u = st.text_input("USUÁRIO").strip()
+            p = st.text_input("SENHA", type="password").strip()
+            if st.form_submit_button("LIBERAR ACESSO"):
+                user_row = df_users[df_users['user'].astype(str) == u]
+                if not user_row.empty and str(p) == str(user_row.iloc[0]['password']):
+                    st.session_state.autenticado = True
+                    st.rerun()
+                else: st.error("DADOS INCORRETOS")
     st.stop()
 
-# 3. TERMINAL (80 ATIVOS - FORMATO CURTO)
-t_list = [
-    'BTC-USD','ETH-USD','SOL-USD','BNB-USD','XRP-USD','ADA-USD','AVAX-USD','DOT-USD','LINK-USD','NEAR-USD',
-    'MATIC-USD','PEPE-USD','EGLD-USD','GALA-USD','FET-USD','SUI-USD','TIA-USD','AAVE-USD','RENDER-USD','INJ-USD',
-    'SHIB-USD','LTC-USD','BCH-USD','APT-USD','STX-USD','KAS-USD','ARB-USD','OP-USD','SEI-USD','FIL-USD',
-    'HBAR-USD','ETC-USD','ICP-USD','BONK-USD','FLOKI-USD','WIF-USD','PYTH-USD','JUP-USD','RAY-USD','ORDI-USD'
-]
+# --- TERMINAL ALPHA VISION ---
+assets = {
+    'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
+    'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
+    'NEAR-USD':'NEAR/USDT','PEPE-USD':'PEPE/USDT','EGLD-USD':'EGLD/USDT','GALA-USD':'GALA/USDT','FET-USD':'FET/USDT',
+    'SUI-USD':'SUI/USDT','TIA-USD':'TIA/USDT','AAVE-USD':'AAVE/USDT','RENDER-USD':'RENDER/USDT','INJ-USD':'INJ/USDT'
+}
 
-st.markdown("<div class='title'>ALPHA VISION CRYPTO</div>", unsafe_allow_html=True)
-monitor = st.empty()
+st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
+
+painel = st.empty()
 
 while True:
     try:
-        data = yf.download(t_list, period="1d", interval="1m", group_by='ticker', silent=True)
-        with monitor.container():
-            st.markdown('<div class="header-table"><div style="width:14%; color:white; padding-left:10px;">ATIVO</div><div class="h-col">PREÇO</div><div class="h-col">ALVO 4%</div><div class="h-col">ALVO 8%</div><div class="h-col">ALVO 10%</div><div class="h-col">SUP 4%</div><div class="h-col">SUP 8%</div><div class="h-col">SUP 10%</div><div class="h-col" style="width:14%;">SINAL</div></div>', unsafe_allow_html=True)
-            for tid in t_list:
+        # Puxa dados (Yahoo Finance simula abertura 00:00 UTC no period 1d)
+        data = yf.download(list(assets.keys()), period="1d", interval="1m", group_by='ticker', silent=True)
+        
+        with painel.container():
+            st.markdown('<div class="header-container"><div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div><div class="h-col" style="width:12%;">PREÇO</div><div class="h-col" style="width:10%;">ALVO 4%</div><div class="h-col" style="width:10%;">ALVO 8%</div><div class="h-col" style="width:10%;">ALVO 10%</div><div class="h-col" style="width:10%;">SUP 4%</div><div class="h-col" style="width:10%;">SUP 8%</div><div class="h-col" style="width:10%;">SUP 10%</div><div class="h-col" style="width:14%;">SINAL</div></div>', unsafe_allow_html=True)
+
+            for tid, name in assets.items():
                 try:
-                    tick = data[tid]
-                    p_atual = tick['Close'].iloc[-1]
-                    p_open = tick['Open'].iloc[0] # Reset 00:00 UTC
-                    v4, v8, v10 = p_open*1.04, p_open*1.08, p_open*1.10
-                    c4, c8, c10 = p_open*0.96, p_open*0.92, p_open*0.90
+                    df_t = data[tid]
+                    price = df_t['Close'].iloc[-1]
+                    open_p = df_t['Open'].iloc[0] # Abertura 00:00 UTC
                     
-                    s_txt, s_bg, p_style = "ESTÁVEL", "background:#00CED1", ""
-                    if p_atual >= v4: s_txt, s_bg, p_style = "ALERTA", "background:#FFFF00", "class='bg-yellow'"
+                    change = ((price - open_p) / open_p) * 100
+                    v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
+                    c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
-                    dec = 4 if p_atual < 10 else 2
-                    row = f"""<div class="row-alpha">
-                        <div class="c-ativo">{tid.replace('-USD','/T')}</div>
-                        <div class="c-price">{p_atual:.{dec}f}</div>
-                        <div class="c-val" style="color:#FFFF00;"><span {p_style}>{v4:.{dec}f}</span></div>
-                        <div class="c-val" style="color:#FFA500;">{v8:.{dec}f}</div>
-                        <div class="c-val" style="color:#FF0000;">{v10:.{dec}f}</div>
-                        <div class="c-val" style="color:#FFFF00;">{c4:.{dec}f}</div>
-                        <div class="c-val" style="color:#FFA500;">{c8:.{dec}f}</div>
-                        <div class="c-val" style="color:#00FF00;">{c10:.{dec}f}</div>
-                        <div style="width:14%;"><div class="st-box" style="{s_bg}; color:#000;">{s_txt}</div></div>
-                    </div>"""
+                    s_txt, s_class, p_class = "ESTÁVEL", "bg-estavel", ""
+                    if price >= v4: s_txt, s_class, p_class = "DECISÃO ATENÇÃO", "bg-yellow", "t-y"
+                    
+                    prec = 4 if price < 10 else 2
+                    seta = '▲' if price >= open_p else '▼'
+                    seta_c = '#00FF00' if price >= open_p else '#FF0000'
+
+                    # Construção da linha fragmentada (Evita erro de string do Streamlit)
+                    row = f'<div class="row-container">'
+                    row += f'<div class="w-ativo">{name}</div>'
+                    row += f'<div class="w-price">{price:.{prec}f}<br><span style="font-size:9px; color:{seta_c};">{seta}{change:+.2f}%</span></div>'
+                    row += f'<div class="w-target" style="color:#FFFF00;"><span class="{p_class}">{v4:.{prec}f}</span></div>'
+                    row += f'<div class="w-target" style="color:#FFA500;">{v8:.{prec}f}</div>'
+                    row += f'<div class="w-target" style="color:#FF0000;">{v10:.{prec}f}</div>'
+                    row += f'<div class="w-target" style="color:#FFFF00;">{c4:.{prec}f}</div>'
+                    row += f'<div class="w-target" style="color:#FFA500;">{c8:.{prec}f}</div>'
+                    row += f'<div class="w-target" style="color:#00FF00;">{c10:.{prec}f}</div>'
+                    row += f'<div style="width:14%;"><div class="status-box {s_class}">{s_txt}</div></div></div>'
+                    
                     st.markdown(row, unsafe_allow_html=True)
                 except: continue
         time.sleep(15)
