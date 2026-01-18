@@ -24,7 +24,6 @@ st.markdown("""
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     
-    /* CORES DINÂMICAS */
     .bg-estavel { background-color: #00CED1; color: #000; }
     .bg-decisao { background-color: #FFFF00 !important; color: #000 !important; font-weight: 900; }
     .bg-atencao { background-color: #FFA500 !important; color: #000 !important; font-weight: 900; }
@@ -36,7 +35,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LOGIN E CONEXÃO ROBUSTA
+# 2. LOGIN E CONEXÃO ROBUSTA (RESET BINANCE 00:00 UTC INTEGRADO)
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
@@ -67,14 +66,13 @@ if not st.session_state.autenticado:
                 else: st.error("Acesso negado.")
             else: st.error("Falha na conexão. Tente novamente.")
         
-        # SUPORTE COM REDIRECIONAMENTO DIRETO
         st.markdown(f'''<a href="https://wa.me/SEU_NUMERO" target="_blank" style="text-decoration:none;">
             <div style="width:100%; background:#262626; color:white; padding:10px; border-radius:5px; text-align:center; font-weight:bold; border:1px solid #444; margin-top:10px;">
                 FALAR COM SUPORTE TÉCNICO
             </div></a>''', unsafe_allow_html=True)
     st.stop()
 
-# 3. MONITORAMENTO (80 ATIVOS)
+# 3. MONITORAMENTO
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
@@ -101,7 +99,6 @@ placeholder = st.empty()
 
 while True:
     try:
-        # Pega abertura da Binance (00:00 UTC) resetada
         data_batch = yf.download(list(assets.keys()), period="2d", interval="1m", group_by='ticker', progress=False)
         with placeholder.container():
             st.markdown("""<div class="header-container">
@@ -120,14 +117,12 @@ while True:
                     df = data_batch[tid].dropna()
                     if df.empty: continue
                     price = float(df['Close'].iloc[-1])
-                    open_p = float(df['Open'].iloc[0]) # Reset Binance 00:00 UTC
+                    open_p = float(df['Open'].iloc[0]) 
                     change = ((price - open_p) / open_p) * 100
                     
-                    # Alvos
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
-                    # Sinalização
                     s_txt, s_class, rh4, rh8, rh10 = "ESTÁVEL", "bg-estavel", "", "", ""
                     abs_c = abs(change)
                     
@@ -138,6 +133,7 @@ while True:
                     elif abs_c >= 8: s_txt, s_class, rh8 = "ATENÇÃO", "bg-atencao", "bg-atencao"
                     elif abs_c >= 4: s_txt, s_class, rh4 = "DECISÃO", "bg-decisao", "bg-decisao"
 
+                    arrow = "▲" if change >= 0 else "▼"
                     t_color = "#00FF00" if change >= 0 else "#FF0000"
                     prec = 4 if price < 1 else 2
 
@@ -145,7 +141,7 @@ while True:
                         <div class="row-container">
                             <div class="w-ativo">{name}</div>
                             <div class="w-price">
-                                {price:.{prec}f}
+                                {price:.{prec}f} <span style="color:{t_color}; font-size:12px;">{arrow}</span>
                                 <span class="perc-val" style="color:{t_color};">{change:+.2f}%</span>
                             </div>
                             <div class="w-target {rh4 if change > 0 else ''}" style="color:#FFFF00;">{v4:.{prec}f}</div>
