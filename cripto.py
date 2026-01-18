@@ -24,7 +24,7 @@ st.markdown("""
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     
-    .bg-estavel { background-color: #00CED1; color: #000; }
+    .bg-estavel { background-color: #1a1a1a; color: #555; }
     .bg-decisao { background-color: #FFFF00 !important; color: #000 !important; font-weight: 900; }
     .bg-atencao { background-color: #FFA500 !important; color: #000 !important; font-weight: 900; }
     .bg-parabolica { background-color: #800080; color: #FFF; }
@@ -35,7 +35,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LOGIN E CONEXÃO ROBUSTA (RESET BINANCE 00:00 UTC INTEGRADO)
+# 2. LOGIN E CONEXÃO
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
@@ -64,18 +64,11 @@ if not st.session_state.autenticado:
                     st.session_state.autenticado = True
                     st.rerun()
                 else: st.error("Acesso negado.")
-            else: st.error("Falha na conexão. Tente novamente.")
-        
-        st.markdown(f'''<a href="https://wa.me/SEU_NUMERO" target="_blank" style="text-decoration:none;">
-            <div style="width:100%; background:#262626; color:white; padding:10px; border-radius:5px; text-align:center; font-weight:bold; border:1px solid #444; margin-top:10px;">
-                FALAR COM SUPORTE TÉCNICO
-            </div></a>''', unsafe_allow_html=True)
+            else: st.error("Falha na conexão.")
+        st.markdown(f'''<a href="https://wa.me/suporte" target="_blank" style="text-decoration:none;"><div style="width:100%; background:#262626; color:white; padding:10px; border-radius:5px; text-align:center; font-weight:bold; border:1px solid #444; margin-top:10px;">FALAR COM SUPORTE TÉCNICO</div></a>''', unsafe_allow_html=True)
     st.stop()
 
 # 3. MONITORAMENTO
-st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
-
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
@@ -119,19 +112,23 @@ while True:
                     price = float(df['Close'].iloc[-1])
                     open_p = float(df['Open'].iloc[0]) 
                     change = ((price - open_p) / open_p) * 100
+                    abs_c = abs(change)
                     
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
                     s_txt, s_class, rh4, rh8, rh10 = "ESTÁVEL", "bg-estavel", "", "", ""
-                    abs_c = abs(change)
                     
-                    if abs_c >= 12: s_txt, s_class = "PARABÓLICA", "bg-parabolica"
-                    elif abs_c >= 10: 
+                    # Lógica com margem de 1% para apagar o sinal
+                    if 10.0 <= abs_c <= 11.0:
                         s_txt, s_class = "EXAUSTÃO", ("target-blink-red" if change > 0 else "target-blink-green")
                         rh10 = s_class
-                    elif abs_c >= 8: s_txt, s_class, rh8 = "ATENÇÃO", "bg-atencao", "bg-atencao"
-                    elif abs_c >= 4: s_txt, s_class, rh4 = "DECISÃO", "bg-decisao", "bg-decisao"
+                    elif 8.0 <= abs_c <= 9.0:
+                        s_txt, s_class, rh8 = "PRÓX TOPO", "bg-atencao", "bg-atencao"
+                    elif 4.0 <= abs_c <= 5.0:
+                        s_txt, s_class, rh4 = "ZONA DE DECISÃO", "bg-decisao", "bg-decisao"
+                    elif abs_c >= 12:
+                        s_txt, s_class = "PARABÓLICA", "bg-parabolica"
 
                     arrow = "▲" if change >= 0 else "▼"
                     t_color = "#00FF00" if change >= 0 else "#FF0000"
@@ -140,10 +137,8 @@ while True:
                     st.markdown(f"""
                         <div class="row-container">
                             <div class="w-ativo">{name}</div>
-                            <div class="w-price">
-                                {price:.{prec}f} <span style="color:{t_color}; font-size:12px;">{arrow}</span>
-                                <span class="perc-val" style="color:{t_color};">{change:+.2f}%</span>
-                            </div>
+                            <div class="w-price">{price:.{prec}f} <span style="color:{t_color}; font-size:12px;">{arrow}</span>
+                                <span class="perc-val" style="color:{t_color};">{change:+.2f}%</span></div>
                             <div class="w-target {rh4 if change > 0 else ''}" style="color:#FFFF00;">{v4:.{prec}f}</div>
                             <div class="w-target {rh8 if change > 0 else ''}" style="color:#FFA500;">{v8:.{prec}f}</div>
                             <div class="w-target {rh10 if change > 0 else ''}" style="color:#FF0000;">{v10:.{prec}f}</div>
