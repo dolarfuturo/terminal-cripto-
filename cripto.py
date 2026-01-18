@@ -13,33 +13,25 @@ st.markdown("""
     .stApp { background-color: #000000; }
     .block-container { padding: 0rem 1rem !important; }
     header, footer { visibility: hidden; }
-    
     .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; }
     .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 25px; font-weight: 700; }
-    
     .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
     .h-col { font-size: 10px; color: #FFFFFF; text-transform: uppercase; text-align: center; font-weight: 700; }
-    
     .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; }
     .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
     .w-price { width: 12%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
     .w-target { width: 10%; text-align: center; font-size: 13px; font-weight: 800; border-radius: 4px; padding: 6px 0; }
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
-    
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
-    .bar-amarela { background-color: #FFFF00 !important; color: #000 !important; }
-    .bar-laranja { background-color: #FFA500 !important; color: #000 !important; }
     .bg-estavel { background-color: #00CED1; color: #000; }
-    .bg-parabolica { background-color: #800080; color: #FFF; }
     .target-blink-red { background-color: #FF0000 !important; color: #FFF !important; animation: blinker 0.6s linear infinite; }
     .target-blink-green { background-color: #00FF00 !important; color: #000 !important; animation: blinker 0.6s linear infinite; }
-    
     @keyframes blinker { 50% { opacity: 0.3; } }
-    .delta-main { font-size: 10px; font-weight: 700; display: block; margin-top: 1px; }
+    .perc-main { font-size: 11px; font-weight: 700; display: block; margin-top: 1px; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LOGIN E CONEXÃO RESILIENTE
+# 2. LOGIN COM AUTO-RECONEXÃO
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
@@ -50,10 +42,10 @@ if not st.session_state.autenticado:
         u = st.text_input("USUÁRIO")
         p = st.text_input("SENHA", type="password")
         
-        col_btn1, col_btn2 = st.columns(2)
         if st.button("LIBERAR ACESSO", use_container_width=True):
             try:
-                st.cache_data.clear() # Limpa erro de conexão anterior
+                # Tenta conectar limpando o cache para evitar o erro das fotos
+                st.cache_data.clear()
                 conn = st.connection("gsheets", type=GSheetsConnection)
                 df_users = conn.read(ttl=0)
                 df_users.columns = [str(c).strip().lower() for c in df_users.columns]
@@ -61,14 +53,16 @@ if not st.session_state.autenticado:
                 if not user_row.empty and str(p) == str(user_row.iloc[0]['password']).strip():
                     st.session_state.autenticado = True
                     st.rerun()
-                else: st.error("Credenciais inválidas.")
-            except: st.error("Erro de conexão. Tente novamente.")
-            
-        # BOTÃO DE SUPORTE REAL
-        st.link_button("FALAR COM SUPORTE TÉCNICO", "https://wa.me/SEU_LINK_AQUI", use_container_width=True)
+                else: st.error("Usuário ou Senha incorretos.")
+            except:
+                st.warning("Reconectando ao servidor... clique novamente em segundos.")
+                st.cache_data.clear()
+        
+        # LINK SUPORTE (Agora como link_button para garantir abertura)
+        st.link_button("FALAR COM SUPORTE TÉCNICO", "https://wa.me/5500000000000", use_container_width=True)
     st.stop()
 
-# 3. MONITORAMENTO COM TODAS AS MOEDAS
+# 3. MONITORAMENTO
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
@@ -115,7 +109,6 @@ while True:
                     price = float(df['Close'].iloc[-1])
                     open_p = float(df['Open'].iloc[0])
                     change = ((price - open_p) / open_p) * 100
-                    diff = price - open_p
                     
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
@@ -124,12 +117,13 @@ while True:
                     t_color = "#00FF00" if change >= 0 else "#FF0000"
                     
                     s_txt, s_class, rh4, rh8, rh10 = "ESTÁVEL", "bg-estavel", "", "", ""
-                    if abs(change) >= 12: s_txt, s_class = "PARABÓLICA", "bg-parabolica"
-                    elif abs(change) >= 10: 
+                    abs_c = abs(change)
+                    
+                    if abs_c >= 10: 
                         s_txt, s_class = "EXAUSTÃO", ("target-blink-red" if change > 0 else "target-blink-green")
                         rh10 = s_class
-                    elif abs(change) >= 8: s_txt, s_class, rh8 = "ATENÇÃO ALTA VOL", "bar-laranja", "bar-laranja"
-                    elif abs(change) >= 4: s_txt, s_class, rh4 = "REGIÃO DE DECISÃO", "bar-amarela", "bar-amarela"
+                    elif abs_c >= 8: s_txt, s_class, rh8 = "ATENÇÃO ALTA VOL", "bar-laranja", "bar-laranja"
+                    elif abs_c >= 4: s_txt, s_class, rh4 = "REGIÃO DE DECISÃO", "bar-amarela", "bar-amarela"
 
                     prec = 4 if price < 1 else 2
 
@@ -138,7 +132,7 @@ while True:
                             <div class="w-ativo">{name}</div>
                             <div class="w-price">
                                 {price:.{prec}f} <span style="color:{t_color}; font-size:11px;">{arrow}</span>
-                                <span class="delta-main" style="color:{t_color};">{diff:+.{prec}f} ({change:+.2f}%)</span>
+                                <span class="perc-main" style="color:{t_color};">{change:+.2f}%</span>
                             </div>
                             <div class="w-target {rh4 if change > 0 else ''}" style="color:#FFFF00;">{v4:.{prec}f}</div>
                             <div class="w-target {rh8 if change > 0 else ''}" style="color:#FFA500;">{v8:.{prec}f}</div>
