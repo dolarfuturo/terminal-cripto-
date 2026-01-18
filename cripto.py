@@ -5,10 +5,18 @@ import yfinance as yf
 from datetime import datetime
 from streamlit_gsheets import GSheetsConnection
 
-# ==========================================
-# 1. BLOCO DE ACESSO (TRAVA DA PLANILHA)
-# ==========================================
+# 1. CONFIGURAÇÃO E TRAVA DE LOGIN (FUNDO PRETO)
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
+
+# Estilo para deixar a tela de login preta
+st.markdown("""
+    <style>
+    .stApp { background-color: #000000; }
+    input { background-color: #151515 !important; color: white !important; border: 1px solid #D4AF37 !important; }
+    .stMarkdown h1 { color: #D4AF37 !important; }
+    label { color: #C0C0C0 !important; }
+    </style>
+    """, unsafe_allow_html=True)
 
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
@@ -21,25 +29,31 @@ if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
 if not st.session_state.autenticado:
-    st.markdown("<h1 style='text-align:center; color:#D4AF37;'>ALPHA VISION LOGIN</h1>", unsafe_allow_html=True)
-    with st.form("login_form"):
-        u = st.text_input("USUÁRIO")
-        p = st.text_input("SENHA", type="password")
-        if st.form_submit_button("LIBERAR ACESSO"):
-            user_row = df_users[df_users['user'] == u]
-            if not user_row.empty:
-                if str(p) == str(user_row.iloc[0]['password']):
-                    venc = pd.to_datetime(user_row.iloc[0]['vencimento']).date()
-                    if datetime.now().date() <= venc:
-                        st.session_state.autenticado = True
-                        st.rerun()
-                    else: st.error("⚠️ ACESSO EXPIRADO.")
-                else: st.error("❌ SENHA INCORRETA.")
-            else: st.error("❌ USUÁRIO NÃO ENCONTRADO.")
+    st.markdown("<h1 style='text-align:center;'>ALPHA VISION LOGIN</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#C0C0C0; letter-spacing: 5px;'>TERMINAL RESTRITO</p>", unsafe_allow_html=True)
+    
+    with st.container():
+        left, mid, right = st.columns([1, 2, 1])
+        with mid:
+            with st.form("login_form"):
+                u = st.text_input("USUÁRIO")
+                p = st.text_input("SENHA", type="password")
+                if st.form_submit_button("LIBERAR ACESSO"):
+                    # Garanta que na sua planilha as colunas sejam 'user' e 'password'
+                    user_row = df_users[df_users['user'] == u]
+                    if not user_row.empty:
+                        if str(p) == str(user_row.iloc[0]['password']):
+                            venc = pd.to_datetime(user_row.iloc[0]['vencimento']).date()
+                            if datetime.now().date() <= venc:
+                                st.session_state.autenticado = True
+                                st.rerun()
+                            else: st.error("ACESSO EXPIRADO.")
+                        else: st.error("SENHA INCORRETA.")
+                    else: st.error("USUÁRIO NÃO ENCONTRADO.")
     st.stop()
 
 # ==========================================
-# 2. SEU LAYOUT ORIGINAL (VISÃO DE TUBARÃO)
+# 2. SEU LAYOUT ORIGINAL (ESTRUTURA MANTIDA)
 # ==========================================
 
 st.markdown("""
@@ -62,15 +76,6 @@ st.markdown("""
     .w-target { width: 10%; text-align: center; font-size: 14px; font-weight: 800; }
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
 
-    .t-active { border-radius: 2px; padding: 2px 4px; }
-    .t-y { background-color: #FFFF00; color: #000 !important; }
-    .t-o { background-color: #FFA500; color: #000 !important; }
-    .t-blink-r { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; }
-    .t-blink-g { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; }
-    .t-purple { background-color: #8A2BE2; color: #FFF !important; font-weight: 900; }
-    
-    @keyframes blinker { 50% { opacity: 0.2; } }
-
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     .bg-estavel { background-color: #00CED1; color: #000; } 
     .bg-yellow { background-color: #FFFF00; color: #000; }
@@ -78,6 +83,8 @@ st.markdown("""
     .bg-blink-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
     .bg-blink-green { background-color: #00FF00; color: #000; animation: blinker 0.4s linear infinite; }
     .bg-purple { background-color: #8A2BE2; color: #FFF; }
+    
+    @keyframes blinker { 50% { opacity: 0.2; } }
     </style>
     """, unsafe_allow_html=True)
 
@@ -91,7 +98,7 @@ assets = {
     'FIL-USD':'FIL/USDT','HBAR-USD':'HBAR/USDT','ETC-USD':'ETC/USDT','ICP-USD':'ICP/USDT','BONK-USD':'BONK/USDT',
     'FLOKI-USD':'FLOKI/USDT','WIF-USD':'WIF/USDT','PYTH-USD':'PYTH/USDT','JUP-USD':'JUP/USDT','RAY-USD':'RAY/USDT',
     'ORDI-USD':'ORDI/USDT','BEAM-USD':'BEAM/USDT','IMX-USD':'IMX/USDT','GNS-USD':'GNS/USDT','DYDX-USD':'DYDX/USDT',
-    'LDO-USD':'LDO/USDT','PENDLE-USD':'PENDLE/USDT','ENA-ENA':'ENA/USDT','TRX-USD':'TRX/USDT','ATOM-USD':'ATOM/USDT',
+    'LDO-USD':'LDO/USDT','PENDLE-USD':'PENDLE/USDT','ENA-USD':'ENA/USDT','TRX-USD':'TRX/USDT','ATOM-USD':'ATOM/USDT',
     'MKR-USD':'MKR/USDT','GRT-USD':'GRT/USDT','THETA-USD':'THETA/USDT','FTM-USD':'FTM/USDT','VET-USD':'VET/USDT',
     'ALGO-USD':'ALGO/USDT','FLOW-USD':'FLOW/USDT','QNT-USD':'QNT/USDT','SNX-USD':'SNX/USDT','EOS-USD':'EOS/USDT',
     'NEO-USD':'NEO/USDT','IOTA-USD':'IOTA/USDT','CFX-USD':'CFX/USDT','AXS-USD':'AXS/USDT','MANA-USD':'MANA/USDT',
