@@ -61,19 +61,16 @@ st.markdown("""
     .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; }
     .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 15px; font-weight: 700; }
     
-    /* CABEÇALHO */
     .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
-    .h-col { font-size: 11px; color: #FFFFFF; text-transform: uppercase; text-align: center; font-weight: 700; }
+    .h-col { font-size: 10px; color: #FFFFFF; text-transform: uppercase; text-align: center; font-weight: 700; }
     
-    /* LINHAS */
-    .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; }
-    .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
-    .w-price { width: 12%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
-    .w-target { width: 10%; text-align: center; font-size: 13px; font-weight: 800; }
+    .row-container { display: flex; width: 100%; align-items: stretch; padding: 0; border-bottom: 1px solid #151515; min-height: 45px; }
+    .w-ativo { width: 14%; display: flex; align-items: center; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
+    .w-price { width: 12%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
+    .w-target { width: 10%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; }
     
-    /* SINALIZADOR - BARRA TODA */
-    .w-sinal { width: 14%; padding-right: 10px; display: flex; align-items: center; justify-content: center; }
-    .status-box { padding: 8px 0; border-radius: 2px; font-weight: 900; font-size: 10px; width: 100%; text-align: center; text-transform: uppercase; }
+    .w-sinal { width: 14%; display: flex; align-items: stretch; }
+    .status-box { display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 10px; width: 100%; text-align: center; text-transform: uppercase; }
     
     .bg-estavel { background-color: #00CED1; color: #000; }
     .bg-blink-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
@@ -90,8 +87,7 @@ assets = {
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
     'NEAR-USD':'NEAR/USDT','PEPE-USD':'PEPE/USDT','EGLD-USD':'EGLD/USDT','GALA-USD':'GALA/USDT','FET-USD':'FET/USDT',
     'AAVE-USD':'AAVE/USDT','RENDER-USD':'RENDER/USDT','SUI-USD':'SUI/USDT','TIA-USD':'TIA/USDT','INJ-USD':'INJ/USDT',
-    'MATIC-USD':'POL/USDT','SHIB-USD':'SHIB/USDT','LTC-USD':'LTC/USDT','BCH-USD':'BCH/USDT','APT-USD':'APT/USDT',
-    'STX-USD':'STX/USDT','KAS-USD':'KAS/USDT','ARB-USD':'ARB/USDT','OP-USD':'OP/USDT','SEI-USD':'SEI/USDT'
+    'MATIC-USD':'POL/USDT','SHIB-USD':'SHIB/USDT','LTC-USD':'LTC/USDT','BCH-USD':'BCH/USDT','APT-USD':'APT/USDT'
 }
 
 placeholder = st.empty()
@@ -100,12 +96,16 @@ while True:
     try:
         data_batch = yf.download(list(assets.keys()), period="2d", interval="1m", group_by='ticker', progress=False)
         with placeholder.container():
-            # Cabeçalho Corrigido
+            # CABEÇALHO ESCRITO POR EXTENSO
             st.markdown("""<div class="header-container">
                 <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
                 <div class="h-col" style="width:12%;">PREÇO ATUAL</div>
-                <div class="h-col" style="width:10%;">4%</div><div class="h-col" style="width:10%;">8%</div><div class="h-col" style="width:10%;">10%</div>
-                <div class="h-col" style="width:10%;">-4%</div><div class="h-col" style="width:10%;">-8%</div><div class="h-col" style="width:10%;">-10%</div>
+                <div class="h-col" style="width:10%;">RESISTÊNCIA</div>
+                <div class="h-col" style="width:10%;">PRÓX AO TOPO</div>
+                <div class="h-col" style="width:10%;">TETO EXAUSTÃO</div>
+                <div class="h-col" style="width:10%;">SUPORTE</div>
+                <div class="h-col" style="width:10%;">PRÓX FUNDO</div>
+                <div class="h-col" style="width:10%;">CHÃO EXAUSTÃO</div>
                 <div class="h-col" style="width:14%;">SINALIZADOR</div></div>""", unsafe_allow_html=True)
 
             for tid, name in assets.items():
@@ -117,16 +117,12 @@ while True:
                     open_p = float(df['Open'].iloc[0])
                     change = ((price - open_p) / open_p) * 100
                     
-                    # Alvos
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
-                    # Lógica de Sinal (Sem erro de sintaxe)
                     s_txt, s_class = "ESTÁVEL", "bg-estavel"
-                    if change >= 10: 
-                        s_txt, s_class = "EXAUSTÃO MÁXIMA", "bg-blink-red"
-                    elif change <= -10: 
-                        s_txt, s_class = "EXAUSTÃO MÁXIMA", "bg-blink-green"
+                    if change >= 10: s_txt, s_class = "EXAUSTÃO MÁXIMA", "bg-blink-red"
+                    elif change <= -10: s_txt, s_class = "EXAUSTÃO MÁXIMA", "bg-blink-green"
 
                     prec = 4 if price < 10 else 2
                     color = "#00FF00" if price >= open_p else "#FF0000"
