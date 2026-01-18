@@ -23,16 +23,18 @@ st.markdown("""
     .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; }
     .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
     .w-price { width: 12%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
-    .w-target { width: 10%; text-align: center; font-size: 13px; font-weight: 800; transition: all 0.3s; }
+    .w-target { width: 10%; text-align: center; font-size: 13px; font-weight: 800; }
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
     
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     
+    /* Cores Sinalizador */
     .bg-estavel { background-color: #00CED1; color: #000; }
     .bg-4 { background-color: #FFFF00; color: #000; }
     .bg-8 { background-color: #FFA500; color: #000; }
     .bg-parabolica { background-color: #800080; color: #FFF; animation: none !important; }
     
+    /* Animações */
     .blink-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
     .blink-green { background-color: #00FF00; color: #000; animation: blinker 0.4s linear infinite; }
     .highlight-target { filter: brightness(2.5); text-shadow: 0 0 10px currentColor; font-size: 15px !important; animation: blinker 0.8s linear infinite; }
@@ -41,7 +43,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# LOGIN (Mantido conforme original)
+# LOGIN
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
@@ -61,11 +63,11 @@ if not st.session_state.autenticado:
     except: st.stop()
     st.stop()
 
-# TÍTULOS LIMPOS
+# CABEÇALHO LIMPO
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
-# LISTA COMPLETA 80 ATIVOS
+# TODOS OS ATIVOS
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
@@ -94,20 +96,22 @@ while True:
             st.markdown("""<div class="header-container">
                 <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
                 <div class="h-col" style="width:12%;">PREÇO ATUAL</div>
-                <div class="h-col" style="width:10%;">RESISTÊNCIA</div>
-                <div class="h-col" style="width:10%;">PRÓX AO TOPO</div>
-                <div class="h-col" style="width:10%;">TETO EXAUSTÃO</div>
-                <div class="h-col" style="width:10%;">SUPORTE</div>
-                <div class="h-col" style="width:10%;">PRÓX FUNDO</div>
-                <div class="h-col" style="width:10%;">CHÃO EXAUSTÃO</div>
+                <div class="h-col" style="width:10%;">4%</div>
+                <div class="h-col" style="width:10%;">8%</div>
+                <div class="h-col" style="width:10%;">10%</div>
+                <div class="h-col" style="width:10%;">-4%</div>
+                <div class="h-col" style="width:10%;">-8%</div>
+                <div class="h-col" style="width:10%;">-10%</div>
                 <div class="h-col" style="width:14%;">SINALIZADOR</div></div>""", unsafe_allow_html=True)
 
             for tid, name in assets.items():
                 try:
                     df = data_batch[tid].dropna()
                     if df.empty: continue
-                    price = float(df['Close'].iloc[-1]); open_p = float(df['Open'].iloc[0])
+                    price = float(df['Close'].iloc[-1])
+                    open_p = float(df['Open'].iloc[0])
                     change = ((price - open_p) / open_p) * 100
+                    
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
@@ -128,8 +132,8 @@ while True:
                         s_txt, s_class = "ALERTA 4%", "bg-4"
                         h4 = "highlight-target"
 
-                    prec = 4 if price < 10 else 2
-                    color = "#00FF00" if price >= open_p else "#FF0000"
+                    prec = 4 if price < 1 else 2
+                    color = "#00FF00" if change >= 0 else "#FF0000"
 
                     st.markdown(f"""
                         <div class="row-container">
@@ -141,4 +145,9 @@ while True:
                             <div class="w-target {h4}" style="color:#FFFF00;">{c4:.{prec}f}</div>
                             <div class="w-target {h8}" style="color:#FFA500;">{c8:.{prec}f}</div>
                             <div class="w-target {h10}" style="color:#00FF00;">{c10:.{prec}f}</div>
-                            <div class="w-sinal">
+                            <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                except: continue
+        time.sleep(10)
+    except: time.sleep(5)
