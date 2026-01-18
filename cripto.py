@@ -36,27 +36,10 @@ st.markdown("""
     
     @keyframes blinker { 50% { opacity: 0.3; } }
     .delta-main { font-size: 10px; font-weight: 700; display: block; margin-top: 1px; }
-    
-    /* ESTILO BOTÃO SUPORTE */
-    .btn-suporte {
-        display: inline-block;
-        width: 100%;
-        padding: 10px 0;
-        background-color: #262626;
-        color: #FFFFFF !important;
-        text-align: center;
-        text-decoration: none;
-        font-size: 12px;
-        font-weight: 700;
-        border-radius: 5px;
-        margin-top: 10px;
-        border: 1px solid #404040;
-    }
-    .btn-suporte:hover { background-color: #333333; border-color: #D4AF37; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LOGIN
+# 2. LOGIN E CONEXÃO RESILIENTE
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
@@ -67,9 +50,10 @@ if not st.session_state.autenticado:
         u = st.text_input("USUÁRIO")
         p = st.text_input("SENHA", type="password")
         
+        col_btn1, col_btn2 = st.columns(2)
         if st.button("LIBERAR ACESSO", use_container_width=True):
             try:
-                st.cache_data.clear()
+                st.cache_data.clear() # Limpa erro de conexão anterior
                 conn = st.connection("gsheets", type=GSheetsConnection)
                 df_users = conn.read(ttl=0)
                 df_users.columns = [str(c).strip().lower() for c in df_users.columns]
@@ -78,13 +62,13 @@ if not st.session_state.autenticado:
                     st.session_state.autenticado = True
                     st.rerun()
                 else: st.error("Credenciais inválidas.")
-            except: st.error("Erro de conexão com a planilha.")
+            except: st.error("Erro de conexão. Tente novamente.")
             
-        # BOTÃO DE SUPORTE ABAIXO DO ACESSO
-        st.markdown('<a href="https://wa.me/suporte" class="btn-suporte">FALAR COM SUPORTE TÉCNICO</a>', unsafe_allow_html=True)
+        # BOTÃO DE SUPORTE REAL
+        st.link_button("FALAR COM SUPORTE TÉCNICO", "https://wa.me/SEU_LINK_AQUI", use_container_width=True)
     st.stop()
 
-# 3. MONITORAMENTO (Lista de ativos e lógica permanecem iguais)
+# 3. MONITORAMENTO COM TODAS AS MOEDAS
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
@@ -140,14 +124,12 @@ while True:
                     t_color = "#00FF00" if change >= 0 else "#FF0000"
                     
                     s_txt, s_class, rh4, rh8, rh10 = "ESTÁVEL", "bg-estavel", "", "", ""
-                    abs_c = abs(change)
-                    
-                    if abs_c >= 12: s_txt, s_class = "PARABÓLICA", "bg-parabolica"
-                    elif abs_c >= 10: 
+                    if abs(change) >= 12: s_txt, s_class = "PARABÓLICA", "bg-parabolica"
+                    elif abs(change) >= 10: 
                         s_txt, s_class = "EXAUSTÃO", ("target-blink-red" if change > 0 else "target-blink-green")
                         rh10 = s_class
-                    elif abs_c >= 8: s_txt, s_class, rh8 = "ATENÇÃO ALTA VOL", "bar-laranja", "bar-laranja"
-                    elif abs_c >= 4: s_txt, s_class, rh4 = "REGIÃO DE DECISÃO", "bar-amarela", "bar-amarela"
+                    elif abs(change) >= 8: s_txt, s_class, rh8 = "ATENÇÃO ALTA VOL", "bar-laranja", "bar-laranja"
+                    elif abs(change) >= 4: s_txt, s_class, rh4 = "REGIÃO DE DECISÃO", "bar-amarela", "bar-amarela"
 
                     prec = 4 if price < 1 else 2
 
@@ -156,7 +138,7 @@ while True:
                             <div class="w-ativo">{name}</div>
                             <div class="w-price">
                                 {price:.{prec}f} <span style="color:{t_color}; font-size:11px;">{arrow}</span>
-                                <span class="delta-main" style="color:{t_color};">{diff:+.{prec}f}</span>
+                                <span class="delta-main" style="color:{t_color};">{diff:+.{prec}f} ({change:+.2f}%)</span>
                             </div>
                             <div class="w-target {rh4 if change > 0 else ''}" style="color:#FFFF00;">{v4:.{prec}f}</div>
                             <div class="w-target {rh8 if change > 0 else ''}" style="color:#FFA500;">{v8:.{prec}f}</div>
