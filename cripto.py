@@ -14,6 +14,9 @@ st.markdown("""
     .block-container { padding: 0rem 1rem !important; }
     header, footer { visibility: hidden; }
     
+    /* Login Clean */
+    .login-box { max-width: 400px; margin: 100px auto; padding: 20px; background: #080808; border: 1px solid #D4AF37; border-radius: 10px; }
+    
     .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; }
     .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 25px; font-weight: 700; }
     
@@ -28,13 +31,11 @@ st.markdown("""
     
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     
-    /* Cores Sinalizador */
     .bg-estavel { background-color: #00CED1; color: #000; }
     .bg-4 { background-color: #FFFF00; color: #000; }
     .bg-8 { background-color: #FFA500; color: #000; }
     .bg-parabolica { background-color: #800080; color: #FFF; animation: none !important; }
     
-    /* Animações */
     .blink-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
     .blink-green { background-color: #00FF00; color: #000; animation: blinker 0.4s linear infinite; }
     .highlight-target { filter: brightness(2.5); text-shadow: 0 0 10px currentColor; font-size: 15px !important; animation: blinker 0.8s linear infinite; }
@@ -43,31 +44,33 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# LOGIN
+# 2. SISTEMA DE LOGIN SEM SOMBRA
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
 if not st.session_state.autenticado:
-    try:
-        conn = st.connection("gsheets", type=GSheetsConnection)
-        df_users = conn.read(ttl=10)
-        df_users.columns = [str(c).strip().lower() for c in df_users.columns]
-        st.markdown("<h1 style='text-align:center; color:#D4AF37;'>ALPHA VISION LOGIN</h1>", unsafe_allow_html=True)
-        u = st.text_input("USUÁRIO").strip()
-        p = st.text_input("SENHA", type="password").strip()
-        if st.button("LIBERAR ACESSO"):
-            user_row = df_users[df_users['user'].astype(str) == u]
-            if not user_row.empty and str(p) == str(user_row.iloc[0]['password']).strip():
-                st.session_state.autenticado = True
-                st.rerun()
-    except: st.stop()
+    with st.container():
+        st.markdown('<div class="title-gold">ALPHA VISION</div>', unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1,2,1])
+        with col2:
+            u = st.text_input("USUÁRIO")
+            p = st.text_input("SENHA", type="password")
+            if st.button("LIBERAR ACESSO"):
+                try:
+                    conn = st.connection("gsheets", type=GSheetsConnection)
+                    df_users = conn.read(ttl=10)
+                    df_users.columns = [str(c).strip().lower() for c in df_users.columns]
+                    user_row = df_users[df_users['user'].astype(str) == u]
+                    if not user_row.empty and str(p) == str(user_row.iloc[0]['password']).strip():
+                        st.session_state.autenticado = True
+                        st.rerun()
+                except: st.error("Erro na conexão.")
     st.stop()
 
-# CABEÇALHO LIMPO
+# 3. INTERFACE PRINCIPAL (SÓ APARECE APÓS LOGIN)
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
-# TODOS OS ATIVOS
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
@@ -96,41 +99,30 @@ while True:
             st.markdown("""<div class="header-container">
                 <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
                 <div class="h-col" style="width:12%;">PREÇO ATUAL</div>
-                <div class="h-col" style="width:10%;">4%</div>
-                <div class="h-col" style="width:10%;">8%</div>
-                <div class="h-col" style="width:10%;">10%</div>
-                <div class="h-col" style="width:10%;">-4%</div>
-                <div class="h-col" style="width:10%;">-8%</div>
-                <div class="h-col" style="width:10%;">-10%</div>
+                <div class="h-col" style="width:10%;">RESISTÊNCIA</div>
+                <div class="h-col" style="width:10%;">PRÓX AO TOPO</div>
+                <div class="h-col" style="width:10%;">TETO EXAUSTÃO</div>
+                <div class="h-col" style="width:10%;">SUPORTE</div>
+                <div class="h-col" style="width:10%;">PRÓX FUNDO</div>
+                <div class="h-col" style="width:10%;">CHÃO EXAUSTÃO</div>
                 <div class="h-col" style="width:14%;">SINALIZADOR</div></div>""", unsafe_allow_html=True)
 
             for tid, name in assets.items():
                 try:
                     df = data_batch[tid].dropna()
                     if df.empty: continue
-                    price = float(df['Close'].iloc[-1])
-                    open_p = float(df['Open'].iloc[0])
+                    price = float(df['Close'].iloc[-1]); open_p = float(df['Open'].iloc[0])
                     change = ((price - open_p) / open_p) * 100
-                    
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
-                    s_txt, s_class = "ESTÁVEL", "bg-estavel"
-                    h4, h8, h10 = "", "", ""
-                    
+                    s_txt, s_class, h4, h8, h10 = "ESTÁVEL", "bg-estavel", "", "", ""
                     abs_c = abs(change)
-                    if abs_c >= 12:
-                        s_txt, s_class = "PARABÓLICA", "bg-parabolica"
-                        h4 = h8 = h10 = "highlight-target"
-                    elif abs_c >= 10:
-                        s_txt, s_class = "EXAUSTÃO", "blink-red" if change > 0 else "blink-green"
-                        h10 = "highlight-target"
-                    elif abs_c >= 8:
-                        s_txt, s_class = "ALERTA 8%", "bg-8"
-                        h8 = "highlight-target"
-                    elif abs_c >= 4:
-                        s_txt, s_class = "ALERTA 4%", "bg-4"
-                        h4 = "highlight-target"
+                    
+                    if abs_c >= 12: s_txt, s_class, h4, h8, h10 = "PARABÓLICA", "bg-parabolica", "highlight-target", "highlight-target", "highlight-target"
+                    elif abs_c >= 10: s_txt, s_class, h10 = "EXAUSTÃO", ("blink-red" if change > 0 else "blink-green"), "highlight-target"
+                    elif abs_c >= 8: s_txt, s_class, h8 = "ALERTA 8%", "bg-8", "highlight-target"
+                    elif abs_c >= 4: s_txt, s_class, h4 = "ALERTA 4%", "bg-4", "highlight-target"
 
                     prec = 4 if price < 1 else 2
                     color = "#00FF00" if change >= 0 else "#FF0000"
