@@ -28,20 +28,25 @@ st.markdown("""
     
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     
+    /* Estilos de Cores */
     .bg-estavel { background-color: #00CED1; color: #000; }
     .bg-amarelo { background-color: #FFFF00; color: #000; }
     .bg-laranja { background-color: #FFA500; color: #000; }
     .bg-parabolica { background-color: #800080; color: #FFF; }
     
+    /* Efeito Aceso (Sólido) para 4% e 8% */
+    .target-aceso { filter: brightness(2.0); text-shadow: 0 0 8px currentColor; font-size: 14px !important; }
+    
+    /* Efeito Piscante para 10% */
     .blink-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
     .blink-green { background-color: #00FF00; color: #000; animation: blinker 0.4s linear infinite; }
-    .highlight-target { filter: brightness(2.5); text-shadow: 0 0 10px currentColor; font-size: 15px !important; animation: blinker 0.8s linear infinite; }
+    .target-blink { filter: brightness(2.5); text-shadow: 0 0 10px currentColor; font-size: 15px !important; animation: blinker 0.6s linear infinite; }
     
     @keyframes blinker { 50% { opacity: 0.1; } }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LOGIN (Sem elementos residuais na tela)
+# LOGIN
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
@@ -63,11 +68,9 @@ if not st.session_state.autenticado:
             except: st.error("Erro de conexão.")
     st.stop()
 
-# 3. INTERFACE PRINCIPAL
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
-# LISTA COMPLETA DE ATIVOS (CORRIGIDA)
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
@@ -108,8 +111,7 @@ while True:
                 try:
                     df = data_batch[tid].dropna()
                     if df.empty: continue
-                    price = float(df['Close'].iloc[-1])
-                    open_p = float(df['Open'].iloc[0])
+                    price = float(df['Close'].iloc[-1]); open_p = float(df['Open'].iloc[0])
                     change = ((price - open_p) / open_p) * 100
                     
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
@@ -119,13 +121,14 @@ while True:
                     abs_c = abs(change)
                     
                     if abs_c >= 12: 
-                        s_txt, s_class, h4, h8, h10 = "PARABÓLICA", "bg-parabolica", "highlight-target", "highlight-target", "highlight-target"
+                        s_txt, s_class = "PARABÓLICA", "bg-parabolica"
+                        h4 = h8 = h10 = "target-aceso"
                     elif abs_c >= 10: 
-                        s_txt, s_class, h10 = "EXAUSTÃO", ("blink-red" if change > 0 else "blink-green"), "highlight-target"
+                        s_txt, s_class, h10 = "EXAUSTÃO", ("blink-red" if change > 0 else "blink-green"), "target-blink"
                     elif abs_c >= 8: 
-                        s_txt, s_class, h8 = "ALERTA LARANJA", "bg-laranja", "highlight-target"
+                        s_txt, s_class, h8 = "ATENÇÃO ALTA VOL", "bg-laranja", "target-aceso"
                     elif abs_c >= 4: 
-                        s_txt, s_class, h4 = "ALERTA AMARELO", "bg-amarelo", "highlight-target"
+                        s_txt, s_class, h4 = "REGIÃO DE DECISÃO", "bg-amarelo", "target-aceso"
 
                     prec = 4 if price < 1 else 2
 
