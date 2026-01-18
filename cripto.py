@@ -21,6 +21,8 @@ st.markdown("""
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
     df_users = conn.read(ttl=10)
+    # Padronização interna para evitar erros de leitura
+    df_users.columns = [str(c).strip().lower() for c in df_users.columns]
 except:
     st.error("Erro de conexão com a base de dados.")
     st.stop()
@@ -34,17 +36,41 @@ if not st.session_state.autenticado:
         left, mid, right = st.columns([1, 2, 1])
         with mid:
             with st.form("login_form"):
-                u = st.text_input("USUÁRIO")
-                p = st.text_input("SENHA", type="password")
+                u = st.text_input("USUÁRIO").strip()
+                p = st.text_input("SENHA", type="password").strip()
                 if st.form_submit_button("LIBERAR ACESSO"):
-                    user_row = df_users[df_users['user'] == u]
-                    if not user_row.empty and str(p) == str(user_row.iloc[0]['password']):
-                        st.session_state.autenticado = True
-                        st.rerun()
-                    else: st.error("Acesso negado.")
+                    # Busca segura do usuário
+                    user_row = df_users[df_users['user'].astype(str) == u]
+                    
+                    if not user_row.empty:
+                        # 1. VALIDAÇÃO DE SENHA
+                        if str(p) == str(user_row.iloc[0]['password']).strip():
+                            
+                            # 2. VALIDAÇÃO DE DATA (VENCIMENTO)
+                            try:
+                                data_venc = pd.to_datetime(user_row.iloc[0]['vencimento']).date()
+                                hoje = datetime.now().date()
+                                status = str(user_row.iloc[0]['status']).strip().lower()
+                                
+                                if status != 'ativo':
+                                    st.error("CONTA INATIVA. Fale com o suporte.")
+                                elif hoje > data_venc:
+                                    st.error(f"ACESSO EXPIRADO EM {data_venc.strftime('%d/%m/%Y')}")
+                                    st.markdown("<a href='https://t.me/SEU_USUARIO' target='_blank'><button style='width:100%; background-color:#D4AF37; border:none; color:black; padding:10px; font-weight:bold; cursor:pointer;'>RENOVAR ASSINATURA (SUPORTE)</button></a>", unsafe_allow_html=True)
+                                else:
+                                    st.session_state.autenticado = True
+                                    st.rerun()
+                            except:
+                                st.error("Erro no formato da data de vencimento.")
+                        else:
+                            st.error("Senha incorreta.")
+                    else:
+                        st.error("Usuário não encontrado.")
+            
+            st.markdown("<p style='text-align:center; color:#555; font-size:12px; margin-top:10px;'>Alpha Vision Crypto © 2026<br>Suporte Técnico: @SeuTelegramSuporte</p>", unsafe_allow_html=True)
     st.stop()
 
-# 2. TERMINAL VISÃO DE TUBARÃO (80 ATIVOS + CORES ORIGINAIS)
+# 2. TERMINAL VISÃO DE TUBARÃO (LAYOUT MANTIDO INTEGRALMENTE)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&display=swap');
@@ -65,7 +91,6 @@ st.markdown("""
     .w-target { width: 10%; text-align: center; font-size: 14px; font-weight: 800; }
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
 
-    /* ESTILO PARA PINTAR O FUNDO DOS NÚMEROS QUANDO ATINGE ALERTA */
     .t-y { background-color: #FFFF00; color: #000 !important; border-radius: 2px; padding: 1px 3px; }
     .t-o { background-color: #FFA500; color: #000 !important; border-radius: 2px; padding: 1px 3px; }
     .t-r { background-color: #FF0000; color: #FFF !important; border-radius: 2px; padding: 1px 3px; animation: blinker 0.4s linear infinite; }
@@ -104,7 +129,7 @@ assets = {
 }
 
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO • RESET 00:00 UTC</div>', unsafe_allow_html=True)
 
 placeholder = st.empty()
 
@@ -119,53 +144,4 @@ while True:
                     <div class="h-col" style="width:10%;">RESISTÊNCIA</div>
                     <div class="h-col" style="width:10%;">PRÓX AO TOPO</div>
                     <div class="h-col" style="width:10%;">TETO EXAUSTÃO</div>
-                    <div class="h-col" style="width:10%;">SUPORTE</div>
-                    <div class="h-col" style="width:10%;">PRÓX FUNDO</div>
-                    <div class="h-col" style="width:10%;">CHÃO EXAUSTÃO</div>
-                    <div class="h-col" style="width:14%;">SINALIZADOR</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            for tid, name in assets.items():
-                try:
-                    info = tickers.tickers[tid].fast_info
-                    price = info.last_price
-                    open_p = info.open
-                    if price is None: continue
-                    
-                    change = ((price - open_p) / open_p) * 100
-                    v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
-                    c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
-                    
-                    s_txt, s_class = "ESTÁVEL", "bg-estavel"
-                    v4_c, v8_c, v10_c, c4_c, c8_c, c10_c = "", "", "", "", "", ""
-
-                    if change >= 15: s_txt, s_class, v10_c = "ALTA PARABÓLICA", "bg-purple", "t-p"
-                    elif change >= 10: s_txt, s_class, v10_c = "EXAUSTÃO MÁXIMA", "bg-blink-red", "t-r"
-                    elif price >= v8: s_txt, s_class, v8_c = "CUIDADO ALTA VOL", "bg-orange", "t-o"
-                    elif price >= v4: s_txt, s_class, v4_c = "DECISÃO ATENÇÃO", "bg-yellow", "t-y"
-                    elif change <= -15: s_txt, s_class, c10_c = "QUEDA PARABÓLICA", "bg-purple", "t-p"
-                    elif change <= -10: s_txt, s_class, c10_c = "EXAUSTÃO MÁXIMA", "bg-blink-green", "t-g"
-                    elif price <= c8: s_txt, s_class, c8_c = "CUIDADO ALTA VOL", "bg-orange", "t-o"
-                    elif price <= c4: s_txt, s_class, c4_c = "DECISÃO ATENÇÃO", "bg-yellow", "t-y"
-
-                    prec = 6 if price < 0.1 else (4 if price < 10 else 2)
-                    seta = '▲' if price >= open_p else '▼'
-                    seta_c = '#00FF00' if price >= open_p else '#FF0000'
-
-                    st.markdown(f"""
-                        <div class="row-container">
-                            <div class="w-ativo">{name}</div>
-                            <div class="w-price">{price:.{prec}f}<br><span style="font-size:9px; color:{seta_c};">{seta}{change:+.2f}%</span></div>
-                            <div class="w-target" style="color:#FFFF00;"><span class="{v4_c}">{v4:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#FFA500;"><span class="{v8_c}">{v8:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#FF0000;"><span class="{v10_c}">{v10:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#FFFF00;"><span class="{c4_c}">{c4:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#FFA500;"><span class="{c8_c}">{c8:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#00FF00;"><span class="{c10_c}">{c10:.{prec}f}</span></div>
-                            <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
-                        </div>
-                    """, unsafe_allow_html=True)
-                except: continue
-        time.sleep(10)
-    except: time.sleep(10)
+                    <div class="h
