@@ -13,21 +13,16 @@ st.markdown("""
     .stApp { background-color: #000000; }
     .block-container { padding: 0rem 1rem !important; }
     header, footer { visibility: hidden; }
-    
     .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; }
     .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 15px; font-weight: 700; }
-    
     .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
     .h-col { font-size: 10px; color: #FFFFFF; text-transform: uppercase; text-align: center; font-weight: 700; }
-    
     .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; }
     .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
     .w-price { width: 12%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
     .w-target { width: 10%; text-align: center; font-size: 13px; font-weight: 800; }
-    .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
-    
+    .w-sinal { width: 14%; text-align: center; }
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
-    
     .bg-estavel { background-color: #00CED1; color: #000; }
     .bg-blink-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
     .bg-blink-green { background-color: #00FF00; color: #000; animation: blinker 0.4s linear infinite; }
@@ -35,7 +30,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# LOGIN
+# SISTEMA DE LOGIN
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
@@ -44,23 +39,28 @@ if not st.session_state.autenticado:
         conn = st.connection("gsheets", type=GSheetsConnection)
         df_users = conn.read(ttl=10)
         df_users.columns = [str(c).strip().lower() for c in df_users.columns]
-    except: st.stop()
-    
-    st.markdown("<h1 style='text-align:center; color:#D4AF37;'>ALPHA VISION LOGIN</h1>", unsafe_allow_html=True)
-    with st.form("login_form"):
-        u = st.text_input("USUÁRIO").strip()
-        p = st.text_input("SENHA", type="password").strip()
-        if st.form_submit_button("LIBERAR ACESSO"):
-            user_row = df_users[df_users['user'].astype(str) == u]
-            if not user_row.empty and str(p) == str(user_row.iloc[0]['password']).strip():
-                st.session_state.autenticado = True
-                st.rerun()
+        
+        st.markdown("<h1 style='text-align:center; color:#D4AF37;'>ALPHA VISION LOGIN</h1>", unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            with st.form("login_form"):
+                u = st.text_input("USUÁRIO").strip()
+                p = st.text_input("SENHA", type="password").strip()
+                if st.form_submit_button("LIBERAR ACESSO"):
+                    user_row = df_users[df_users['user'].astype(str) == u]
+                    if not user_row.empty and str(p) == str(user_row.iloc[0]['password']).strip():
+                        st.session_state.autenticado = True
+                        st.rerun()
+                    else: st.error("Acesso negado.")
+    except Exception as e:
+        st.error(f"Erro ao conectar ao banco de dados: {e}")
     st.stop()
 
+# INTERFACE PRINCIPAL
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
-# LISTA COMPLETA DE ATIVOS (ORIGINAL)
+# LISTA COMPLETA DOS ATIVOS ORIGINAIS
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
@@ -84,9 +84,10 @@ placeholder = st.empty()
 
 while True:
     try:
-        data_batch = yf.download(list(assets.keys()), period="2d", interval="1m", group_by='ticker', progress=False)
+        # Puxa os dados (com tratamento para não travar nos nans)
+        data = yf.download(list(assets.keys()), period="2d", interval="1m", group_by='ticker', progress=False)
+        
         with placeholder.container():
-            # CABEÇALHO COM TEXTO COMPLETO
             st.markdown("""<div class="header-container">
                 <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
                 <div class="h-col" style="width:12%;">PREÇO ATUAL</div>
@@ -100,11 +101,11 @@ while True:
 
             for tid, name in assets.items():
                 try:
-                    df = data_batch[tid].dropna()
-                    if df.empty: continue
+                    df_t = data[tid].dropna()
+                    if df_t.empty: continue
                     
-                    price = float(df['Close'].iloc[-1])
-                    open_p = float(df['Open'].iloc[0])
+                    price = float(df_t['Close'].iloc[-1])
+                    open_p = float(df_t['Open'].iloc[0])
                     change = ((price - open_p) / open_p) * 100
                     
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
@@ -132,4 +133,5 @@ while True:
                     """, unsafe_allow_html=True)
                 except: continue
         time.sleep(15)
-    except: time.sleep(10)
+    except:
+        time.sleep(10)
