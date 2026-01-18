@@ -17,13 +17,13 @@ st.markdown("""
     .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; }
     .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 25px; font-weight: 700; }
     
-    /* CABEÇALHO MAIOR E MAIS VISÍVEL */
+    /* CABEÇALHO MAIOR */
     .header-container { display: flex; width: 100%; padding: 15px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
     .h-col { font-size: 13px; color: #FFFFFF; text-transform: uppercase; text-align: center; font-weight: 800; letter-spacing: 1px; }
     
     .row-container { display: flex; width: 100%; align-items: center; padding: 10px 0; border-bottom: 1px solid #151515; }
     
-    /* NÚMEROS E LETRAS MAIORES NA TABELA */
+    /* NÚMEROS E TABELA */
     .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 16px; font-weight: 700; }
     .w-price { width: 15%; text-align: center; color: #FF8C00; font-size: 18px; font-weight: 900; }
     .w-target { width: 9%; text-align: center; font-size: 14px; font-weight: 800; border-radius: 4px; padding: 6px 0; }
@@ -43,6 +43,22 @@ st.markdown("""
     .perc-val { font-size: 12px; display: block; margin-top: 2px; font-weight: 600; }
     
     .footer-live { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #000; color: #00FF00; text-align: center; padding: 10px; font-size: 13px; font-weight: bold; border-top: 1px solid #333; z-index: 100; }
+
+    /* BOTÃO SUPORTE LOGIN */
+    .btn-suporte {
+        display: inline-block;
+        width: 100%;
+        padding: 10px;
+        background-color: #262626;
+        color: white !important;
+        text-align: center;
+        text-decoration: none;
+        font-weight: bold;
+        border-radius: 5px;
+        border: 1px solid #444;
+        margin-top: 10px;
+    }
+    .btn-suporte:hover { background-color: #333; border-color: #D4AF37; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -76,6 +92,9 @@ if not st.session_state.autenticado:
                     st.rerun()
                 else: st.error("Acesso negado.")
             else: st.error("Erro de conexão.")
+        
+        # BOTÃO SUPORTE TELA DE LOGIN
+        st.markdown(f'''<a href="https://t.me/+GOzXsBo0BchkMzYx" target="_blank" class="btn-suporte">SUPORTE</a>''', unsafe_allow_html=True)
     st.stop()
 
 # 3. MONITORAMENTO
