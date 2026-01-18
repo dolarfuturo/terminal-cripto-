@@ -5,73 +5,37 @@ import yfinance as yf
 from datetime import datetime
 from streamlit_gsheets import GSheetsConnection
 
-# 1. LOGIN COM FUNDO PRETO
-st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
+# 1. CONFIGURAÇÃO ALPHA VISION
+st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide", initial_sidebar_state="collapsed")
 
+# CSS - ESTILIZAÇÃO COMPLETA
 st.markdown("""
     <style>
-    .stApp { background-color: #000000; }
+    .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
+    header, footer { visibility: hidden; }
     input { background-color: #151515 !important; color: white !important; border: 1px solid #D4AF37 !important; }
     .stMarkdown h1 { color: #D4AF37 !important; }
     label { color: #C0C0C0 !important; }
-    div[data-testid="stForm"] { background-color: #050505; border: 1px solid #151515; }
-    </style>
-    """, unsafe_allow_html=True)
-
-try:
-    conn = st.connection("gsheets", type=GSheetsConnection)
-    df_users = conn.read(ttl=10)
-except:
-    st.error("Erro de conexão com a base de dados.")
-    st.stop()
-
-if 'autenticado' not in st.session_state:
-    st.session_state.autenticado = False
-
-if not st.session_state.autenticado:
-    st.markdown("<h1 style='text-align:center;'>ALPHA VISION LOGIN</h1>", unsafe_allow_html=True)
-    with st.container():
-        left, mid, right = st.columns([1, 2, 1])
-        with mid:
-            with st.form("login_form"):
-                u = st.text_input("USUÁRIO")
-                p = st.text_input("SENHA", type="password")
-                if st.form_submit_button("LIBERAR ACESSO"):
-                    user_row = df_users[df_users['user'] == u]
-                    if not user_row.empty and str(p) == str(user_row.iloc[0]['password']):
-                        st.session_state.autenticado = True
-                        st.rerun()
-                    else: st.error("Acesso negado.")
-    st.stop()
-
-# 2. TERMINAL VISÃO DE TUBARÃO (80 ATIVOS + CORES ORIGINAIS)
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&display=swap');
-    .block-container { padding-top: 0rem !important; padding-bottom: 0rem !important; }
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
-    .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
+    div[data-testid="stForm"] { background-color: #050505; border: 1px solid #151515; border-radius: 5px; }
     
     .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; }
-    .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 15px; font-weight: 700; }
+    .subtitle-vision { color: #C0C0C0; font-size: 14px; text-align: center; margin-top: -5px; letter-spacing: 5px; margin-bottom: 15px; font-weight: 700; }
     
     .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
-    .h-col { font-size: 11px; font-weight: 400; color: #FFFFFF; text-transform: uppercase; text-align: center; }
+    .h-col { font-size: 10px; font-weight: 700; color: #FFFFFF; text-transform: uppercase; text-align: center; }
     
-    .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; gap: 0px; }
+    .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; }
     .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
     .w-price { width: 12%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
-    .w-target { width: 10%; text-align: center; font-size: 14px; font-weight: 800; }
+    .w-target { width: 10%; text-align: center; font-size: 13px; font-weight: 800; }
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
 
-    /* ESTILO PARA PINTAR O FUNDO DOS NÚMEROS QUANDO ATINGE ALERTA */
+    /* ESTILO DE ALERTAS */
     .t-y { background-color: #FFFF00; color: #000 !important; border-radius: 2px; padding: 1px 3px; }
     .t-o { background-color: #FFA500; color: #000 !important; border-radius: 2px; padding: 1px 3px; }
     .t-r { background-color: #FF0000; color: #FFF !important; border-radius: 2px; padding: 1px 3px; animation: blinker 0.4s linear infinite; }
     .t-g { background-color: #00FF00; color: #000 !important; border-radius: 2px; padding: 1px 3px; animation: blinker 0.4s linear infinite; }
     .t-p { background-color: #8A2BE2; color: #FFF !important; border-radius: 2px; padding: 1px 3px; }
-    
     @keyframes blinker { 50% { opacity: 0.3; } }
 
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
@@ -84,6 +48,46 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# CONEXÃO PLANILHA
+try:
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    df_users = conn.read(ttl=10)
+except:
+    st.error("Erro de conexão com a base de dados.")
+    st.stop()
+
+if 'autenticado' not in st.session_state:
+    st.session_state.autenticado = False
+
+# SISTEMA DE LOGIN COM TRAVA DE STATUS
+if not st.session_state.autenticado:
+    st.markdown("<h1 style='text-align:center;'>ALPHA VISION LOGIN</h1>", unsafe_allow_html=True)
+    left, mid, right = st.columns([1, 2, 1])
+    with mid:
+        with st.form("login_form"):
+            u = st.text_input("USUÁRIO").strip()
+            p = st.text_input("SENHA", type="password").strip()
+            if st.form_submit_button("LIBERAR ACESSO"):
+                user_row = df_users[df_users['user'].astype(str) == u]
+                if not user_row.empty:
+                    # VERIFICA SENHA
+                    if str(p) == str(user_row.iloc[0]['password']):
+                        # VERIFICA STATUS (O SEU BOTÃO DE BLOQUEIO)
+                        status = str(user_row.iloc[0]['status']).strip().lower()
+                        if status == 'ativo':
+                            st.session_state.autenticado = True
+                            st.rerun()
+                        else:
+                            st.error("ACESSO BLOQUEADO. Fale com o suporte.")
+                    else:
+                        st.error("Senha incorreta.")
+                else:
+                    st.error("Usuário não encontrado.")
+        
+        st.markdown("<p style='text-align:center; color:#C0C0C0; font-size:12px;'>Problemas de acesso? <br><b>Suporte: @SeuUsuarioTelegram</b></p>", unsafe_allow_html=True)
+    st.stop()
+
+# TERMINAL ALPHA VISION - 80 ATIVOS
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
@@ -104,13 +108,15 @@ assets = {
 }
 
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO • RESET 00:00 UTC</div>', unsafe_allow_html=True)
 
 placeholder = st.empty()
 
 while True:
     try:
-        tickers = yf.Tickers(' '.join(assets.keys()))
+        # Download otimizado em lote
+        data_batch = yf.download(list(assets.keys()), period="1d", interval="1m", group_by='ticker', silent=True)
+        
         with placeholder.container():
             st.markdown("""
                 <div class="header-container">
@@ -128,10 +134,9 @@ while True:
 
             for tid, name in assets.items():
                 try:
-                    info = tickers.tickers[tid].fast_info
-                    price = info.last_price
-                    open_p = info.open
-                    if price is None: continue
+                    df_ticker = data_batch[tid]
+                    price = df_ticker['Close'].iloc[-1]
+                    open_p = df_ticker['Open'].iloc[0] # RESET BINANCE 00:00 UTC
                     
                     change = ((price - open_p) / open_p) * 100
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
@@ -167,5 +172,8 @@ while True:
                         </div>
                     """, unsafe_allow_html=True)
                 except: continue
-        time.sleep(10)
+            
+            st.markdown("<p style='text-align:center; color:#444; font-size:10px; padding:20px;'>Alpha Vision Terminal • Sinal instável? Fale com o suporte.</p>", unsafe_allow_html=True)
+        
+        time.sleep(15)
     except: time.sleep(10)
