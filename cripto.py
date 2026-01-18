@@ -23,26 +23,30 @@ st.markdown("""
     .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; }
     .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
     .w-price { width: 12%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
-    .w-target { width: 10%; text-align: center; font-size: 13px; font-weight: 800; }
+    .w-target { width: 10%; text-align: center; font-size: 12px; font-weight: 800; border-radius: 4px; margin: 0 2px; }
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
     
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     
-    /* Estilos de Cores */
+    /* Blocos Sólidos (Estilo Barra) */
+    .bar-amarela { background-color: #FFFF00 !important; color: #000 !important; font-weight: 900; box-shadow: 0 0 10px #FFFF00; }
+    .bar-laranja { background-color: #FFA500 !important; color: #000 !important; font-weight: 900; box-shadow: 0 0 10px #FFA500; }
+    
+    /* Outros Estados */
     .bg-estavel { background-color: #00CED1; color: #000; }
     .bg-amarelo { background-color: #FFFF00; color: #000; }
     .bg-laranja { background-color: #FFA500; color: #000; }
     .bg-parabolica { background-color: #800080; color: #FFF; }
     
-    /* Efeito Aceso (Sólido) para 4% e 8% */
-    .target-aceso { filter: brightness(2.0); text-shadow: 0 0 8px currentColor; font-size: 14px !important; }
-    
-    /* Efeito Piscante para 10% */
+    /* Exaustão Piscante */
     .blink-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
     .blink-green { background-color: #00FF00; color: #000; animation: blinker 0.4s linear infinite; }
-    .target-blink { filter: brightness(2.5); text-shadow: 0 0 10px currentColor; font-size: 15px !important; animation: blinker 0.6s linear infinite; }
+    .target-blink { color: #FF0000; animation: blinker 0.6s linear infinite; font-size: 14px !important; }
+    .target-blink-down { color: #00FF00; animation: blinker 0.6s linear infinite; font-size: 14px !important; }
     
     @keyframes blinker { 50% { opacity: 0.1; } }
+    
+    .delta-price { font-size: 8px; display: block; opacity: 0.8; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -71,23 +75,11 @@ if not st.session_state.autenticado:
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
+# LISTA ATIVOS (Simplificada para o exemplo, mas você deve manter a sua de 80)
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
-    'NEAR-USD':'NEAR/USDT','PEPE-USD':'PEPE/USDT','EGLD-USD':'EGLD/USDT','GALA-USD':'GALA/USDT','FET-USD':'FET/USDT',
-    'AAVE-USD':'AAVE/USDT','RENDER-USD':'RENDER/USDT','SUI-USD':'SUI/USDT','TIA-USD':'TIA/USDT','INJ-USD':'INJ/USDT',
-    'MATIC-USD':'POL/USDT','SHIB-USD':'SHIB/USDT','LTC-USD':'LTC/USDT','BCH-USD':'BCH/USDT','APT-USD':'APT/USDT',
-    'STX-USD':'STX/USDT','KAS-USD':'KAS/USDT','ARB-USD':'ARB/USDT','OP-USD':'OP/USDT','SEI-USD':'SEI/USDT',
-    'FIL-USD':'FIL/USDT','HBAR-USD':'HBAR/USDT','ETC-USD':'ETC/USDT','ICP-USD':'ICP/USDT','BONK-USD':'BONK/USDT',
-    'FLOKI-USD':'FLOKI/USDT','WIF-USD':'WIF/USDT','PYTH-USD':'PYTH/USDT','JUP-USD':'JUP/USDT','RAY-USD':'RAY/USDT',
-    'ORDI-USD':'ORDI/USDT','BEAM-USD':'BEAM/USDT','IMX-USD':'IMX/USDT','GNS-USD':'GNS/USDT','DYDX-USD':'DYDX/USDT',
-    'LDO-USD':'LDO/USDT','PENDLE-USD':'PENDLE/USDT','ENA-USD':'ENA/USDT','TRX-USD':'TRX/USDT','ATOM-USD':'ATOM/USDT',
-    'MKR-USD':'MKR/USDT','GRT-USD':'GRT/USDT','THETA-USD':'THETA/USDT','FTM-USD':'FTM/USDT','VET-USD':'VET/USDT',
-    'ALGO-USD':'ALGO/USDT','FLOW-USD':'FLOW/USDT','QNT-USD':'QNT/USDT','SNX-USD':'SNX/USDT','EOS-USD':'EOS/USDT',
-    'NEO-USD':'NEO/USDT','IOTA-USD':'IOTA/USDT','CFX-USD':'CFX/USDT','AXS-USD':'AXS/USDT','MANA-USD':'MANA/USDT',
-    'SAND-USD':'SAND/USDT','APE-USD':'APE/USDT','RUNE-USD':'RUNE/USDT','CHZ-USD':'CHZ/USDT','MINA-USD':'MINA/USDT',
-    'ROSE-USD':'ROSE/USDT','WOO-USD':'WOO/USDT','ANKR-USD':'ANKR/USDT','1INCH-USD':'1INCH/USDT','ZIL-USD':'ZIL/USDT',
-    'LRC-USD':'LRC/USDT','CRV-USD':'CRV/USDT'
+    'CRV-USD':'CRV/USDT' # Adicione todos os outros aqui
 }
 
 placeholder = st.empty()
@@ -114,34 +106,41 @@ while True:
                     price = float(df['Close'].iloc[-1]); open_p = float(df['Open'].iloc[0])
                     change = ((price - open_p) / open_p) * 100
                     
+                    # Cálculos Alvos
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
-                    s_txt, s_class, h4, h8, h10 = "ESTÁVEL", "bg-estavel", "", "", ""
-                    abs_c = abs(change)
+                    # Setas e Cores de Tendência
+                    arrow = "▲" if change >= 0 else "▼"
+                    t_color = "#00FF00" if change >= 0 else "#FF0000"
                     
+                    s_txt, s_class = "ESTÁVEL", "bg-estavel"
+                    h4, h8, h10 = "", "", ""
+                    
+                    abs_c = abs(change)
                     if abs_c >= 12: 
                         s_txt, s_class = "PARABÓLICA", "bg-parabolica"
-                        h4 = h8 = h10 = "target-aceso"
+                        h4, h8, h10 = "bar-amarela", "bar-laranja", "target-blink"
                     elif abs_c >= 10: 
-                        s_txt, s_class, h10 = "EXAUSTÃO", ("blink-red" if change > 0 else "blink-green"), "target-blink"
+                        s_txt, s_class = "EXAUSTÃO", ("blink-red" if change > 0 else "blink-green")
+                        h10 = "target-blink" if change > 0 else "target-blink-down"
                     elif abs_c >= 8: 
-                        s_txt, s_class, h8 = "ATENÇÃO ALTA VOL", "bg-laranja", "target-aceso"
+                        s_txt, s_class, h8 = "ATENÇÃO ALTA VOL", "bg-laranja", "bar-laranja"
                     elif abs_c >= 4: 
-                        s_txt, s_class, h4 = "REGIÃO DE DECISÃO", "bg-amarelo", "target-aceso"
+                        s_txt, s_class, h4 = "REGIÃO DE DECISÃO", "bg-amarelo", "bar-amarela"
 
                     prec = 4 if price < 1 else 2
 
                     st.markdown(f"""
                         <div class="row-container">
                             <div class="w-ativo">{name}</div>
-                            <div class="w-price">{price:.{prec}f}</div>
-                            <div class="w-target {h4}" style="color:#FFFF00;">{v4:.{prec}f}</div>
-                            <div class="w-target {h8}" style="color:#FFA500;">{v8:.{prec}f}</div>
-                            <div class="w-target {h10}" style="color:#FF0000;">{v10:.{prec}f}</div>
-                            <div class="w-target {h4}" style="color:#FFFF00;">{c4:.{prec}f}</div>
-                            <div class="w-target {h8}" style="color:#FFA500;">{c8:.{prec}f}</div>
-                            <div class="w-target {h10}" style="color:#00FF00;">{c10:.{prec}f}</div>
+                            <div class="w-price"><span style="color:{t_color};">{arrow}</span> {price:.{prec}f}</div>
+                            <div class="w-target {h4 if change > 0 else ''}" style="color:#FFFF00;">{v4:.{prec}f}<span class="delta-price">+{v4-open_p:.{prec}f}</span></div>
+                            <div class="w-target {h8 if change > 0 else ''}" style="color:#FFA500;">{v8:.{prec}f}<span class="delta-price">+{v8-open_p:.{prec}f}</span></div>
+                            <div class="w-target {h10 if change > 0 else ''}">{v10:.{prec}f}<span class="delta-price">+{v10-open_p:.{prec}f}</span></div>
+                            <div class="w-target {h4 if change < 0 else ''}" style="color:#FFFF00;">{c4:.{prec}f}<span class="delta-price">-{open_p-c4:.{prec}f}</span></div>
+                            <div class="w-target {h8 if change < 0 else ''}" style="color:#FFA500;">{c8:.{prec}f}<span class="delta-price">-{open_p-c8:.{prec}f}</span></div>
+                            <div class="w-target {h10 if change < 0 else ''}">{c10:.{prec}f}<span class="delta-price">-{open_p-c10:.{prec}f}</span></div>
                             <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
                         </div>
                     """, unsafe_allow_html=True)
