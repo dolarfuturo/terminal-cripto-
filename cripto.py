@@ -4,11 +4,10 @@ import time
 import yfinance as yf
 import random
 import string
-from datetime import datetime
 from streamlit_gsheets import GSheetsConnection
 
-# 1. CONFIGURAÇÃO E DESIGN ALPHA
-st.set_page_config(page_title="ALPHA VISION", layout="wide", initial_sidebar_state="collapsed")
+# 1. CONFIGURAÇÃO DE INTERFACE
+st.set_page_config(page_title="ALPHA VISION PRO", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
     <style>
@@ -29,21 +28,19 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- AJUSTE: GERADOR DE SENHA SIMPLES NA LATERAL ---
+# --- SIDEBAR: GERADOR DE ACESSO NUMÉRICO ---
 with st.sidebar:
     st.markdown("<h3 style='color:#D4AF37;'>ALPHA ADMIN</h3>", unsafe_allow_html=True)
-    st.write("Gerar acesso numérico:")
-    if st.button("GERAR NOVA SENHA"):
-        # Gera apenas 6 números (ex: 482931) - Simples para o cliente
-        senha_simples = ''.join(random.choice(string.digits) for _ in range(6))
-        st.code(senha_simples)
-        st.caption("Copie para a sua planilha Google.")
+    if st.button("GERAR SENHA CLIENTE"):
+        # Ajuste do gerador: apenas números
+        nova_senha = ''.join(random.choice(string.digits) for _ in range(6))
+        st.code(nova_senha)
     st.markdown("---")
-    if st.button("LOGOUT / SAIR"):
+    if st.button("SAIR"):
         st.session_state.autenticado = False
         st.rerun()
 
-# --- 2. LÓGICA DE LOGIN ---
+# --- 2. GESTÃO DE ACESSO ---
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
@@ -52,9 +49,10 @@ if not st.session_state.autenticado:
         conn = st.connection("gsheets", type=GSheetsConnection)
         df_users = conn.read(ttl=5)
     except: st.stop()
+    
     st.markdown("<h1 style='text-align:center; color:#D4AF37;'>ALPHA VISION LOGIN</h1>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns([1, 2, 1])
-    with c2:
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
         with st.form("login_form"):
             u = st.text_input("USUÁRIO").strip()
             p = st.text_input("SENHA", type="password").strip()
@@ -66,58 +64,51 @@ if not st.session_state.autenticado:
                 else: st.error("ACESSO NEGADO")
     st.stop()
 
-# --- 3. TERMINAL VISÃO DE TUBARÃO ---
-# Ativos organizados em lista para evitar erro de string (SyntaxError)
-ativos_lista = [
-    'BTC-USD','ETH-USD','SOL-USD','BNB-USD','XRP-USD','DOGE-USD','ADA-USD','AVAX-USD','DOT-USD','LINK-USD',
-    'NEAR-USD','PEPE-USD','EGLD-USD','GALA-USD','FET-USD','SUI-USD','TIA-USD','AAVE-USD','RENDER-USD','INJ-USD'
+# --- 3. TERMINAL (REESTRUTURADO PARA EVITAR TELA PRETA) ---
+ativos = [
+    'BTC-USD','ETH-USD','SOL-USD','BNB-USD','XRP-USD','ADA-USD','AVAX-USD','DOT-USD',
+    'LINK-USD','NEAR-USD','PEPE-USD','EGLD-USD','GALA-USD','FET-USD','SUI-USD','TIA-USD'
 ]
 
-st.markdown('<h2 style="color:#D4AF37; text-align:center; margin:0;">ALPHA VISION CRYPTO</h2>', unsafe_allow_html=True)
+st.markdown('<div class="title-gold" style="color:#D4AF37; text-align:center; font-size:30px; font-weight:900;">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<p style="text-align:center; color:#C0C0C0; letter-spacing:4px; font-size:12px;">VISÃO DE TUBARÃO</p>', unsafe_allow_html=True)
 
-painel = st.empty()
+container = st.empty()
 
 while True:
     try:
-        # Puxa os dados com reset automático (00:00 UTC)
-        dados = yf.download(ativos_lista, period="1d", interval="1m", group_by='ticker', silent=True)
+        # Puxa dados com base na abertura diária (00:00 UTC)
+        df_data = yf.download(ativos, period="1d", interval="1m", group_by='ticker', silent=True)
         
-        with painel.container():
-            # Cabeçalho
+        with container.container():
             st.markdown('<div class="header-alpha"><div style="width:14%; color:#FFF; padding-left:10px; font-size:10px;">ATIVO</div><div class="h-col">PREÇO</div><div class="h-col">ALVO 4%</div><div class="h-col">ALVO 8%</div><div class="h-col">ALVO 10%</div><div class="h-col">SUP 4%</div><div class="h-col">SUP 8%</div><div class="h-col">SUP 10%</div><div class="h-col" style="width:14%;">SINAL</div></div>', unsafe_allow_html=True)
 
-            for ticker_id in ativos_lista:
+            for t in ativos:
                 try:
-                    df_ticker = dados[ticker_id]
-                    preco_atual = df_ticker['Close'].iloc[-1]
-                    preco_abertura = df_ticker['Open'].iloc[0]
+                    p_atual = df_data[t]['Close'].iloc[-1]
+                    p_open = df_data[t]['Open'].iloc[0]
                     
-                    # Cálculos de Alvos e Suportes
-                    v4, v8, v10 = preco_abertura*1.04, preco_abertura*1.08, preco_abertura*1.10
-                    c4, c8, c10 = preco_abertura*0.96, preco_abertura*0.92, preco_abertura*0.90
+                    v4, v8, v10 = p_open*1.04, p_open*1.08, p_open*1.10
+                    c4, c8, c10 = p_open*0.96, p_open*0.92, p_open*0.90
                     
-                    # Lógica de Alerta Visual (Igual ao seu padrão)
-                    txt_sinal, css_sinal, css_preco = "ESTÁVEL", "st-ok", ""
-                    if preco_atual >= v4:
-                        txt_sinal, css_sinal, css_preco = "DECISÃO ATENÇÃO", "st-warn", "bg-alert"
+                    s_txt, s_style, p_style = "ESTÁVEL", "st-ok", ""
+                    if p_atual >= v4: s_txt, s_style, p_style = "DECISÃO ATENÇÃO", "st-warn", "bg-alert"
 
-                    decimais = 4 if preco_atual < 10 else 2
-                    nome_exibicao = ticker_id.replace("-USD", "/USDT")
+                    dec = 4 if p_atual < 10 else 2
+                    name = t.replace("-USD", "/USDT")
                     
-                    # Construção da linha (Fragmentada para evitar erros de sintaxe)
-                    linha = f'<div class="row-alpha">'
-                    linha += f'<div class="c-ativo">{nome_exibicao}</div>'
-                    linha += f'<div class="c-price">{preco_atual:.{decimais}f}</div>'
-                    linha += f'<div class="c-val" style="color:#FFFF00;"><span class="{css_preco}">{v4:.{decimais}f}</span></div>'
-                    linha += f'<div class="c-val" style="color:#FFA500;">{v8:.{decimais}f}</div>'
-                    linha += f'<div class="c-val" style="color:#FF0000;">{v10:.{decimais}f}</div>'
-                    linha += f'<div class="c-val" style="color:#FFFF00;">{c4:.{decimais}f}</div>'
-                    linha += f'<div class="c-val" style="color:#FFA500;">{c8:.{decimais}f}</div>'
-                    linha += f'<div class="c-val" style="color:#00FF00;">{c10:.{decimais}f}</div>'
-                    linha += f'<div style="width:14%;"><div class="status-box {css_sinal}">{txt_sinal}</div></div></div>'
+                    row = f'<div class="row-alpha">'
+                    row += f'<div class="c-ativo">{name}</div>'
+                    row += f'<div class="c-price">{p_atual:.{dec}f}</div>'
+                    row += f'<div class="c-val" style="color:#FFFF00;"><span class="{p_style}">{v4:.{dec}f}</span></div>'
+                    row += f'<div class="c-val" style="color:#FFA500;">{v8:.{dec}f}</div>'
+                    row += f'<div class="c-val" style="color:#FF0000;">{v10:.{dec}f}</div>'
+                    row += f'<div class="c-val" style="color:#FFFF00;">{c4:.{dec}f}</div>'
+                    row += f'<div class="c-val" style="color:#FFA500;">{c8:.{dec}f}</div>'
+                    row += f'<div class="c-val" style="color:#00FF00;">{c10:.{dec}f}</div>'
+                    row += f'<div style="width:14%;"><div class="status-box {s_style}">{s_txt}</div></div></div>'
                     
-                    st.markdown(linha, unsafe_allow_html=True)
+                    st.markdown(row, unsafe_allow_html=True)
                 except: continue
         time.sleep(15)
     except: time.sleep(5)
