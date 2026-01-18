@@ -8,7 +8,7 @@ from streamlit_gsheets import GSheetsConnection
 # 1. CONFIGURAÇÃO ALPHA VISION
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide", initial_sidebar_state="collapsed")
 
-# CSS - ESTILIZAÇÃO COMPLETA
+# ESTILO VISUAL (FUNDO PRETO E DOURADO)
 st.markdown("""
     <style>
     .stApp { background-color: #000000; font-family: 'JetBrains Mono', monospace; }
@@ -48,18 +48,20 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# CONEXÃO PLANILHA
+# 2. CONEXÃO E LEITURA (BLINDADA)
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
     df_users = conn.read(ttl=10)
+    # Garante que as colunas lidas sejam strings e limpas de espaços
+    df_users.columns = df_users.columns.str.strip().str.lower()
 except:
-    st.error("Erro de conexão com a base de dados.")
+    st.error("Erro na base de dados. Tente atualizar a página.")
     st.stop()
 
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
-# SISTEMA DE LOGIN COM TRAVA DE STATUS
+# 3. LOGIN COM TRAVA DE STATUS
 if not st.session_state.autenticado:
     st.markdown("<h1 style='text-align:center;'>ALPHA VISION LOGIN</h1>", unsafe_allow_html=True)
     left, mid, right = st.columns([1, 2, 1])
@@ -68,26 +70,27 @@ if not st.session_state.autenticado:
             u = st.text_input("USUÁRIO").strip()
             p = st.text_input("SENHA", type="password").strip()
             if st.form_submit_button("LIBERAR ACESSO"):
-                user_row = df_users[df_users['user'].astype(str) == u]
-                if not user_row.empty:
-                    # VERIFICA SENHA
-                    if str(p) == str(user_row.iloc[0]['password']):
-                        # VERIFICA STATUS (O SEU BOTÃO DE BLOQUEIO)
-                        status = str(user_row.iloc[0]['status']).strip().lower()
-                        if status == 'ativo':
+                user_match = df_users[df_users['user'].astype(str) == u]
+                if not user_match.empty:
+                    if str(p) == str(user_match.iloc[0]['password']):
+                        # Verifica se a coluna status existe
+                        if 'status' in user_match.columns:
+                            s_val = str(user_match.iloc[0]['status']).strip().lower()
+                            if s_val == 'ativo':
+                                st.session_state.autenticado = True
+                                st.rerun()
+                            else:
+                                st.error("Acesso bloqueado. Fale com o suporte.")
+                        else:
+                            # Se você esqueceu de criar a coluna, ele deixa passar para não dar tela preta
                             st.session_state.autenticado = True
                             st.rerun()
-                        else:
-                            st.error("ACESSO BLOQUEADO. Fale com o suporte.")
-                    else:
-                        st.error("Senha incorreta.")
-                else:
-                    st.error("Usuário não encontrado.")
-        
-        st.markdown("<p style='text-align:center; color:#C0C0C0; font-size:12px;'>Problemas de acesso? <br><b>Suporte: @SeuUsuarioTelegram</b></p>", unsafe_allow_html=True)
+                    else: st.error("Senha incorreta.")
+                else: st.error("Usuário não encontrado.")
+        st.caption("Dúvida ou erro de sinal? Fale com o suporte.")
     st.stop()
 
-# TERMINAL ALPHA VISION - 80 ATIVOS
+# 4. TERMINAL (80 ATIVOS + RESET BINANCE 00:00 UTC)
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
@@ -108,15 +111,13 @@ assets = {
 }
 
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO • RESET 00:00 UTC</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO • AUTOMATIC RESET 00:00 UTC</div>', unsafe_allow_html=True)
 
 placeholder = st.empty()
 
 while True:
     try:
-        # Download otimizado em lote
         data_batch = yf.download(list(assets.keys()), period="1d", interval="1m", group_by='ticker', silent=True)
-        
         with placeholder.container():
             st.markdown("""
                 <div class="header-container">
@@ -136,7 +137,7 @@ while True:
                 try:
                     df_ticker = data_batch[tid]
                     price = df_ticker['Close'].iloc[-1]
-                    open_p = df_ticker['Open'].iloc[0] # RESET BINANCE 00:00 UTC
+                    open_p = df_ticker['Open'].iloc[0] # OPENING BINANCE TIME
                     
                     change = ((price - open_p) / open_p) * 100
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
@@ -161,19 +162,4 @@ while True:
                     st.markdown(f"""
                         <div class="row-container">
                             <div class="w-ativo">{name}</div>
-                            <div class="w-price">{price:.{prec}f}<br><span style="font-size:9px; color:{seta_c};">{seta}{change:+.2f}%</span></div>
-                            <div class="w-target" style="color:#FFFF00;"><span class="{v4_c}">{v4:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#FFA500;"><span class="{v8_c}">{v8:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#FF0000;"><span class="{v10_c}">{v10:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#FFFF00;"><span class="{c4_c}">{c4:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#FFA500;"><span class="{c8_c}">{c8:.{prec}f}</span></div>
-                            <div class="w-target" style="color:#00FF00;"><span class="{c10_c}">{c10:.{prec}f}</span></div>
-                            <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
-                        </div>
-                    """, unsafe_allow_html=True)
-                except: continue
-            
-            st.markdown("<p style='text-align:center; color:#444; font-size:10px; padding:20px;'>Alpha Vision Terminal • Sinal instável? Fale com o suporte.</p>", unsafe_allow_html=True)
-        
-        time.sleep(15)
-    except: time.sleep(10)
+                            <div class="w-price">{price:.{prec}f}<br><span style="font-size:9px; color:{seta_c};">{set
