@@ -23,17 +23,32 @@ st.markdown("""
     .w-target { width: 10%; text-align: center; font-size: 13px; font-weight: 800; border-radius: 4px; padding: 6px 0; }
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
+    
+    /* CORES DINÂMICAS */
     .bg-estavel { background-color: #00CED1; color: #000; }
+    .bg-decisao { background-color: #FFFF00 !important; color: #000 !important; font-weight: 900; }
+    .bg-atencao { background-color: #FFA500 !important; color: #000 !important; font-weight: 900; }
+    .bg-parabolica { background-color: #800080; color: #FFF; }
     .target-blink-red { background-color: #FF0000 !important; color: #FFF !important; animation: blinker 0.6s linear infinite; }
     .target-blink-green { background-color: #00FF00 !important; color: #000 !important; animation: blinker 0.6s linear infinite; }
     @keyframes blinker { 50% { opacity: 0.3; } }
-    .perc-main { font-size: 11px; font-weight: 700; display: block; margin-top: 1px; }
+    .perc-val { font-size: 11px; display: block; margin-top: 2px; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LOGIN COM AUTO-RECONEXÃO
+# 2. LOGIN E CONEXÃO ROBUSTA
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
+
+def safe_connect():
+    for i in range(3):
+        try:
+            st.cache_data.clear()
+            conn = st.connection("gsheets", type=GSheetsConnection)
+            return conn.read(ttl=0)
+        except:
+            time.sleep(1)
+    return None
 
 if not st.session_state.autenticado:
     st.markdown('<div class="title-gold">ALPHA VISION</div>', unsafe_allow_html=True)
@@ -41,28 +56,25 @@ if not st.session_state.autenticado:
     with c2:
         u = st.text_input("USUÁRIO")
         p = st.text_input("SENHA", type="password")
-        
         if st.button("LIBERAR ACESSO", use_container_width=True):
-            try:
-                # Tenta conectar limpando o cache para evitar o erro das fotos
-                st.cache_data.clear()
-                conn = st.connection("gsheets", type=GSheetsConnection)
-                df_users = conn.read(ttl=0)
+            df_users = safe_connect()
+            if df_users is not None:
                 df_users.columns = [str(c).strip().lower() for c in df_users.columns]
                 user_row = df_users[df_users['user'].astype(str) == u]
                 if not user_row.empty and str(p) == str(user_row.iloc[0]['password']).strip():
                     st.session_state.autenticado = True
                     st.rerun()
-                else: st.error("Usuário ou Senha incorretos.")
-            except:
-                st.warning("Reconectando ao servidor... clique novamente em segundos.")
-                st.cache_data.clear()
+                else: st.error("Acesso negado.")
+            else: st.error("Falha na conexão. Tente novamente.")
         
-        # LINK SUPORTE (Agora como link_button para garantir abertura)
-        st.link_button("FALAR COM SUPORTE TÉCNICO", "https://wa.me/5500000000000", use_container_width=True)
+        # SUPORTE COM REDIRECIONAMENTO DIRETO
+        st.markdown(f'''<a href="https://wa.me/SEU_NUMERO" target="_blank" style="text-decoration:none;">
+            <div style="width:100%; background:#262626; color:white; padding:10px; border-radius:5px; text-align:center; font-weight:bold; border:1px solid #444; margin-top:10px;">
+                FALAR COM SUPORTE TÉCNICO
+            </div></a>''', unsafe_allow_html=True)
     st.stop()
 
-# 3. MONITORAMENTO
+# 3. MONITORAMENTO (80 ATIVOS)
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
@@ -82,13 +94,14 @@ assets = {
     'NEO-USD':'NEO/USDT','IOTA-USD':'IOTA/USDT','CFX-USD':'CFX/USDT','AXS-USD':'AXS/USDT','MANA-USD':'MANA/USDT',
     'SAND-USD':'SAND/USDT','APE-USD':'APE/USDT','RUNE-USD':'RUNE/USDT','CHZ-USD':'CHZ/USDT','MINA-USD':'MINA/USDT',
     'ROSE-USD':'ROSE/USDT','WOO-USD':'WOO/USDT','ANKR-USD':'ANKR/USDT','1INCH-USD':'1INCH/USDT','ZIL-USD':'ZIL/USDT',
-    'LRC-USD':'LRC/USDT','CRV-USD':'CRV/USDT'
+    'LRC-USD':'LRC/USDT','CRV-USD':'CRV/USDT','JASMY-USD':'JASMY/USDT','W-USD':'W/USDT','STRK-USD':'STRK/USDT'
 }
 
 placeholder = st.empty()
 
 while True:
     try:
+        # Pega abertura da Binance (00:00 UTC) resetada
         data_batch = yf.download(list(assets.keys()), period="2d", interval="1m", group_by='ticker', progress=False)
         with placeholder.container():
             st.markdown("""<div class="header-container">
@@ -107,32 +120,33 @@ while True:
                     df = data_batch[tid].dropna()
                     if df.empty: continue
                     price = float(df['Close'].iloc[-1])
-                    open_p = float(df['Open'].iloc[0])
+                    open_p = float(df['Open'].iloc[0]) # Reset Binance 00:00 UTC
                     change = ((price - open_p) / open_p) * 100
                     
+                    # Alvos
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
-                    arrow = "▲" if change >= 0 else "▼"
-                    t_color = "#00FF00" if change >= 0 else "#FF0000"
-                    
+                    # Sinalização
                     s_txt, s_class, rh4, rh8, rh10 = "ESTÁVEL", "bg-estavel", "", "", ""
                     abs_c = abs(change)
                     
-                    if abs_c >= 10: 
+                    if abs_c >= 12: s_txt, s_class = "PARABÓLICA", "bg-parabolica"
+                    elif abs_c >= 10: 
                         s_txt, s_class = "EXAUSTÃO", ("target-blink-red" if change > 0 else "target-blink-green")
                         rh10 = s_class
-                    elif abs_c >= 8: s_txt, s_class, rh8 = "ATENÇÃO ALTA VOL", "bar-laranja", "bar-laranja"
-                    elif abs_c >= 4: s_txt, s_class, rh4 = "REGIÃO DE DECISÃO", "bar-amarela", "bar-amarela"
+                    elif abs_c >= 8: s_txt, s_class, rh8 = "ATENÇÃO", "bg-atencao", "bg-atencao"
+                    elif abs_c >= 4: s_txt, s_class, rh4 = "DECISÃO", "bg-decisao", "bg-decisao"
 
+                    t_color = "#00FF00" if change >= 0 else "#FF0000"
                     prec = 4 if price < 1 else 2
 
                     st.markdown(f"""
                         <div class="row-container">
                             <div class="w-ativo">{name}</div>
                             <div class="w-price">
-                                {price:.{prec}f} <span style="color:{t_color}; font-size:11px;">{arrow}</span>
-                                <span class="perc-main" style="color:{t_color};">{change:+.2f}%</span>
+                                {price:.{prec}f}
+                                <span class="perc-val" style="color:{t_color};">{change:+.2f}%</span>
                             </div>
                             <div class="w-target {rh4 if change > 0 else ''}" style="color:#FFFF00;">{v4:.{prec}f}</div>
                             <div class="w-target {rh8 if change > 0 else ''}" style="color:#FFA500;">{v8:.{prec}f}</div>
