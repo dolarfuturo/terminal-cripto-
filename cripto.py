@@ -5,7 +5,7 @@ import yfinance as yf
 from datetime import datetime
 from streamlit_gsheets import GSheetsConnection
 
-# 1. LOGIN (FUNDO PRETO)
+# 1. CONFIGURAÇÃO E LOGIN (FUNDO PRETO)
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 
 st.markdown("""
@@ -21,7 +21,7 @@ try:
     conn = st.connection("gsheets", type=GSheetsConnection)
     df_users = conn.read(ttl=10)
 except:
-    st.error("Erro de conexão.")
+    st.error("Erro de conexão com a planilha.")
     st.stop()
 
 if 'autenticado' not in st.session_state:
@@ -40,10 +40,10 @@ if not st.session_state.autenticado:
                     if not user_row.empty and str(p) == str(user_row.iloc[0]['password']):
                         st.session_state.autenticado = True
                         st.rerun()
-                    else: st.error("Erro de login.")
+                    else: st.error("Acesso Negado.")
     st.stop()
 
-# 2. SEU CÓDIGO ORIGINAL (ESTRUTURA E CORES PRESERVADAS)
+# 2. SEU LAYOUT ORIGINAL (VISÃO DE TUBARÃO)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&display=swap');
@@ -64,13 +64,34 @@ st.markdown("""
     .w-target { width: 10%; text-align: center; font-size: 14px; font-weight: 800; }
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
 
-    /* CLASSES DE DESTAQUE NOS VALORES */
-    .t-y { background-color: #FFFF00; color: #000 !important; border-radius: 2px; padding: 2px 4px; }
-    .t-o { background-color: #FFA500; color: #000 !important; border-radius: 2px; padding: 2px 4px; }
-    .t-blink-r { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; border-radius: 2px; padding: 2px 4px; }
-    .t-blink-g { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; border-radius: 2px; padding: 2px 4px; }
-    .t-purple { background-color: #8A2BE2; color: #FFF !important; font-weight: 900; border-radius: 2px; padding: 2px 4px; }
+    /* CLASSES PARA PINTAR O NÚMERO */
+    .t-y { background-color: #FFFF00; color: #000 !important; border-radius: 2px; padding: 2px 4px; font-weight: 900; }
+    .t-o { background-color: #FFA500; color: #000 !important; border-radius: 2px; padding: 2px 4px; font-weight: 900; }
+    .t-r { background-color: #FF0000; color: #FFF !important; border-radius: 2px; padding: 2px 4px; font-weight: 900; animation: blinker 0.4s linear infinite; }
+    .t-g { background-color: #00FF00; color: #000 !important; border-radius: 2px; padding: 2px 4px; font-weight: 900; animation: blinker 0.4s linear infinite; }
+    .t-p { background-color: #8A2BE2; color: #FFF !important; border-radius: 2px; padding: 2px 4px; font-weight: 900; }
     
     @keyframes blinker { 50% { opacity: 0.2; } }
 
-    .status-box { padding: 8px 2
+    .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
+    .bg-estavel { background-color: #00CED1; color: #000; } 
+    .bg-yellow { background-color: #FFFF00; color: #000; }
+    .bg-orange { background-color: #FFA500; color: #000; }
+    .bg-blink-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
+    .bg-blink-green { background-color: #00FF00; color: #000; animation: blinker 0.4s linear infinite; }
+    .bg-purple { background-color: #8A2BE2; color: #FFF; }
+    </style>
+    """, unsafe_allow_html=True)
+
+assets = {
+    'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
+    'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
+    'NEAR-USD':'NEAR/USDT','PEPE-USD':'PEPE/USDT','EGLD-USD':'EGLD/USDT','GALA-USD':'GALA/USDT','FET-USD':'FET/USDT',
+    'AAVE-USD':'AAVE/USDT','RENDER-USD':'RENDER/USDT','SUI-USD':'SUI/USDT','TIA-USD':'TIA/USDT','INJ-USD':'INJ/USDT',
+    'MATIC-USD':'POL/USDT','SHIB-USD':'SHIB/USDT','LTC-USD':'LTC/USDT','BCH-USD':'BCH/USDT','APT-USD':'APT/USDT',
+    'STX-USD':'STX/USDT','KAS-USD':'KAS/USDT','ARB-USD':'ARB/USDT','OP-USD':'OP/USDT','SEI-USD':'SEI/USDT',
+    'FIL-USD':'FIL/USDT','HBAR-USD':'HBAR/USDT','ETC-USD':'ETC/USDT','ICP-USD':'ICP/USDT','BONK-USD':'BONK/USDT',
+    'FLOKI-USD':'FLOKI/USDT','WIF-USD':'WIF/USDT','PYTH-USD':'PYTH/USDT','JUP-USD':'JUP/USDT','RAY-USD':'RAY/USDT',
+    'ORDI-USD':'ORDI/USDT','BEAM-USD':'BEAM/USDT','IMX-USD':'IMX/USDT','GNS-USD':'GNS/USDT','DYDX-USD':'DYDX/USDT',
+    'LDO-USD':'LDO/USDT','PENDLE-USD':'PENDLE/USDT','ENA-USD':'ENA/USDT','TRX-USD':'TRX/USDT','ATOM-USD':'ATOM/USDT',
+    'MKR-USD':'MKR/USDT','GRT-USD':'GRT/USDT','THETA-USD':'
