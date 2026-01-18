@@ -32,10 +32,12 @@ st.markdown("""
     .target-blink-green { background-color: #00FF00 !important; color: #000 !important; animation: blinker 0.6s linear infinite; }
     @keyframes blinker { 50% { opacity: 0.3; } }
     .perc-val { font-size: 11px; display: block; margin-top: 2px; }
+    
+    .footer-live { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #000; color: #00FF00; text-align: center; padding: 10px; font-size: 12px; font-weight: bold; border-top: 1px solid #333; z-index: 100; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LOGIN E CONEXÃO (BLINDADO)
+# 2. LOGIN E CONEXÃO
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
@@ -68,7 +70,7 @@ if not st.session_state.autenticado:
         st.markdown(f'''<a href="https://wa.me/suporte" target="_blank" style="text-decoration:none;"><div style="width:100%; background:#262626; color:white; padding:10px; border-radius:5px; text-align:center; font-weight:bold; border:1px solid #444; margin-top:10px;">FALAR COM SUPORTE TÉCNICO</div></a>''', unsafe_allow_html=True)
     st.stop()
 
-# 3. MONITORAMENTO (RESTAURANDO O NOME NO TOPO)
+# 3. MONITORAMENTO
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
@@ -127,7 +129,7 @@ while True:
                         s_txt, s_class = "EXAUSTÃO", ("target-blink-red" if change > 0 else "target-blink-green")
                         rh10 = s_class
                     elif 8.0 <= abs_c <= 9.0: s_txt, s_class, rh8 = "PRÓX TOPO", "bg-atencao", "bg-atencao"
-                    elif 4.0 <= abs_c <= 5.0: s_txt, s_class, rh4 = "ZONA DE DECISÃO", "bg-decisao", "bg-decisao"
+                    elif 4.0 <= abs_c <= 5.0: s_txt, s_class, rh4 = "REGIÃO DE DECISÃO", "bg-decisao", "bg-decisao"
 
                     arrow = "▲" if change >= 0 else "▼"
                     t_color = "#00FF00" if change >= 0 else "#FF0000"
@@ -148,5 +150,9 @@ while True:
                         </div>
                     """, unsafe_allow_html=True)
                 except: continue
+            
+            # RODAPÉ LIVE STREAM
+            st.markdown('<div class="footer-live">🟢 LIVE STREAM / ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
+            
         time.sleep(10)
     except: time.sleep(5)
