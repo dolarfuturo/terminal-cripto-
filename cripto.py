@@ -5,7 +5,7 @@ import yfinance as yf
 from datetime import datetime
 from streamlit_gsheets import GSheetsConnection
 
-# --- INÍCIO DA TRAVA DE LOGIN (PLANILHA) ---
+# 1. TRAVA DE LOGIN (PLANILHA) - NÃO ALTERA O SEU LAYOUT
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 
 try:
@@ -24,9 +24,10 @@ if not st.session_state.autenticado:
         u = st.text_input("USUÁRIO")
         p = st.text_input("SENHA", type="password")
         if st.form_submit_button("LIBERAR ACESSO"):
+            # Procura o usuário (garanta que na planilha esteja 'user' em minúsculo)
             user_row = df_users[df_users['user'] == u]
             if not user_row.empty:
-                if p == str(user_row.iloc[0]['password']):
+                if str(p) == str(user_row.iloc[0]['password']):
                     venc = pd.to_datetime(user_row.iloc[0]['vencimento']).date()
                     if datetime.now().date() <= venc:
                         st.session_state.autenticado = True
@@ -35,10 +36,8 @@ if not st.session_state.autenticado:
                 else: st.error("SENHA INCORRETA.")
             else: st.error("USUÁRIO NÃO ENCONTRADO.")
     st.stop()
-# --- FIM DA TRAVA DE LOGIN ---
 
-# --- SEU CÓDIGO ORIGINAL ABAIXO (SEM ALTERAÇÕES DE LAYOUT) ---
-
+# 2. SEU CÓDIGO ORIGINAL (ESTÉTICA E LÓGICA MANTIDAS)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&display=swap');
@@ -62,10 +61,8 @@ st.markdown("""
     .t-active { border-radius: 2px; padding: 2px 4px; }
     .t-y { background-color: #FFFF00; color: #000 !important; }
     .t-o { background-color: #FFA500; color: #000 !important; }
-    
     .t-blink-r { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; }
     .t-blink-g { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; }
-    
     .t-purple { background-color: #8A2BE2; color: #FFF !important; font-weight: 900; }
     
     @keyframes blinker { 50% { opacity: 0.2; } }
@@ -108,3 +105,9 @@ while True:
     try:
         tickers = yf.Tickers(' '.join(assets.keys()))
         with placeholder.container():
+            st.markdown("""
+                <div class="header-container">
+                    <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
+                    <div class="h-col" style="width:12%;">PREÇO ATUAL</div>
+                    <div class="h-col" style="width:10%;">RESISTÊNCIA</div>
+                    <div class="h-col" style
