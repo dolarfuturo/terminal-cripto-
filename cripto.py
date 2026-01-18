@@ -36,10 +36,27 @@ st.markdown("""
     
     @keyframes blinker { 50% { opacity: 0.3; } }
     .delta-main { font-size: 10px; font-weight: 700; display: block; margin-top: 1px; }
+    
+    /* ESTILO BOTÃO SUPORTE */
+    .btn-suporte {
+        display: inline-block;
+        width: 100%;
+        padding: 10px 0;
+        background-color: #262626;
+        color: #FFFFFF !important;
+        text-align: center;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 5px;
+        margin-top: 10px;
+        border: 1px solid #404040;
+    }
+    .btn-suporte:hover { background-color: #333333; border-color: #D4AF37; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LOGIN E SUPORTE
+# 2. LOGIN
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
@@ -49,7 +66,7 @@ if not st.session_state.autenticado:
     with c2:
         u = st.text_input("USUÁRIO")
         p = st.text_input("SENHA", type="password")
-        st.markdown('<div style="text-align: center; margin-bottom: 10px;"><a href="https://wa.me/suporte" style="color:#C0C0C0; font-size:12px; text-decoration:none;">SUPORTE TÉCNICO</a></div>', unsafe_allow_html=True)
+        
         if st.button("LIBERAR ACESSO", use_container_width=True):
             try:
                 st.cache_data.clear()
@@ -60,10 +77,14 @@ if not st.session_state.autenticado:
                 if not user_row.empty and str(p) == str(user_row.iloc[0]['password']).strip():
                     st.session_state.autenticado = True
                     st.rerun()
+                else: st.error("Credenciais inválidas.")
             except: st.error("Erro de conexão com a planilha.")
+            
+        # BOTÃO DE SUPORTE ABAIXO DO ACESSO
+        st.markdown('<a href="https://wa.me/suporte" class="btn-suporte">FALAR COM SUPORTE TÉCNICO</a>', unsafe_allow_html=True)
     st.stop()
 
-# 3. MONITORAMENTO
+# 3. MONITORAMENTO (Lista de ativos e lógica permanecem iguais)
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
@@ -107,7 +128,8 @@ while True:
                 try:
                     df = data_batch[tid].dropna()
                     if df.empty: continue
-                    price = float(df['Close'].iloc[-1]); open_p = float(df['Open'].iloc[0])
+                    price = float(df['Close'].iloc[-1])
+                    open_p = float(df['Open'].iloc[0])
                     change = ((price - open_p) / open_p) * 100
                     diff = price - open_p
                     
