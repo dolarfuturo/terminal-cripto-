@@ -5,14 +5,16 @@ import yfinance as yf
 from datetime import datetime
 from streamlit_gsheets import GSheetsConnection
 
-# 1. TRAVA DE LOGIN (PLANILHA) - NÃO ALTERA O SEU LAYOUT
+# ==========================================
+# 1. BLOCO DE ACESSO (TRAVA DA PLANILHA)
+# ==========================================
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
     df_users = conn.read(ttl=10)
 except:
-    st.error("Erro ao conectar com a base de dados de usuários.")
+    st.error("Erro de conexão com a planilha de usuários.")
     st.stop()
 
 if 'autenticado' not in st.session_state:
@@ -24,7 +26,6 @@ if not st.session_state.autenticado:
         u = st.text_input("USUÁRIO")
         p = st.text_input("SENHA", type="password")
         if st.form_submit_button("LIBERAR ACESSO"):
-            # Procura o usuário (garanta que na planilha esteja 'user' em minúsculo)
             user_row = df_users[df_users['user'] == u]
             if not user_row.empty:
                 if str(p) == str(user_row.iloc[0]['password']):
@@ -32,12 +33,15 @@ if not st.session_state.autenticado:
                     if datetime.now().date() <= venc:
                         st.session_state.autenticado = True
                         st.rerun()
-                    else: st.error("ACESSO EXPIRADO.")
-                else: st.error("SENHA INCORRETA.")
-            else: st.error("USUÁRIO NÃO ENCONTRADO.")
+                    else: st.error("⚠️ ACESSO EXPIRADO.")
+                else: st.error("❌ SENHA INCORRETA.")
+            else: st.error("❌ USUÁRIO NÃO ENCONTRADO.")
     st.stop()
 
-# 2. SEU CÓDIGO ORIGINAL (ESTÉTICA E LÓGICA MANTIDAS)
+# ==========================================
+# 2. SEU LAYOUT ORIGINAL (VISÃO DE TUBARÃO)
+# ==========================================
+
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&display=swap');
@@ -87,7 +91,7 @@ assets = {
     'FIL-USD':'FIL/USDT','HBAR-USD':'HBAR/USDT','ETC-USD':'ETC/USDT','ICP-USD':'ICP/USDT','BONK-USD':'BONK/USDT',
     'FLOKI-USD':'FLOKI/USDT','WIF-USD':'WIF/USDT','PYTH-USD':'PYTH/USDT','JUP-USD':'JUP/USDT','RAY-USD':'RAY/USDT',
     'ORDI-USD':'ORDI/USDT','BEAM-USD':'BEAM/USDT','IMX-USD':'IMX/USDT','GNS-USD':'GNS/USDT','DYDX-USD':'DYDX/USDT',
-    'LDO-USD':'LDO/USDT','PENDLE-USD':'PENDLE/USDT','ENA-USD':'ENA/USDT','TRX-USD':'TRX/USDT','ATOM-USD':'ATOM/USDT',
+    'LDO-USD':'LDO/USDT','PENDLE-USD':'PENDLE/USDT','ENA-ENA':'ENA/USDT','TRX-USD':'TRX/USDT','ATOM-USD':'ATOM/USDT',
     'MKR-USD':'MKR/USDT','GRT-USD':'GRT/USDT','THETA-USD':'THETA/USDT','FTM-USD':'FTM/USDT','VET-USD':'VET/USDT',
     'ALGO-USD':'ALGO/USDT','FLOW-USD':'FLOW/USDT','QNT-USD':'QNT/USDT','SNX-USD':'SNX/USDT','EOS-USD':'EOS/USDT',
     'NEO-USD':'NEO/USDT','IOTA-USD':'IOTA/USDT','CFX-USD':'CFX/USDT','AXS-USD':'AXS/USDT','MANA-USD':'MANA/USDT',
@@ -110,4 +114,55 @@ while True:
                     <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
                     <div class="h-col" style="width:12%;">PREÇO ATUAL</div>
                     <div class="h-col" style="width:10%;">RESISTÊNCIA</div>
-                    <div class="h-col" style
+                    <div class="h-col" style="width:10%;">PRÓX AO TOPO</div>
+                    <div class="h-col" style="width:10%;">TETO EXAUSTÃO</div>
+                    <div class="h-col" style="width:10%;">SUPORTE</div>
+                    <div class="h-col" style="width:10%;">PRÓX FUNDO</div>
+                    <div class="h-col" style="width:10%;">CHÃO EXAUSTÃO</div>
+                    <div class="h-col" style="width:14%;">SINALIZADOR</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            for tid, name in assets.items():
+                try:
+                    info = tickers.tickers[tid].fast_info
+                    price = info.last_price
+                    open_p = info.open
+                    if price is None: continue
+                    
+                    change = ((price - open_p) / open_p) * 100
+                    v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
+                    c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
+                    
+                    s_txt, s_class = "ESTÁVEL", "bg-estavel"
+                    v4_c, v8_c, v10_c, c4_c, c8_c, c10_c = "", "", "", "", "", ""
+
+                    if change >= 15: s_txt, s_class, v10_c = "ALTA PARABÓLICA", "bg-purple", "t-purple"
+                    elif change >= 10: s_txt, s_class, v10_c = "EXAUSTÃO MÁXIMA", "bg-blink-red", "t-blink-r"
+                    elif price >= v8: s_txt, s_class, v8_c = "CUIDADO ALTA VOL", "bg-orange", "t-o"
+                    elif price >= v4: s_txt, s_class, v4_c = "DECISÃO ATENÇÃO", "bg-yellow", "t-y"
+                    elif change <= -15: s_txt, s_class, c10_c = "QUEDA PARABÓLICA", "bg-purple", "t-purple"
+                    elif change <= -10: s_txt, s_class, c10_c = "EXAUSTÃO MÁXIMA", "bg-blink-green", "t-blink-g"
+                    elif price <= c8: s_txt, s_class, c8_c = "CUIDADO ALTA VOL", "bg-orange", "t-o"
+                    elif price <= c4: s_txt, s_class, c4_c = "DECISÃO ATENÇÃO", "bg-yellow", "t-y"
+
+                    prec = 6 if price < 0.1 else (4 if price < 10 else 2)
+                    seta = '▲' if price >= open_p else '▼'
+                    seta_c = '#00FF00' if price >= open_p else '#FF0000'
+
+                    st.markdown(f"""
+                        <div class="row-container">
+                            <div class="w-ativo">{name}</div>
+                            <div class="w-price">{price:.{prec}f}<br><span style="font-size:9px; color:{seta_c};">{seta}{change:+.2f}%</span></div>
+                            <div class="w-target" style="color:#FFFF00;"><span class="{v4_c}">{v4:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#FFA500;"><span class="{v8_c}">{v8:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#FF0000;"><span class="{v10_c}">{v10:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#FFFF00;"><span class="{c4_c}">{c4:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#FFA500;"><span class="{c8_c}">{c8:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#00FF00;"><span class="{c10_c}">{c10:.{prec}f}</span></div>
+                            <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                except: continue
+        time.sleep(10)
+    except: time.sleep(10)
