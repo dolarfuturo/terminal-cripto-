@@ -31,7 +31,7 @@ st.markdown("""
     .bg-estavel { background-color: #00CED1; color: #000; }
     .bg-amarelo { background-color: #FFFF00; color: #000; }
     .bg-laranja { background-color: #FFA500; color: #000; }
-    .bg-parabolica { background-color: #800080; color: #FFF; animation: none !important; }
+    .bg-parabolica { background-color: #800080; color: #FFF; }
     
     .blink-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
     .blink-green { background-color: #00FF00; color: #000; animation: blinker 0.4s linear infinite; }
@@ -41,14 +41,14 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# LOGIN
+# 2. LOGIN (Sem elementos residuais na tela)
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
 if not st.session_state.autenticado:
     st.markdown('<div class="title-gold">ALPHA VISION</div>', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
+    c1, c2, c3 = st.columns([1,2,1])
+    with c2:
         u = st.text_input("USUÁRIO")
         p = st.text_input("SENHA", type="password")
         if st.button("LIBERAR ACESSO"):
@@ -60,12 +60,14 @@ if not st.session_state.autenticado:
                 if not user_row.empty and str(p) == str(user_row.iloc[0]['password']).strip():
                     st.session_state.autenticado = True
                     st.rerun()
-            except: st.error("Erro na conexão.")
+            except: st.error("Erro de conexão.")
     st.stop()
 
+# 3. INTERFACE PRINCIPAL
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
+# LISTA COMPLETA DE ATIVOS (CORRIGIDA)
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
@@ -80,4 +82,66 @@ assets = {
     'MKR-USD':'MKR/USDT','GRT-USD':'GRT/USDT','THETA-USD':'THETA/USDT','FTM-USD':'FTM/USDT','VET-USD':'VET/USDT',
     'ALGO-USD':'ALGO/USDT','FLOW-USD':'FLOW/USDT','QNT-USD':'QNT/USDT','SNX-USD':'SNX/USDT','EOS-USD':'EOS/USDT',
     'NEO-USD':'NEO/USDT','IOTA-USD':'IOTA/USDT','CFX-USD':'CFX/USDT','AXS-USD':'AXS/USDT','MANA-USD':'MANA/USDT',
-    'SAND-USD':'SAND/USDT','APE-USD':'APE/USDT','RUNE-USD':'RUNE/USDT','CHZ-USD':'CHZ/USDT','MINA
+    'SAND-USD':'SAND/USDT','APE-USD':'APE/USDT','RUNE-USD':'RUNE/USDT','CHZ-USD':'CHZ/USDT','MINA-USD':'MINA/USDT',
+    'ROSE-USD':'ROSE/USDT','WOO-USD':'WOO/USDT','ANKR-USD':'ANKR/USDT','1INCH-USD':'1INCH/USDT','ZIL-USD':'ZIL/USDT',
+    'LRC-USD':'LRC/USDT','CRV-USD':'CRV/USDT'
+}
+
+placeholder = st.empty()
+
+while True:
+    try:
+        data_batch = yf.download(list(assets.keys()), period="2d", interval="1m", group_by='ticker', progress=False)
+        with placeholder.container():
+            st.markdown("""<div class="header-container">
+                <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
+                <div class="h-col" style="width:12%;">PREÇO ATUAL</div>
+                <div class="h-col" style="width:10%;">RESISTÊNCIA</div>
+                <div class="h-col" style="width:10%;">PRÓX AO TOPO</div>
+                <div class="h-col" style="width:10%;">TETO EXAUSTÃO</div>
+                <div class="h-col" style="width:10%;">SUPORTE</div>
+                <div class="h-col" style="width:10%;">PRÓX FUNDO</div>
+                <div class="h-col" style="width:10%;">CHÃO EXAUSTÃO</div>
+                <div class="h-col" style="width:14%;">SINALIZADOR</div></div>""", unsafe_allow_html=True)
+
+            for tid, name in assets.items():
+                try:
+                    df = data_batch[tid].dropna()
+                    if df.empty: continue
+                    price = float(df['Close'].iloc[-1])
+                    open_p = float(df['Open'].iloc[0])
+                    change = ((price - open_p) / open_p) * 100
+                    
+                    v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
+                    c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
+                    
+                    s_txt, s_class, h4, h8, h10 = "ESTÁVEL", "bg-estavel", "", "", ""
+                    abs_c = abs(change)
+                    
+                    if abs_c >= 12: 
+                        s_txt, s_class, h4, h8, h10 = "PARABÓLICA", "bg-parabolica", "highlight-target", "highlight-target", "highlight-target"
+                    elif abs_c >= 10: 
+                        s_txt, s_class, h10 = "EXAUSTÃO", ("blink-red" if change > 0 else "blink-green"), "highlight-target"
+                    elif abs_c >= 8: 
+                        s_txt, s_class, h8 = "ALERTA LARANJA", "bg-laranja", "highlight-target"
+                    elif abs_c >= 4: 
+                        s_txt, s_class, h4 = "ALERTA AMARELO", "bg-amarelo", "highlight-target"
+
+                    prec = 4 if price < 1 else 2
+
+                    st.markdown(f"""
+                        <div class="row-container">
+                            <div class="w-ativo">{name}</div>
+                            <div class="w-price">{price:.{prec}f}</div>
+                            <div class="w-target {h4}" style="color:#FFFF00;">{v4:.{prec}f}</div>
+                            <div class="w-target {h8}" style="color:#FFA500;">{v8:.{prec}f}</div>
+                            <div class="w-target {h10}" style="color:#FF0000;">{v10:.{prec}f}</div>
+                            <div class="w-target {h4}" style="color:#FFFF00;">{c4:.{prec}f}</div>
+                            <div class="w-target {h8}" style="color:#FFA500;">{c8:.{prec}f}</div>
+                            <div class="w-target {h10}" style="color:#00FF00;">{c10:.{prec}f}</div>
+                            <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                except: continue
+        time.sleep(10)
+    except: time.sleep(5)
