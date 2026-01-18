@@ -40,18 +40,20 @@ if not st.session_state.autenticado:
             if st.form_submit_button("LIBERAR ACESSO"):
                 user_row = df_users[df_users['user'].astype(str) == u]
                 if not user_row.empty and str(p) == str(user_row.iloc[0]['password']).strip():
+                    # TRAVA DE VENCIMENTO
                     data_venc = pd.to_datetime(user_row.iloc[0]['vencimento']).date()
                     hoje = datetime.now().date()
                     if hoje > data_venc:
                         st.error(f"ACESSO EXPIRADO EM {data_venc.strftime('%d/%m/%Y')}")
-                        st.markdown("<a href='https://t.me/+GOzXsBo0BchkMzYx' target='_blank'><button style='width:100%; background-color:#D4AF37; color:black; border:none; padding:10px; font-weight:bold; cursor:pointer; border-radius:5px;'>RENOVAR NO GRUPO DE SUPORTE</button></a>", unsafe_allow_html=True)
+                        # LINK ATUALIZADO ABAIXO
+                        st.markdown("<a href='https://t.me/+GOzXsBo0BchkMzYx' target='_blank'><button style='width:100%; background-color:#D4AF37; color:black; border:none; padding:10px; font-weight:bold; cursor:pointer; border-radius:5px;'>FALAR COM SUPORTE PARA RENOVAR</button></a>", unsafe_allow_html=True)
                     else:
                         st.session_state.autenticado = True
                         st.rerun()
                 else: st.error("Acesso negado.")
     st.stop()
 
-# 2. TERMINAL VISÃO DE TUBARÃO
+# 2. TERMINAL VISÃO DE TUBARÃO (DESIGN ORIGINAL)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&display=swap');
@@ -66,6 +68,7 @@ st.markdown("""
     .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
     .w-price { width: 12%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
     .w-target { width: 10%; text-align: center; font-size: 14px; font-weight: 800; }
+    .w-sinal { width: 14%; text-align: center; }
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     .bg-estavel { background-color: #00CED1; color: #000; }
     .bg-blink-red { background-color: #FF0000; color: #FFF; animation: blinker 0.4s linear infinite; }
@@ -101,6 +104,7 @@ placeholder = st.empty()
 while True:
     try:
         data_batch = yf.download(list(assets.keys()), period="1d", interval="1m", group_by='ticker', progress=False)
+        
         with placeholder.container():
             st.markdown("""<div class="header-container">
                 <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
@@ -115,12 +119,15 @@ while True:
                     if df_ticker.empty: continue
                     price = float(df_ticker['Close'].iloc[-1])
                     open_p = float(df_ticker['Open'].iloc[0])
+                    
                     change = ((price - open_p) / open_p) * 100
                     v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
+                    
                     s_txt, s_class = "ESTÁVEL", "bg-estavel"
                     if change >= 10: s_txt, s_class = "EXAUSTÃO MÁXIMA", "bg-blink-red"
                     elif change <= -10: s_txt, s_class = "EXAUSTÃO MÁXIMA", "bg-blink-green"
+
                     prec = 4 if price < 10 else 2
                     seta = '▲' if price >= open_p else '▼'
                     seta_c = '#00FF00' if price >= open_p else '#FF0000'
