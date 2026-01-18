@@ -4,10 +4,9 @@ import time
 import yfinance as yf
 from streamlit_gsheets import GSheetsConnection
 
-# 1. CONFIGURAÇÃO DE INTERFACE ALPHA VISION
+# CONFIGURAÇÃO DE INTERFACE
 st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide", initial_sidebar_state="collapsed")
 
-# ESTILO CSS ORIGINAL (PRETO, DOURADO E ALERTAS)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;900&display=swap');
@@ -26,19 +25,18 @@ st.markdown("""
     .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
     .h-col { font-size: 11px; font-weight: 400; color: #FFFFFF; text-transform: uppercase; text-align: center; }
     
-    .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; gap: 0px; }
+    .row-container { display: flex; width: 100%; align-items: center; padding: 6px 0; border-bottom: 1px solid #151515; }
     .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 14px; font-weight: 700; }
     .w-price { width: 12%; text-align: center; color: #FF8C00; font-size: 15px; font-weight: 900; }
     .w-target { width: 10%; text-align: center; font-size: 14px; font-weight: 800; }
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
 
-    /* CLASSES DE ESTADO E ALERTAS */
-    .t-active { border-radius: 2px; padding: 2px 4px; }
-    .t-y { background-color: #FFFF00; color: #000 !important; border-radius: 2px; }
-    .t-o { background-color: #FFA500; color: #000 !important; border-radius: 2px; }
-    .t-blink-r { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; border-radius: 2px; }
-    .t-blink-g { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; border-radius: 2px; }
-    .t-purple { background-color: #8A2BE2; color: #FFF !important; font-weight: 900; border-radius: 2px; }
+    /* ALERTAS */
+    .t-y { background-color: #FFFF00; color: #000 !important; border-radius: 2px; padding: 2px; }
+    .t-o { background-color: #FFA500; color: #000 !important; border-radius: 2px; padding: 2px; }
+    .t-blink-r { background-color: #FF0000; color: #FFF !important; animation: blinker 0.4s linear infinite; border-radius: 2px; padding: 2px; }
+    .t-blink-g { background-color: #00FF00; color: #000 !important; animation: blinker 0.4s linear infinite; border-radius: 2px; padding: 2px; }
+    .t-purple { background-color: #8A2BE2; color: #FFF !important; font-weight: 900; border-radius: 2px; padding: 2px; }
     
     @keyframes blinker { 50% { opacity: 0.2; } }
 
@@ -52,19 +50,19 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. CONEXÃO COM A PLANILHA (BLINDADA)
+# CONEXÃO PLANILHA
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
     df_users = conn.read(ttl=15)
     df_users.columns = df_users.columns.str.strip().str.lower()
 except:
-    st.error("Erro de conexão com o banco de dados de usuários.")
+    st.error("Erro ao conectar com a base de dados.")
     st.stop()
 
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
-# 3. LOGIN COM TRAVA DE STATUS
+# LOGIN COM TRAVA DE STATUS
 if not st.session_state.autenticado:
     st.markdown("<h1 style='text-align:center;'>ALPHA VISION LOGIN</h1>", unsafe_allow_html=True)
     left, mid, right = st.columns([1, 2, 1])
@@ -76,19 +74,18 @@ if not st.session_state.autenticado:
                 user_match = df_users[df_users['user'].astype(str) == u]
                 if not user_match.empty:
                     if str(p) == str(user_match.iloc[0]['password']):
-                        # VERIFICAÇÃO DO STATUS NA PLANILHA
-                        status_val = str(user_match.iloc[0].get('status', 'ativo')).strip().lower()
-                        if status_val == 'ativo':
+                        # Verifica o status (Se não existir a coluna, assume ativo)
+                        status_check = str(user_match.iloc[0].get('status', 'ativo')).strip().lower()
+                        if status_check == 'ativo':
                             st.session_state.autenticado = True
                             st.rerun()
                         else:
-                            st.error("🚫 ACESSO BLOQUEADO OU EXPIRADO.")
+                            st.error("ACESSO BLOQUEADO.")
                     else: st.error("Senha incorreta.")
                 else: st.error("Usuário não encontrado.")
-        st.markdown("<p style='text-align:center; color:gray; font-size:12px;'>Sinal caído ou instável? Fale com o suporte.</p>", unsafe_allow_html=True)
     st.stop()
 
-# 4. LISTA DOS 80 ATIVOS
+# LISTA DOS 80 ATIVOS
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
@@ -113,10 +110,9 @@ st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO • RESET 00:00 UTC
 
 placeholder = st.empty()
 
-# 5. LOOP PRINCIPAL COM RESET 00:00 UTC
 while True:
     try:
-        # Puxa dados em lote para performance
+        # Download em lote para evitar SyntaxError por tempo de resposta
         data_batch = yf.download(list(assets.keys()), period="1d", interval="1m", group_by='ticker', silent=True)
         
         with placeholder.container():
@@ -132,6 +128,47 @@ while True:
                     <div class="h-col" style="width:10%;">CHÃO EXAUSTÃO</div>
                     <div class="h-col" style="width:14%;">SINALIZADOR</div>
                 </div>
-                """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-            for
+            for tid, name in assets.items():
+                try:
+                    df_t = data_batch[tid]
+                    price = df_t['Close'].iloc[-1]
+                    open_p = df_t['Open'].iloc[0] # RESET 00:00 UTC
+                    
+                    change = ((price - open_p) / open_p) * 100
+                    v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
+                    c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
+                    
+                    s_txt, s_class = "ESTÁVEL", "bg-estavel"
+                    v4_s, v8_s, v10_s, c4_s, c8_s, c10_s = "", "", "", "", "", ""
+
+                    if change >= 15: s_txt, s_class, v10_s = "ALTA PARABÓLICA", "bg-purple", "t-purple"
+                    elif change >= 10: s_txt, s_class, v10_s = "EXAUSTÃO MÁXIMA", "bg-blink-red", "t-blink-r"
+                    elif price >= v8: s_txt, s_class, v8_s = "CUIDADO ALTA VOL", "bg-orange", "t-o"
+                    elif price >= v4: s_txt, s_class, v4_s = "DECISÃO ATENÇÃO", "bg-yellow", "t-y"
+                    elif change <= -15: s_txt, s_class, c10_s = "QUEDA PARABÓLICA", "bg-purple", "t-purple"
+                    elif change <= -10: s_txt, s_class, c10_s = "EXAUSTÃO MÁXIMA", "bg-blink-green", "t-blink-g"
+                    elif price <= c8: s_txt, s_class, c8_s = "CUIDADO ALTA VOL", "bg-orange", "t-o"
+                    elif price <= c4: s_txt, s_class, c4_s = "DECISÃO ATENÇÃO", "bg-yellow", "t-y"
+
+                    prec = 6 if price < 0.1 else (4 if price < 10 else 2)
+                    seta = '▲' if price >= open_p else '▼'
+                    cor = '#00FF00' if price >= open_p else '#FF0000'
+
+                    st.markdown(f"""
+                        <div class="row-container">
+                            <div class="w-ativo">{name}</div>
+                            <div class="w-price">{price:.{prec}f}<br><span style="font-size:9px; color:{cor};">{seta}{change:+.2f}%</span></div>
+                            <div class="w-target" style="color:#FFFF00;"><span class="{v4_s}">{v4:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#FFA500;"><span class="{v8_s}">{v8:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#FF0000;"><span class="{v10_s}">{v10:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#FFFF00;"><span class="{c4_s}">{c4:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#FFA500;"><span class="{c8_s}">{c8:.{prec}f}</span></div>
+                            <div class="w-target" style="color:#00FF00;"><span class="{c10_s}">{c10:.{prec}f}</span></div>
+                            <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                except: continue
+        time.sleep(15)
+    except: time.sleep(10)
