@@ -28,6 +28,7 @@ st.markdown("""
     
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 9px; width: 100%; text-align: center; text-transform: uppercase; }
     
+    /* CLASSES DE DESTAQUE ISOLADO */
     .bar-amarela { background-color: #FFFF00 !important; color: #000 !important; box-shadow: 0 0 15px #FFFF00; }
     .bar-laranja { background-color: #FFA500 !important; color: #000 !important; box-shadow: 0 0 15px #FFA500; }
     
@@ -37,7 +38,7 @@ st.markdown("""
     .target-blink-red { background-color: #FF0000 !important; color: #FFF !important; animation: blinker 0.6s linear infinite; }
     .target-blink-green { background-color: #00FF00 !important; color: #000 !important; animation: blinker 0.6s linear infinite; }
     
-    @keyframes blinker { 50% { opacity: 0.2; } }
+    @keyframes blinker { 50% { opacity: 0.3; } }
     .delta-price-main { font-size: 10px; font-weight: 700; display: block; margin-top: 2px; }
     </style>
     """, unsafe_allow_html=True)
@@ -67,7 +68,6 @@ if not st.session_state.autenticado:
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
-# LISTA COMPLETA DE ATIVOS
 assets = {
     'BTC-USD':'BTC/USDT','ETH-USD':'ETH/USDT','SOL-USD':'SOL/USDT','BNB-USD':'BNB/USDT','XRP-USD':'XRP/USDT',
     'DOGE-USD':'DOGE/USDT','ADA-USD':'ADA/USDT','AVAX-USD':'AVAX/USDT','DOT-USD':'DOT/USDT','LINK-USD':'LINK/USDT',
@@ -118,20 +118,23 @@ while True:
                     arrow = "▲" if change >= 0 else "▼"
                     t_color = "#00FF00" if change >= 0 else "#FF0000"
                     
-                    s_txt, s_class, h4, h8, h10 = "ESTÁVEL", "bg-estavel", "", "", ""
+                    s_txt, s_class = "ESTÁVEL", "bg-estavel"
+                    row_h4, row_h8, row_h10 = "", "", ""
+                    
                     abs_c = abs(change)
                     
-                    if abs_c >= 12: 
+                    # Lógica de Alerta por linha
+                    if abs_c >= 12:
                         s_txt, s_class = "PARABÓLICA", "bg-parabolica"
-                        h4, h8 = "bar-amarela", "bar-laranja"
-                        h10 = "target-blink-red" if change > 0 else "target-blink-green"
-                    elif abs_c >= 10: 
-                        s_txt, s_class = "EXAUSTÃO", "target-blink-red" if change > 0 else "target-blink-green"
-                        h10 = "target-blink-red" if change > 0 else "target-blink-green"
-                    elif abs_c >= 8: 
-                        s_txt, s_class, h8 = "ATENÇÃO ALTA VOL", "bar-laranja", "bar-laranja"
-                    elif abs_c >= 4: 
-                        s_txt, s_class, h4 = "REGIÃO DE DECISÃO", "bar-amarela", "bar-amarela"
+                    elif abs_c >= 10:
+                        s_txt, s_class = "EXAUSTÃO", ("target-blink-red" if change > 0 else "target-blink-green")
+                        row_h10 = "target-blink-red" if change > 0 else "target-blink-green"
+                    elif abs_c >= 8:
+                        s_txt, s_class = "ATENÇÃO ALTA VOL", "bar-laranja"
+                        row_h8 = "bar-laranja"
+                    elif abs_c >= 4:
+                        s_txt, s_class = "REGIÃO DE DECISÃO", "bar-amarela"
+                        row_h4 = "bar-amarela"
 
                     prec = 4 if price < 1 else 2
 
@@ -142,12 +145,12 @@ while True:
                                 {price:.{prec}f} <span style="color:{t_color}; font-size:11px;">{arrow}</span>
                                 <span class="delta-price-main" style="color:{t_color};">{diff:+.{prec}f}</span>
                             </div>
-                            <div class="w-target {h4 if change > 0 else ''}" style="color:#FFFF00;">{v4:.{prec}f}</div>
-                            <div class="w-target {h8 if change > 0 else ''}" style="color:#FFA500;">{v8:.{prec}f}</div>
-                            <div class="w-target {h10 if change > 0 else ''}" style="color:#FF0000;">{v10:.{prec}f}</div>
-                            <div class="w-target {h4 if change < 0 else ''}" style="color:#FFFF00;">{c4:.{prec}f}</div>
-                            <div class="w-target {h8 if change < 0 else ''}" style="color:#FFA500;">{c8:.{prec}f}</div>
-                            <div class="w-target {h10 if change < 0 else ''}" style="color:#00FF00;">{c10:.{prec}f}</div>
+                            <div class="w-target {row_h4 if change > 0 else ''}" style="color:#FFFF00;">{v4:.{prec}f}</div>
+                            <div class="w-target {row_h8 if change > 0 else ''}" style="color:#FFA500;">{v8:.{prec}f}</div>
+                            <div class="w-target {row_h10 if change > 0 else ''}" style="color:#FF0000;">{v10:.{prec}f}</div>
+                            <div class="w-target {row_h4 if change < 0 else ''}" style="color:#FFFF00;">{c4:.{prec}f}</div>
+                            <div class="w-target {row_h8 if change < 0 else ''}" style="color:#FFA500;">{c8:.{prec}f}</div>
+                            <div class="w-target {row_h10 if change < 0 else ''}" style="color:#00FF00;">{c10:.{prec}f}</div>
                             <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
                         </div>
                     """, unsafe_allow_html=True)
