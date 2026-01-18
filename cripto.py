@@ -94,8 +94,7 @@ assets = {
 }
 
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
-# ADICIONADO RESET 00:00 UTC NO SUBTÍTULO
-st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO • RESET 00:00 UTC</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
 placeholder = st.empty()
 
@@ -121,4 +120,24 @@ while True:
                     c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     s_txt, s_class = "ESTÁVEL", "bg-estavel"
                     if change >= 10: s_txt, s_class = "EXAUSTÃO MÁXIMA", "bg-blink-red"
-                    elif change <= -10: s_txt, s_class = "EXAUSTÃO MÁXIMA", "bg-blink
+                    elif change <= -10: s_txt, s_class = "EXAUSTÃO MÁXIMA", "bg-blink-green"
+                    prec = 4 if price < 10 else 2
+                    seta = '▲' if price >= open_p else '▼'
+                    seta_c = '#00FF00' if price >= open_p else '#FF0000'
+
+                    st.markdown(f"""
+                        <div class="row-container">
+                            <div class="w-ativo">{name}</div>
+                            <div class="w-price">{price:.{prec}f}<br><span style="font-size:9px; color:{seta_c};">{seta}{change:+.2f}%</span></div>
+                            <div class="w-target" style="color:#FFFF00;">{v4:.{prec}f}</div>
+                            <div class="w-target" style="color:#FFA500;">{v8:.{prec}f}</div>
+                            <div class="w-target" style="color:#FF0000;">{v10:.{prec}f}</div>
+                            <div class="w-target" style="color:#FFFF00;">{c4:.{prec}f}</div>
+                            <div class="w-target" style="color:#FFA500;">{c8:.{prec}f}</div>
+                            <div class="w-target" style="color:#00FF00;">{c10:.{prec}f}</div>
+                            <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
+                        </div>
+                    """, unsafe_allow_html=True)
+                except: continue
+        time.sleep(15)
+    except: time.sleep(10)
