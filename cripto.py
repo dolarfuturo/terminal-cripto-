@@ -13,56 +13,31 @@ st.markdown("""
     .stApp { background-color: #000000; }
     .block-container { padding: 0rem 1rem !important; }
     header, footer { visibility: hidden; }
-    
     .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; }
     .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 25px; font-weight: 700; }
-    
-    /* CABEÇALHO MAIOR */
     .header-container { display: flex; width: 100%; padding: 15px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
     .h-col { font-size: 13px; color: #FFFFFF; text-transform: uppercase; text-align: center; font-weight: 800; letter-spacing: 1px; }
-    
     .row-container { display: flex; width: 100%; align-items: center; padding: 10px 0; border-bottom: 1px solid #151515; }
-    
-    /* NÚMEROS E TABELA */
     .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #EEE; font-size: 16px; font-weight: 700; }
     .w-price { width: 15%; text-align: center; color: #FF8C00; font-size: 18px; font-weight: 900; }
     .w-target { width: 9%; text-align: center; font-size: 14px; font-weight: 800; border-radius: 4px; padding: 6px 0; }
     .w-sinal { width: 14%; text-align: center; padding-right: 5px; }
-    
     .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 10px; width: 100%; text-align: center; text-transform: uppercase; }
-    
     .bg-estavel { background-color: #00CED1; color: #000; }
     .bg-decisao { background-color: #FFFF00 !important; color: #000 !important; font-weight: 900; }
     .bg-atencao { background-color: #FFA500 !important; color: #000 !important; font-weight: 900; }
     .bg-parabolica { background-color: #800080; color: #FFF; }
-    
     .target-blink-red { background-color: #FF0000 !important; color: #FFF !important; animation: blinker 0.6s linear infinite; }
     .target-blink-green { background-color: #00FF00 !important; color: #000 !important; animation: blinker 0.6s linear infinite; }
-    
     @keyframes blinker { 50% { opacity: 0.3; } }
     .perc-val { font-size: 12px; display: block; margin-top: 2px; font-weight: 600; }
-    
     .footer-live { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #000; color: #00FF00; text-align: center; padding: 10px; font-size: 13px; font-weight: bold; border-top: 1px solid #333; z-index: 100; }
-
-    /* BOTÃO SUPORTE LOGIN */
-    .btn-suporte {
-        display: inline-block;
-        width: 100%;
-        padding: 10px;
-        background-color: #262626;
-        color: white !important;
-        text-align: center;
-        text-decoration: none;
-        font-weight: bold;
-        border-radius: 5px;
-        border: 1px solid #444;
-        margin-top: 10px;
-    }
+    .btn-suporte { display: inline-block; width: 100%; padding: 10px; background-color: #262626; color: white !important; text-align: center; text-decoration: none; font-weight: bold; border-radius: 5px; border: 1px solid #444; margin-top: 10px; }
     .btn-suporte:hover { background-color: #333; border-color: #D4AF37; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LOGIN E CONEXÃO
+# 2. LOGIN E CONEXÃO (MANTIDO)
 if 'autenticado' not in st.session_state:
     st.session_state.autenticado = False
 
@@ -92,12 +67,10 @@ if not st.session_state.autenticado:
                     st.rerun()
                 else: st.error("Acesso negado.")
             else: st.error("Erro de conexão.")
-        
-        # BOTÃO SUPORTE TELA DE LOGIN
         st.markdown(f'''<a href="https://t.me/+GOzXsBo0BchkMzYx" target="_blank" class="btn-suporte">SUPORTE</a>''', unsafe_allow_html=True)
     st.stop()
 
-# 3. MONITORAMENTO
+# 3. MONITORAMENTO COM EIXO ALPHA (VOLUME)
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
@@ -124,40 +97,51 @@ placeholder = st.empty()
 
 while True:
     try:
-        data_batch = yf.download(list(assets.keys()), period="2d", interval="1m", group_by='ticker', progress=False)
+        # MUDANÇA: period="1d" para reset diário
+        data_batch = yf.download(list(assets.keys()), period="1d", interval="1m", group_by='ticker', progress=False)
         with placeholder.container():
             st.markdown("""<div class="header-container">
                 <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
                 <div class="h-col" style="width:15%;">PREÇO ATUAL</div>
-                <div class="h-col" style="width:9%;">RESISTÊNCIA</div>
-                <div class="h-col" style="width:9%;">PRÓX AO TOPO</div>
-                <div class="h-col" style="width:9%;">TETO EXAUSTÃO</div>
-                <div class="h-col" style="width:9%;">SUPORTE</div>
-                <div class="h-col" style="width:9%;">PRÓX FUNDO</div>
-                <div class="h-col" style="width:9%;">CHÃO EXAUSTÃO</div>
+                <div class="h-col" style="width:9%;">DECISÃO (4%)</div>
+                <div class="h-col" style="width:9%;">ATENÇÃO (8%)</div>
+                <div class="h-col" style="width:9%;">EXAUSTÃO (10%)</div>
+                <div class="h-col" style="width:9%;">DECISÃO (4%)</div>
+                <div class="h-col" style="width:9%;">ATENÇÃO (8%)</div>
+                <div class="h-col" style="width:9%;">EXAUSTÃO (10%)</div>
                 <div class="h-col" style="width:14%;">SINALIZADOR</div></div>""", unsafe_allow_html=True)
 
             for tid, name in assets.items():
                 try:
                     df = data_batch[tid].dropna()
                     if df.empty: continue
+                    
                     price = float(df['Close'].iloc[-1])
-                    open_p = float(df['Open'].iloc[0]) 
+                    
+                    # MUDANÇA: EIXO ALPHA POR VOLUME (VWAP)
+                    total_vol = df['Volume'].sum()
+                    open_p = (df['Close'] * df['Volume']).sum() / total_vol if total_vol > 0 else float(df['Open'].iloc[0])
+                    
                     diff_pts = price - open_p
                     change_pct = (diff_pts / open_p) * 100
                     abs_c = abs(change_pct)
                     
-                    v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
-                    c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
+                    # SENSIBILIDADE F
+                    f = 0.25 if tid == "BTC-USD" else 0.50 if tid == "ETH-USD" else 1.0
+                    
+                    # ALVOS DINÂMICOS BASEADOS NO EIXO DE VOLUME
+                    v4, v8, v10 = open_p*(1 + (0.04*f)), open_p*(1 + (0.08*f)), open_p*(1 + (0.10*f))
+                    c4, c8, c10 = open_p*(1 - (0.04*f)), open_p*(1 - (0.08*f)), open_p*(1 - (0.10*f))
                     
                     s_txt, s_class, rh4, rh8, rh10 = "ESTÁVEL", "bg-estavel", "", "", ""
                     
-                    if abs_c >= 12: s_txt, s_class = "PARABÓLICA", "bg-parabolica"
-                    elif 10.0 <= abs_c <= 11.0:
+                    # LÓGICA DE SINALIZAÇÃO ALPHA
+                    if abs_c >= (12.0 * f): s_txt, s_class = "PARABÓLICA", "bg-parabolica"
+                    elif (10.0 * f) <= abs_c:
                         s_txt, s_class = "EXAUSTÃO", ("target-blink-red" if change_pct > 0 else "target-blink-green")
                         rh10 = s_class
-                    elif 8.0 <= abs_c <= 9.0: s_txt, s_class, rh8 = "PRÓX TOPO", "bg-atencao", "bg-atencao"
-                    elif 4.0 <= abs_c <= 5.0: s_txt, s_class, rh4 = "REGIÃO DE DECISÃO", "bg-decisao", "bg-decisao"
+                    elif (8.0 * f) <= abs_c: s_txt, s_class, rh8 = "ATENÇÃO", "bg-atencao", "bg-atencao"
+                    elif (4.0 * f) <= abs_c: s_txt, s_class, rh4 = "REGIÃO DE DECISÃO", "bg-decisao", "bg-decisao"
 
                     arrow = "▲" if change_pct >= 0 else "▼"
                     t_color = "#00FF00" if change_pct >= 0 else "#FF0000"
@@ -178,7 +162,9 @@ while True:
                     """, unsafe_allow_html=True)
                 except: continue
             
-            st.markdown('<div class="footer-live">🟢 LIVE STREAM / ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="footer-live">🟢 LIVE STREAM / ALPHA VISION | EIXO VOLUME 1D | {datetime.now().strftime("%H:%M:%S")}</div>', unsafe_allow_html=True)
             
         time.sleep(10)
-    except: time.sleep(5)
+    except Exception as e: 
+        st.error(f"Erro no loop: {e}")
+        time.sleep(5)
