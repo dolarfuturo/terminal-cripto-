@@ -124,7 +124,7 @@ placeholder = st.empty()
 
 while True:
     try:
-        data_batch = yf.download(list(assets.keys()), period="1d", interval="1m", group_by='ticker', progress=False)
+        data_batch = yf.download(list(assets.keys()), period="2d", interval="1m", group_by='ticker', progress=False)
         with placeholder.container():
             st.markdown("""<div class="header-container">
                 <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
