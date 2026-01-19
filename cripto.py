@@ -93,6 +93,7 @@ if not st.session_state.autenticado:
                 else: st.error("Acesso negado.")
             else: st.error("Erro de conexão.")
         
+        # BOTÃO SUPORTE TELA DE LOGIN
         st.markdown(f'''<a href="https://t.me/+GOzXsBo0BchkMzYx" target="_blank" class="btn-suporte">SUPORTE</a>''', unsafe_allow_html=True)
     st.stop()
 
@@ -129,10 +130,10 @@ while True:
                 <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">ATIVO</div>
                 <div class="h-col" style="width:15%;">PREÇO ATUAL</div>
                 <div class="h-col" style="width:9%;">RESISTÊNCIA</div>
-                <div class="h-col" style="width:9%;">ATENÇÃO VOL</div>
+                <div class="h-col" style="width:9%;">PRÓX AO TOPO</div>
                 <div class="h-col" style="width:9%;">TETO EXAUSTÃO</div>
                 <div class="h-col" style="width:9%;">SUPORTE</div>
-                <div class="h-col" style="width:9%;">ATENÇÃO VOL</div>
+                <div class="h-col" style="width:9%;">PRÓX FUNDO</div>
                 <div class="h-col" style="width:9%;">CHÃO EXAUSTÃO</div>
                 <div class="h-col" style="width:14%;">SINALIZADOR</div></div>""", unsafe_allow_html=True)
 
@@ -146,28 +147,17 @@ while True:
                     change_pct = (diff_pts / open_p) * 100
                     abs_c = abs(change_pct)
                     
-                    # --- MOTOR DE SENSIBILIDADE ALPHA VISION (Arquiteto) ---
-                    if 'BTC' in name:
-                        f = 0.25  # BTC reage com 1/4 da volatilidade (Alvo 4% -> 1%)
-                    elif 'ETH' in name:
-                        f = 0.50  # ETH reage com 1/2 da volatilidade (Alvo 4% -> 2%)
-                    else:
-                        f = 1.00  # ALTS mantêm padrão 4/8/10%
-                    
-                    v4, v8, v10 = open_p*(1 + 0.04*f), open_p*(1 + 0.08*f), open_p*(1 + 0.10*f)
-                    c4, c8, c10 = open_p*(1 - 0.04*f), open_p*(1 - 0.08*f), open_p*(1 - 0.10*f)
+                    v4, v8, v10 = open_p*1.04, open_p*1.08, open_p*1.10
+                    c4, c8, c10 = open_p*0.96, open_p*0.92, open_p*0.90
                     
                     s_txt, s_class, rh4, rh8, rh10 = "ESTÁVEL", "bg-estavel", "", "", ""
                     
-                    if abs_c >= (12*f): 
-                        s_txt, s_class = "PARABÓLICA", "bg-parabolica"
-                    elif (10.0*f) <= abs_c <= (11.0*f):
+                    if abs_c >= 12: s_txt, s_class = "PARABÓLICA", "bg-parabolica"
+                    elif 10.0 <= abs_c <= 11.0:
                         s_txt, s_class = "EXAUSTÃO", ("target-blink-red" if change_pct > 0 else "target-blink-green")
                         rh10 = s_class
-                    elif (8.0*f) <= abs_c <= (9.0*f): 
-                        s_txt, s_class, rh8 = "ATENÇÃO ALTA VOL", "bg-atencao", "bg-atencao"
-                    elif (4.0*f) <= abs_c <= (5.0*f): 
-                        s_txt, s_class, rh4 = "REGIÃO DE DECISÃO", "bg-decisao", "bg-decisao"
+                    elif 8.0 <= abs_c <= 9.0: s_txt, s_class, rh8 = "PRÓX TOPO", "bg-atencao", "bg-atencao"
+                    elif 4.0 <= abs_c <= 5.0: s_txt, s_class, rh4 = "REGIÃO DE DECISÃO", "bg-decisao", "bg-decisao"
 
                     arrow = "▲" if change_pct >= 0 else "▼"
                     t_color = "#00FF00" if change_pct >= 0 else "#FF0000"
