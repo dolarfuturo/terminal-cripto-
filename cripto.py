@@ -10,8 +10,8 @@ st.set_page_config(page_title="Alpha Vision - Eixo Real", layout="wide")
 api_key = "3psP2WWNFzFGBHo6QhOjnk2gNSfHgpNtVI7TSy2RRcRgYHAI3d0edQdNBcMPRAOI"
 api_secret = "L9YoKJwGdRZL4eO1pBkYWNQuk9qLGi2ESpF3Uw88cy62ED8pQuyUerFiDQHawekM"
 
-# 2. CONEXÃO COM A BINANCE (CORREÇÃO PARA ERRO 451 - LOCALIZAÇÃO)
-# Forçamos o uso do domínio .us ou api.binance.com que às vezes ajuda no bloqueio
+# 2. CONEXÃO DIRETA COM A BINANCE
+# Removida a configuração manual de URL que causou o erro de 'testnet'
 exchange = ccxt.binance({
     'apiKey': api_key,
     'secret': api_secret,
@@ -22,28 +22,24 @@ exchange = ccxt.binance({
     }
 })
 
-# Mudança de URL para tentar evitar o bloqueio geográfico do Streamlit (USA)
-exchange.urls['api'] = {
-    'public': 'https://api.binance.com/api/v3',
-    'private': 'https://api.binance.com/api/v3',
-}
-
 st.title("🚀 Terminal Alpha Vision - Eixo Real")
 
-# 3. TESTE DE CONEXÃO E EXIBIÇÃO DE SALDO
+# 3. EXIBIÇÃO DE DADOS
 try:
-    # O reset do VWAP é baseado no fechamento 00:00 UTC da Binance
+    # Mostra o horário UTC para o controle do Reset das 00:00
     agora_utc = datetime.datetime.now(datetime.timezone.utc)
     st.info(f"Horário Atual (UTC): {agora_utc.strftime('%H:%M:%S')} - Reset VWAP às 00:00")
     
+    # Busca o saldo real
     balance = exchange.fetch_balance()
     usdt_balance = balance['total'].get('USDT', 0)
     
-    st.success("✅ Conectado à Binance! Trading Liberado.")
-    st.metric(label="Saldo Disponível (USDT)", value=f"{usdt_balance:.2f} USDT")
+    st.success("✅ Conectado com Sucesso!")
+    st.metric(label="Saldo em USDT", value=f"{usdt_balance:,.2f}")
 
 except Exception as e:
     st.error(f"Erro de Conexão: {e}")
-    st.warning("Nota: Se o erro 451 persistir, o servidor do Streamlit está bloqueado pela Binance. Podemos precisar de uma rota alternativa.")
+    if "451" in str(e):
+        st.warning("⚠️ O servidor do Streamlit está em uma região bloqueada pela Binance. Tente atualizar a página em alguns minutos.")
 
 # O sistema está programado para o Reset Automático de VWAP às 00:00 UTC.
