@@ -1,40 +1,44 @@
-// @version=5
-indicator("Eixo Alpha Vision - BTC", overlay=true)
+import streamlit as st
+import pandas as pd
+from datetime import time
 
-// Configuração de Horário (Brasília UTC-3)
-sessao_ny = (hour == 11 and minute >= 30) or (hour > 11 and hour < 18)
+st.title("Alpha Vision - Eixo Institucional")
 
-var float max_d = na
-var float min_d = na
-var float eixo = na
+# Simulando a entrada de dados (No seu terminal, aqui entra a API da Exchange)
+# Vamos usar o valor que você validou no gráfico
+preco_atual = 89235.0  # Conforme seu print
+eixo_referencia = 89790.0 # Eixo de Quinta/Sexta que você achou
 
-// Captura de dados
-if sessao_ny
-    max_d := not sessao_ny[1] ? high : math.max(high, max_d)
-    min_d := not sessao_ny[1] ? low : math.min(low, min_d)
+def calcular_alvos(eixo):
+    return {
+        "Alvo Final (1.22%)": eixo * 1.0122,
+        "Aviso Topo (0.80%)": eixo * 1.008,
+        "Parcial (0.61%)": eixo * 1.0061,
+        "Respiro (0.40%)": eixo * 1.004,
+        "EIXO MESTRE": eixo,
+        "Respiro Baixa (-0.40%)": eixo * 0.996,
+        "Parcial Baixa (-0.61%)": eixo * 0.9939,
+        "Alvo Final Baixa (-1.22%)": eixo * 0.9878
+    }
 
-// Trava o Eixo às 18:00
-if hour == 18 and minute == 0
-    eixo := (max_d + min_d) / 2
+alvos = calcular_alvos(eixo_referencia)
 
-// Alvos Baseados no Eixo Travado
-a_04   = eixo * 1.004
-a_061  = eixo * 1.0061
-a_122  = eixo * 1.0122
+# Exibição no Terminal para o Cliente
+st.subheader(f"Eixo Travado: ${eixo_referencia:,.2f}")
 
-b_04   = eixo * 0.996
-b_061  = eixo * 0.9939
-b_122  = eixo * 0.9878
+col1, col2 = st.columns(2)
 
-// Plotagem - Só aparece se o Eixo existir
-plot(eixo, "EIXO MESTRE", color=color.yellow, linewidth=3, style=plot.style_linebr)
+with col1:
+    st.success("🎯 ALVOS DE ALTA")
+    st.write(f"Final (1.22%): **${alvos['Alvo Final (1.22%)']:,.2f}**")
+    st.write(f"Aviso Topo (0.8%): ${alvos['Aviso Topo (0.80%)']:,.2f}")
+    st.write(f"Respiro (0.4%): ${alvos['Respiro (0.40%)']:,.2f}")
 
-// Alvos de Alta (Verdes)
-plot(eixo > 0 ? a_04 : na,  "0.4%",  color=color.new(color.gray, 50))
-plot(eixo > 0 ? a_061 : na, "0.61%", color=color.new(color.green, 50))
-plot(eixo > 0 ? a_122 : na, "1.22%", color=color.green, linewidth=2)
+with col2:
+    st.error("📉 ALVOS DE BAIXA")
+    st.write(f"Final (-1.22%): **${alvos['Alvo Final Baixa (-1.22%)']:,.2f}**")
+    st.write(f"Aviso Topo (-0.8%): ${alvos['Alerta de Topo (0.80%) (Venda)']:,.2f}" if 'Alerta de Topo (0.80%) (Venda)' in alvos else "")
+    st.write(f"Respiro (-0.4%): ${alvos['Respiro Baixa (-0.40%)']:,.2f}")
 
-// Alvos de Baixa (Vermelhos)
-plot(eixo > 0 ? b_04 : na,  "0.4%",  color=color.new(color.gray, 50))
-plot(eixo > 0 ? b_061 : na, "0.61%", color=color.new(color.red, 50))
-plot(eixo > 0 ? b_122 : na, "1.22%", color=color.red, linewidth=2)
+st.divider()
+st.info("O Eixo é calculado diariamente entre 11:30 e 18:00 (Brasília).")
