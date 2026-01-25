@@ -1,77 +1,71 @@
-# 3. MONITORAMENTO AUTOMÁTICO DO EIXO (11:30 - 18:00)
-st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
+import streamlit as st
+import pandas as pd
+import time
+import yfinance as yf
+from datetime import datetime
+import pytz
 
-def calcular_eixo_automatico():
+# 1. CONFIGURAÇÃO ALPHA VISION
+st.set_page_config(page_title="ALPHA VISION BTC", layout="wide", initial_sidebar_state="collapsed")
+
+st.markdown("""
+    <style>
+    .stApp { background-color: #000000; }
+    .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; padding-top: 10px; margin-bottom: 0px; }
+    .subtitle-vision { color: #C0C0C0; font-size: 16px; text-align: center; margin-top: -5px; letter-spacing: 7px; margin-bottom: 25px; font-weight: 700; }
+    
+    .header-container { display: flex; width: 100%; padding: 15px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; position: sticky; top: 0; z-index: 99; }
+    .h-col { font-size: 13px; color: #FFFFFF; text-transform: uppercase; text-align: center; font-weight: 800; letter-spacing: 1px; }
+    
+    .row-container { display: flex; width: 100%; align-items: center; padding: 10px 0; border-bottom: 1px solid #151515; }
+    .w-ativo { width: 14%; text-align: left; padding-left: 10px; color: #D4AF37; font-size: 18px; font-weight: 700; }
+    .w-price { width: 15%; text-align: center; color: #FFFFFF; font-size: 20px; font-weight: 900; }
+    .w-target { width: 9%; text-align: center; font-size: 15px; font-weight: 800; }
+    
+    .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 10px; width: 100%; text-align: center; text-transform: uppercase; }
+    .bg-estavel { background-color: #00CED1; color: #000; }
+    .bg-decisao { background-color: #FFFF00 !important; color: #000 !important; }
+    .bg-atencao { background-color: #FFA500 !important; color: #000 !important; }
+    .target-blink-red { background-color: #FF0000 !important; color: #FFF !important; animation: blinker 0.6s linear infinite; }
+    .target-blink-green { background-color: #00FF00 !important; color: #000 !important; animation: blinker 0.6s linear infinite; }
+    @keyframes blinker { 50% { opacity: 0.3; } }
+    
+    .footer-live { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #000; color: #00FF00; text-align: center; padding: 10px; font-size: 13px; font-weight: bold; border-top: 1px solid #333; }
+    </style>
+    """, unsafe_allow_html=True)
+
+# 2. MOTOR DE CÁLCULO DO EIXO (MÉDIA 11:30 - 18:00 BR)
+def get_institutional_axis():
     try:
         ticker = yf.Ticker("BTC-USD")
-        # Puxa dados de hoje com intervalo de 1 minuto para precisão
-        hist = ticker.history(period="1d", interval="1m")
-        if hist.empty: return 89795.0 # Valor de segurança caso falhe
-        
-        # Filtra o horário de Brasília (11:30 às 18:00)
-        # Nota: YFinance usa UTC, Brasília é UTC-3
+        hist = ticker.history(period="2d", interval="1m")
+        # Converte para horário de Brasília
         hist.index = hist.index.tz_convert('America/Sao_Paulo')
-        janela_alpha = hist.between_time('11:30', '18:00')
+        # Filtra a janela institucional
+        df_janela = hist.between_time('11:30', '18:00')
         
-        if not janela_alpha.empty:
-            maximo = janela_alpha['High'].max()
-            minimo = janela_alpha['Low'].min()
-            return (maximo + minimo) / 2
-        return 89795.0
+        if not df_janela.empty:
+            max_p = df_janela['High'].max()
+            min_p = df_janela['Low'].min()
+            return (max_p + min_p) / 2
+        return 89795.0 # Fallback
     except:
         return 89795.0
 
-# EIXO CALCULADO PELO MOTOR ALPHA
-EIXO_MESTRE = calcular_eixo_automatico()
-ticker_id = "BTC-USD"
+# 3. MONITORAMENTO REAL-TIME
+st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
+
+EIXO = get_institutional_axis()
 placeholder = st.empty()
 
 while True:
     try:
-        data = yf.Ticker(ticker_id).fast_info
-        price = data['last_price']
-        change_pct = ((price / EIXO_MESTRE) - 1) * 100
+        btc = yf.Ticker("BTC-USD").fast_info
+        price = btc['last_price']
+        change_pct = ((price / EIXO) - 1) * 100
         
         with placeholder.container():
             st.markdown(f"""<div class="header-container">
                 <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">BTC/USDT</div>
-                <div class="h-col" style="width:15%;">EIXO: {EIXO_MESTRE:,.2f}</div>
-                <div class="h-col" style="width:9%;">EXAUSTÃO (1.22)</div>
-                <div class="h-col" style="width:9%;">PRÓX. TOPO (0.83)</div>
-                <div class="h-col" style="width:9%;">DECISÃO (0.61)</div>
-                <div class="h-col" style="width:9%;">RESPIRO (0.40)</div>
-                <div class="h-col" style="width:9%;">RESPIRO F. (-0.40)</div>
-                <div class="h-col" style="width:9%;">DECISÃO F. (-0.61)</div>
-                <div class="h-col" style="width:14%;">SINALIZADOR</div></div>""", unsafe_allow_html=True)
-
-            def calc(p): return EIXO_MESTRE * (1 + (p/100))
-            
-            abs_c = abs(change_pct)
-            s_txt, s_class = "ESTÁVEL", "bg-estavel"
-            if abs_c >= 1.22: s_txt, s_class = "EXAUSTÃO", "target-blink-red" if change_pct > 0 else "target-blink-green"
-            elif abs_c >= 0.83: s_txt, s_class = "PRÓX. TOPO", "bg-atencao"
-            elif abs_c >= 0.61: s_txt, s_class = "REGIÃO DE DECISÃO", "bg-decisao"
-
-            arrow = "▲" if price >= EIXO_MESTRE else "▼"
-            t_color = "#00FF00" if price >= EIXO_MESTRE else "#FF0000"
-
-            st.markdown(f"""
-                <div class="row-container">
-                    <div class="w-ativo" style="color:#D4AF37;">BTC/USDT</div>
-                    <div class="w-price">{price:,.2f} <span style="color:{t_color};">{arrow}</span>
-                        <span class="perc-val" style="color:{t_color};">{change_pct:+.2f}% do Eixo</span></div>
-                    <div class="w-target" style="color:#FF4444; width:9%;">{calc(1.22):,.2f}</div>
-                    <div class="w-target" style="color:#FFA500; width:9%;">{calc(0.83):,.2f}</div>
-                    <div class="w-target" style="color:#FFFF00; width:9%;">{calc(0.61):,.2f}</div>
-                    <div class="w-target" style="color:#00CED1; width:9%;">{calc(0.40):,.2f}</div>
-                    <div class="w-target" style="color:#00CED1; width:9%;">{calc(-0.40):,.2f}</div>
-                    <div class="w-target" style="color:#FFFF00; width:9%;">{calc(-0.61):,.2f}</div>
-                    <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown(f'<div class="footer-live">🟢 EIXO DINÂMICO (11:30-18:00 BR) | RESET 00:00 UTC</div>', unsafe_allow_html=True)
-            
-        time.sleep(2)
-    except:
-        time.sleep(5)
+                <div class="h-
