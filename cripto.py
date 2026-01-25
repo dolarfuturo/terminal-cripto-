@@ -1,68 +1,60 @@
 import streamlit as st
-import pandas as pd
+import requests
 import time
-from datetime import datetime, timezone
 
-# Configuração de Interface Estilo Bloomberg
-st.set_page_config(page_title="TERMINAL ALPHA VISION", layout="wide")
+# Configuração de Estilo Terminal
+st.set_page_config(page_title="ALPHA LINE", layout="wide")
 
 st.markdown("""
     <style>
-    .main { background-color: #000000; color: #00FF00; font-family: 'Courier New', Courier, monospace; }
-    .stMetric { background-color: #111111; border: 1px solid #333; padding: 10px; border-radius: 5px; }
+    .main { background-color: #000000; color: #00FF00; font-family: 'Courier New', monospace; }
+    .stMetric { border: 1px solid #222; padding: 5px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- CABEÇALHO ---
-st.title("🏛️ ALPHA VISION | INSTITUTIONAL TERMINAL")
-st.write(f"Sessão: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+# --- FUNÇÃO PREÇO AO VIVO ---
+def get_price():
+    try:
+        url = "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
+        return float(requests.get(url).json()['price'])
+    except:
+        return 89126.0 # Fallback caso a API falhe
 
-# --- LÓGICA DE DADOS (Simulando API Real-Time) ---
-# Aqui o sistema busca o preço ao vivo (Exemplo: $89.126 como no seu print)
-preco_atual = 89126.0 
-# Seu Eixo Travado (Pode ser automatizado via API pegando Max/Min 11:30-18:00)
-eixo_mestre = 89795.0 
+# --- PARÂMETROS ---
+eixo = 89795.0 
+atual = get_price()
+def c(p): return eixo * (1 + (p/100))
 
-# Cálculo de Variação com base no Eixo
-variacao_eixo = ((preco_atual / eixo_mestre) - 1) * 100
+# --- TERMINAL EM LINHA ---
+st.write("### 🟢 ALPHA VISION LIVE FEED")
 
-# --- CÁLCULO DOS ALVOS ---
-def calc(p): return eixo_mestre * (1 + (p/100))
-
-alvos_up = { "1.22%": calc(1.22), "0.83%": calc(0.83), "0.61%": calc(0.61), "0.40%": calc(0.4) }
-alvos_down = { "-0.40%": calc(-0.4), "-0.61%": calc(-0.61), "-0.83%": calc(-0.83), "-1.22%": calc(-1.22) }
-
-# --- PAINEL PRINCIPAL ---
-col_stats1, col_stats2, col_stats3 = st.columns(3)
-
-with col_stats1:
-    st.metric("TICKER", "BTC/USDT")
-with col_stats2:
-    color = "inverse" if variacao_eixo < 0 else "normal"
-    st.metric("PREÇO ATUAL", f"${preco_atual:,.2f}", f"{variacao_eixo:.2f}% vs Eixo", delta_color=color)
-with col_stats3:
-    st.metric("EIXO MESTRE (LOCK)", f"${eixo_mestre:,.2f}", "Reset 00:00 UTC")
+# Primeira Linha: Dados do Ativo
+col_main = st.columns([1, 1, 1, 1])
+col_main[0].metric("CÓDIGO", "BTC/USDT")
+col_main[1].metric("PREÇO ATUAL", f"${atual:,.2f}")
+col_main[2].metric("EIXO MESTRE", f"${eixo:,.2f}")
+col_main[3].metric("VAR %", f"{((atual/eixo)-1)*100:.2f}%")
 
 st.divider()
 
-# --- TABELA DE ALVOS BLOOMBERG STYLE ---
-st.subheader("📊 GRADE DE EXECUÇÃO INSTITUCIONAL")
+# Segunda Linha: Alvos de ALTA (Horizontal)
+st.write("⬆️ **ZONA DE ALTA (ALVOS)**")
+cols_up = st.columns(4)
+cols_up[0].metric("0.40% (R)", f"{c(0.4):,.2f}")
+cols_up[1].metric("0.61% (P)", f"{c(0.61):,.2f}")
+cols_up[2].metric("0.83% (T)", f"{c(0.83):,.2f}")
+cols_up[3].metric("1.22% (GO)", f"{c(1.22):,.2f}")
 
-tabela_dados = {
-    "NÍVEL (%)": ["1.22% (ALVO)", "0.83% (TOPO)", "0.61% (PARCIAL)", "0.40% (RESPIRO)", "0.00% (EIXO)", "-0.40%", "-0.61%", "-0.83%", "-1.22%"],
-    "PREÇO": [
-        f"${alvos_up['1.22%']:,.2f}", f"${alvos_up['0.83%']:,.2f}", f"${alvos_up['0.61%']:,.2f}", f"${alvos_up['0.40%']:,.2f}",
-        f"${eixo_mestre:,.2f}",
-        f"${alvos_down['-0.40%']:,.2f}", f"${alvos_down['-0.61%']:,.2f}", f"${alvos_down['-0.83%']:,.2f}", f"${alvos_down['-1.22%']:,.2f}"
-    ],
-    "STATUS": [
-        "🎯 TARGET", "⚠️ EXAUSTÃO", "🛡️ PROTEÇÃO", "🔄 PULLBACK", "💎 BALANCE", "🔄 PULLBACK", "🛡️ PROTEÇÃO", "⚠️ EXAUSTÃO", "🎯 TARGET"
-    ]
-}
+st.divider()
 
-df_terminal = pd.DataFrame(tabela_dados)
-st.table(df_terminal)
+# Terceira Linha: Alvos de BAIXA (Horizontal)
+st.write("⬇️ **ZONA DE BAIXA (ALVOS)**")
+cols_down = st.columns(4)
+cols_down[0].metric("-0.40% (R)", f"{c(-0.4):,.2f}")
+cols_down[1].metric("-0.61% (P)", f"{c(-0.61):,.2f}")
+cols_down[2].metric("-0.83% (T)", f"{c(-0.83):,.2f}")
+cols_down[3].metric("-1.22% (GO)", f"{c(-1.22):,.2f}")
 
-# --- AUTO REFRESH ---
-time.sleep(2)
-# st.rerun() # Descomente para rodar ao vivo
+# Refresh automático para o preço flutuar
+time.sleep(5)
+st.rerun()
