@@ -2,59 +2,62 @@ import streamlit as st
 import requests
 import time
 
-# Configuração de Estilo Terminal
-st.set_page_config(page_title="ALPHA LINE", layout="wide")
+# Estética Bloomberg
+st.set_page_config(page_title="ALPHA TERMINAL LIVE", layout="wide")
+st.markdown("""<style>.main { background-color: #000; color: #0f0; font-family: monospace; }</style>""", unsafe_allow_html=True)
 
-st.markdown("""
-    <style>
-    .main { background-color: #000000; color: #00FF00; font-family: 'Courier New', monospace; }
-    .stMetric { border: 1px solid #222; padding: 5px; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- FUNÇÃO PREÇO AO VIVO ---
-def get_price():
+# --- FUNÇÃO DE DADOS EM TEMPO REAL ---
+def get_binance_price():
     try:
-        url = "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
-        return float(requests.get(url).json()['price'])
+        # Puxando direto da fonte oficial da Binance
+        response = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT", timeout=2)
+        return float(response.json()['price'])
     except:
-        return 89126.0 # Fallback caso a API falhe
+        return None
 
-# --- PARÂMETROS ---
-eixo = 89795.0 
-atual = get_price()
+# --- PARÂMETROS OPERACIONAIS ---
+eixo = 89795.0 # Seu eixo travado conforme as imagens
+preco_atual = get_binance_price()
+
+# Se a API falhar, tenta novamente
+if preco_atual is None:
+    st.warning("Aguardando conexão com a Binance...")
+    time.sleep(1)
+    st.rerun()
+
+# --- CÁLCULO DE ALVOS (Sua Régua) ---
 def c(p): return eixo * (1 + (p/100))
+var_pct = ((preco_atual / eixo) - 1) * 100
 
 # --- TERMINAL EM LINHA ---
-st.write("### 🟢 ALPHA VISION LIVE FEED")
+st.write(f"### 🖥️ TERMINAL ALPHA | BTC/USDT | {time.strftime('%H:%M:%S')}")
 
-# Primeira Linha: Dados do Ativo
-col_main = st.columns([1, 1, 1, 1])
-col_main[0].metric("CÓDIGO", "BTC/USDT")
-col_main[1].metric("PREÇO ATUAL", f"${atual:,.2f}")
-col_main[2].metric("EIXO MESTRE", f"${eixo:,.2f}")
-col_main[3].metric("VAR %", f"{((atual/eixo)-1)*100:.2f}%")
-
-st.divider()
-
-# Segunda Linha: Alvos de ALTA (Horizontal)
-st.write("⬆️ **ZONA DE ALTA (ALVOS)**")
-cols_up = st.columns(4)
-cols_up[0].metric("0.40% (R)", f"{c(0.4):,.2f}")
-cols_up[1].metric("0.61% (P)", f"{c(0.61):,.2f}")
-cols_up[2].metric("0.83% (T)", f"{c(0.83):,.2f}")
-cols_up[3].metric("1.22% (GO)", f"{c(1.22):,.2f}")
+# CABEÇALHO EM LINHA
+c1, c2, c3, c4 = st.columns([1.5, 2, 2, 1.5])
+c1.metric("ATIVO", "BTC/USDT")
+c2.metric("PREÇO ATUAL", f"${preco_atual:,.2f}", f"{preco_atual - 89070:.2f} diff") # Comparativo
+c3.metric("EIXO MESTRE", f"${eixo:,.2f}")
+c4.metric("VAR / EIXO", f"{var_pct:.2f}%")
 
 st.divider()
 
-# Terceira Linha: Alvos de BAIXA (Horizontal)
-st.write("⬇️ **ZONA DE BAIXA (ALVOS)**")
-cols_down = st.columns(4)
-cols_down[0].metric("-0.40% (R)", f"{c(-0.4):,.2f}")
-cols_down[1].metric("-0.61% (P)", f"{c(-0.61):,.2f}")
-cols_down[2].metric("-0.83% (T)", f"{c(-0.83):,.2f}")
-cols_down[3].metric("-1.22% (GO)", f"{c(-1.22):,.2f}")
+# LINHA DE ALVOS (HORIZONTAL)
+st.write("🎯 **GRADE DE ALVOS (PERCENTUAL SOBRE EIXO)**")
+ca, cb, cc, cd, ce, cf, cg, ch = st.columns(8)
 
-# Refresh automático para o preço flutuar
-time.sleep(5)
+# Alta
+ca.metric("1.22%", f"{c(1.22):,.0f}")
+cb.metric("0.83%", f"{c(0.83):,.0f}")
+cc.metric("0.61%", f"{c(0.61):,.0f}")
+cd.metric("0.40%", f"{c(0.4):,.0f}")
+
+# Baixa
+ce.metric("-0.40%", f"{c(-0.4):,.0f}")
+cf.metric("-0.61%", f"{c(-0.61):,.0f}")
+cg.metric("-0.83%", f"{c(-0.83):,.0f}")
+ch.metric("-1.22%", f"{c(-1.22):,.0f}")
+
+# --- LOOP DE MOVIMENTO ---
+# Faz o script rodar de novo em 2 segundos para o preço flutuar
+time.sleep(2)
 st.rerun()
