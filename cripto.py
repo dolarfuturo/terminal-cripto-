@@ -13,15 +13,12 @@ st.markdown("""
     .stApp { background-color: #000000; }
     .title-gold { color: #D4AF37; font-size: 24px; font-weight: 900; text-align: center; padding: 15px; letter-spacing: 3px; }
     
-    /* Grid Técnico com maior espaçamento (Gap) */
-    .header-container { display: flex; width: 100%; padding: 15px 0; border-bottom: 2px solid #D4AF37; background: #050505; justify-content: space-between; gap: 10px; }
-    .h-col { font-size: 10px; color: #666; text-transform: uppercase; text-align: center; font-weight: 800; flex: 1; letter-spacing: 1px; }
+    .header-container { display: flex; width: 100%; padding: 15px 0; border-bottom: 2px solid #D4AF37; background: #050505; justify-content: space-between; gap: 5px; }
+    .h-col { font-size: 10px; color: #666; text-transform: uppercase; text-align: center; font-weight: 800; flex: 1; }
     
-    /* Row ajustada: Fonte 18px para não embolar as 3 casas */
-    .row-container { display: flex; width: 100%; align-items: center; padding: 30px 0; border-bottom: 1px solid #111; justify-content: space-between; gap: 10px; }
+    .row-container { display: flex; width: 100%; align-items: center; padding: 30px 0; border-bottom: 1px solid #111; justify-content: space-between; gap: 5px; }
     .w-col { flex: 1; text-align: center; font-family: 'monospace'; font-size: 18px; font-weight: 800; color: #EEE; white-space: nowrap; }
     
-    /* Footer Stream */
     .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; color: #FFF; text-align: center; padding: 15px; font-size: 12px; border-top: 1px solid #222; display: flex; justify-content: center; align-items: center; gap: 40px; z-index: 1000; }
     .dot { height: 10px; width: 10px; background-color: #00FF00; border-radius: 50%; display: inline-block; margin-right: 10px; box-shadow: 0 0 15px #00FF00; animation: blink 1.5s infinite; }
     @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.1; } 100% { opacity: 1; } }
@@ -30,13 +27,15 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. MOTOR DE CALIBRAGEM
+# 2. MOTOR DE CALIBRAGEM MIDPOINT
 def get_midpoint_institutional():
     try:
         br_tz = pytz.timezone('America/Sao_Paulo')
         now_br = datetime.now(br_tz)
+        # Sáb, Dom e Seg (<18h) -> Valor fixo do TradingView
         if now_br.weekday() >= 5 or (now_br.weekday() == 0 and now_br.hour < 18):
             return 89792.500
+        
         target_date = now_br if now_br.hour >= 18 else now_br - timedelta(days=1)
         df = yf.download("BTC-USD", start=target_date.strftime('%Y-%m-%d'), interval="1m", progress=False)
         df.index = df.index.tz_convert(br_tz)
@@ -47,11 +46,11 @@ def get_midpoint_institutional():
     except:
         return 89792.500
 
-# 3. INTERFACE
+# 3. INTERFACE EM TEMPO REAL
 st.markdown('<div class="title-gold">ALPHA VISION • MIDPOINT TERMINAL</div>', unsafe_allow_html=True)
 
-if 'midpoint' not in st.session_state:
-    st.session_state.midpoint = get_midpoint_institutional()
+if 'mp_val' not in st.session_state:
+    st.session_state.mp_val = get_midpoint_institutional()
 
 placeholder = st.empty()
 
@@ -60,18 +59,19 @@ while True:
         br_tz, ny_tz = pytz.timezone('America/Sao_Paulo'), pytz.timezone('America/New_York')
         now_br, now_ny = datetime.now(br_tz), datetime.now(ny_tz)
         
-        if now_br.hour == 18 and now_br.minute == 0 and now_br.second < 3:
-            st.session_state.midpoint = get_midpoint_institutional()
+        # Reset Automático
+        if now_br.hour == 18 and now_br.minute == 0 and now_br.second < 2:
+            st.session_state.mp_val = get_midpoint_institutional()
 
         ticker = yf.Ticker("BTC-USD")
         price = ticker.fast_info['last_price']
-        mp = st.session_state.midpoint
+        mp = st.session_state.mp_val
         var = ((price / mp) - 1) * 100
         cor_var = "#00FF00" if var >= 0 else "#FF4444"
         
         with placeholder.container():
             if now_br.hour == 18 and now_br.minute == 0:
-                st.markdown('<div class="reset-alert">⚠️ ALERTA: MIDPOINT RECALIBRADO (11:30-18:00)</div>', unsafe_allow_html=True)
+                st.markdown('<div class="reset-alert">⚠️ DATA REFRESH: MIDPOINT RECALIBRADO</div>', unsafe_allow_html=True)
 
             st.markdown(f"""
                 <div class="header-container">
