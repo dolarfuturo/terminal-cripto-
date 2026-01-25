@@ -5,13 +5,15 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 
-# 1. SETUP ALPHA
+# 1. SETUP ALPHA - IDENTIDADE VISUAL
 st.set_page_config(page_title="ALPHA VISION LIVE", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
     <style>
     .stApp { background-color: #000000; }
-    .title-gold { color: #D4AF37; font-size: 30px; font-weight: 900; text-align: center; padding: 15px; }
+    .title-container { text-align: center; padding: 10px; }
+    .title-gold { color: #D4AF37; font-size: 32px; font-weight: 900; letter-spacing: 2px; margin-bottom: 0px; }
+    .subtitle-white { color: #FFFFFF; font-size: 16px; font-weight: 400; letter-spacing: 1px; margin-top: -5px; }
     
     .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background: #080808; justify-content: space-between; }
     .h-col { font-size: 10px; color: #FFF; text-transform: uppercase; text-align: center; font-weight: 800; flex: 1; }
@@ -22,6 +24,8 @@ st.markdown("""
     .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; color: #FFF; text-align: center; padding: 12px; font-size: 13px; border-top: 1px solid #333; display: flex; justify-content: center; align-items: center; gap: 30px; z-index: 1000; }
     .dot { height: 10px; width: 10px; background-color: #00FF00; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 12px #00FF00; animation: blink 1.2s infinite; }
     @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+    
+    .reset-alert { background-color: #D4AF37; color: #000; text-align: center; font-weight: 900; padding: 8px; font-size: 14px; position: fixed; top: 0; width: 100%; z-index: 2000; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -43,10 +47,15 @@ def get_midpoint_final():
         return 89792
 
 # 3. INTERFACE REAL-TIME
-st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
+st.markdown("""
+    <div class="title-container">
+        <div class="title-gold">ALPHA VISION CRYPTO</div>
+        <div class="subtitle-white">visão de tubarão</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-if 'midpoint_val' not in st.session_state:
-    st.session_state.midpoint_val = get_midpoint_final()
+if 'mp_val' not in st.session_state:
+    st.session_state.mp_val = get_midpoint_final()
 
 placeholder = st.empty()
 
@@ -55,16 +64,24 @@ while True:
         br_tz, ny_tz = pytz.timezone('America/Sao_Paulo'), pytz.timezone('America/New_York')
         now_br, now_ny = datetime.now(br_tz), datetime.now(ny_tz)
         
+        # Reset automático às 18h BR (00:00 UTC aprox para Binance)
+        if now_br.hour == 18 and now_br.minute == 0 and now_br.second < 2:
+            st.session_state.mp_val = get_midpoint_final()
+
         ticker = yf.Ticker("BTC-USD")
         price = ticker.fast_info['last_price']
-        mp = st.session_state.midpoint_val
+        mp = st.session_state.mp_val
         var = ((price / mp) - 1) * 100
         
-        # Lógica da Seta e Cor
+        # Lógica de Seta e Cor para direção do preço
         cor_var = "#00FF00" if var >= 0 else "#FF0000"
         seta = "▲" if var >= 0 else "▼"
         
         with placeholder.container():
+            # Sinal Alerta Reset
+            if now_br.hour == 18 and now_br.minute == 0:
+                st.markdown('<div class="reset-alert">⚠️ SISTEMA RECALCULADO: MIDPOINT ATUALIZADO</div>', unsafe_allow_html=True)
+
             st.markdown(f"""
                 <div class="header-container">
                     <div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div>
@@ -78,21 +95,4 @@ while True:
                     <div class="w-col" style="color:#FF4444;">{int(mp*1.0122):,}</div>
                     <div class="w-col" style="color:#FFA500;">{int(mp*1.0083):,}</div>
                     <div class="w-col" style="color:#FFFF00;">{int(mp*1.0061):,}</div>
-                    <div class="w-col" style="color:#00CED1;">{int(mp*1.0040):,}</div>
-                    <div class="w-col" style="color:#FFA500;">{int(mp*0.9939):,}</div>
-                    <div class="w-col" style="color:#00FF00;">{int(mp*0.9878):,}</div>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown(f"""
-                <div class="footer">
-                    <div><span class="dot"></span> LIVESTREAM ATIVO</div>
-                    <div>MIDPOINT: <span style="color:#FFA500; font-family:monospace;">{int(mp):,}</span></div>
-                    <div>SÃO PAULO: {now_br.strftime('%H:%M:%S')}</div>
-                    <div>NEW YORK: {now_ny.strftime('%H:%M:%S')}</div>
-                </div>
-            """, unsafe_allow_html=True)
-            
-        time.sleep(1)
-    except:
-        time.sleep(5)
+                    <div class="
