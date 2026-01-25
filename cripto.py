@@ -95,4 +95,21 @@ while True:
                     <div class="w-col" style="color:#FF4444;">{int(mp*1.0122):,}</div>
                     <div class="w-col" style="color:#FFA500;">{int(mp*1.0083):,}</div>
                     <div class="w-col" style="color:#FFFF00;">{int(mp*1.0061):,}</div>
-                    <div class="
+                    <div class="w-col" style="color:#00CED1;">{int(mp*1.0040):,}</div>
+                    <div class="w-col" style="color:#FFA500;">{int(mp*0.9939):,}</div>
+                    <div class="w-col" style="color:#00FF00;">{int(mp*0.9878):,}</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+                <div class="footer">
+                    <div><span class="dot"></span> LIVESTREAM ATIVO</div>
+                    <div>MIDPOINT: <span style="color:#FFA500; font-family:monospace;">{int(mp):,}</span></div>
+                    <div>BRASÍLIA: {now_br.strftime('%H:%M:%S')}</div>
+                    <div>NEW YORK: {now_ny.strftime('%H:%M:%S')}</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        time.sleep(1)
+    except:
+        time.sleep(5)
