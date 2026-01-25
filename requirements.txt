@@ -1,5 +1,2 @@
 streamlit
-pandas
-pandas_ta
-tvDatafeed
-git+https://github.com/romanswan/tvDatafeed.git
+requests
