@@ -1,48 +1,65 @@
 import streamlit as st
 import yfinance as yf
+import pandas as pd
 import time
-from datetime import datetime
 
-# Estilo Alpha Vision
-st.set_page_config(page_title="ALPHA VISION LIVE", layout="wide")
-st.markdown("<style>.main { background-color: #000; color: #0f0; font-family: monospace; }</style>", unsafe_allow_html=True)
+# Configuração de Página e Estilo "Visão de Tubarão"
+st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
 
-# Função para buscar preço via Yahoo Finance
-def get_yfinance_price():
-    try:
-        # Busca o ticker do Bitcoin
-        data = yf.Ticker("BTC-USD").fast_info
-        return float(data['last_price'])
-    except:
-        return 89126.0
+st.markdown("""
+    <style>
+    .main { background-color: #000000; }
+    .title { color: #D4AF37; text-align: center; font-family: 'serif'; font-weight: bold; }
+    .subtitle { color: #FFFFFF; text-align: center; letter-spacing: 5px; font-size: 14px; }
+    th { color: #D4AF37 !important; background-color: #111 !important; }
+    td { color: #FFFFFF !important; font-family: 'monospace'; }
+    .stMetric { background-color: #0a0a0a; border: 1px solid #333; padding: 10px; border-radius: 5px; }
+    </style>
+    """, unsafe_allow_html=True)
 
-# CONFIGURAÇÕES DO DIRETOR
-eixo_mestre = 89795.0 
-preco_viva = get_yfinance_price()
-agora = datetime.now().strftime("%H:%M:%S")
+st.markdown("<h1 class='title'>ALPHA VISION CRYPTO</h1>", unsafe_allow_html=True)
+st.markdown("<p class='subtitle'>VISÃO DE TUBARÃO</p>", unsafe_allow_html=True)
 
-def calc(p): return eixo_mestre * (1 + (p/100))
+# Lista de Ativos do Terminal
+ativos = ["BTC-USD", "ETH-USD", "SOL-USD", "BNB-USD", "XRP-USD", "DOGE-USD", "ADA-USD"]
 
-# Interface do Terminal
-st.title("🏛️ ALPHA VISION | YAHOO REAL-TIME")
-st.write(f"Sync: {agora} (Datafeed Ativo)")
+# Eixo Mestre (Referência da sua Imagem 2)
+EIXO = 89795.0 
 
-c1, c2, c3 = st.columns(3)
-c1.metric("ATIVO", "BTC/USD")
-# Preço em destaque
-st.markdown(f"<h1 style='color: #0f0; font-size: 60px;'>${preco_viva:,.2f}</h1>", unsafe_allow_html=True)
-c3.metric("VAR/EIXO", f"{((preco_viva/eixo_mestre)-1)*100:.2f}%")
+def get_data():
+    lista_final = []
+    for ticker in ativos:
+        try:
+            # Puxa dados do Yahoo Finance
+            data = yf.Ticker(ticker).fast_info
+            preco = data['last_price']
+            
+            # Cálculos de Alvos (Baseados no EIXO para BTC, ou Preço para os outros)
+            # Para manter o seu setup, usamos o EIXO fixo no BTC
+            ref = EIXO if ticker == "BTC-USD" else preco
+            
+            def calc(p): return ref * (1 + (p/100))
+            
+            lista_final.append({
+                "ATIVO": ticker.replace("-USD", "/USDT"),
+                "PREÇO ATUAL": f"{preco:,.2f}",
+                "1.22% EXAUSTÃO": f"{calc(1.22):,.2f}",
+                "0.83% TOPO": f"{calc(0.83):,.2f}",
+                "0.61% PARCIAL": f"{calc(0.61):,.2f}",
+                "0.40% RESPIRO": f"{calc(0.40):,.2f}",
+                "SINALIZADOR": "ESTÁVEL"
+            })
+        except:
+            continue
+    return pd.DataFrame(lista_final)
 
-st.divider()
+# Exibição da Tabela "Tubarão"
+df = get_data()
+st.table(df)
 
-# Grade de Alvos Institucionais
-st.write("🎯 **ALVOS DE EXECUÇÃO**")
-cols = st.columns(4)
-cols[0].metric("1.22% ALVO", f"${calc(1.22):,.0f}")
-cols[1].metric("0.83% TOPO", f"${calc(0.83):,.0f}")
-cols[2].metric("0.61% PARCIAL", f"${calc(0.61):,.0f}")
-cols[3].metric("0.40% RESPIRO", f"${calc(0.40):,.0f}")
+# Footer com relógio para confirmar tempo real
+st.markdown(f"<p style='color:#333; text-align:center;'>Sincronizado: {time.strftime('%H:%M:%S')} - Reset VWAP 00:00 UTC</p>", unsafe_allow_html=True)
 
-# MOTOR DE MOVIMENTO
-time.sleep(2)
+# Motor de atualização (A cada 5 segundos para não travar o Yahoo)
+time.sleep(5)
 st.rerun()
