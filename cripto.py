@@ -1,65 +1,65 @@
 import streamlit as st
 import pandas as pd
 import time
-import requests
+import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 
-# 1. CONFIGURAÇÃO VISUAL
-st.set_page_config(page_title="ALPHA VISION BTC", layout="wide", initial_sidebar_state="collapsed")
+# 1. CONFIGURAÇÃO ALPHA
+st.set_page_config(page_title="ALPHA VISION", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
     <style>
     .stApp { background-color: #000000; }
-    .title-gold { color: #D4AF37; font-size: 32px; font-weight: 900; text-align: center; padding: 10px 0; }
-    .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; }
-    .h-col { font-size: 11px; color: #FFFFFF; text-transform: uppercase; text-align: center; font-weight: 800; flex: 1; }
-    .row-container { display: flex; width: 100%; align-items: center; padding: 15px 0; border-bottom: 1px solid #151515; }
-    .w-col { flex: 1; text-align: center; font-family: 'monospace'; font-size: 19px; font-weight: 800; color: #FFF; }
-    .footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #000; color: #00FF00; text-align: center; padding: 5px; font-size: 12px; border-top: 1px solid #333; }
+    .title-gold { color: #D4AF37; font-size: 30px; font-weight: 900; text-align: center; padding: 10px; }
+    .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background: #080808; }
+    .h-col { font-size: 11px; color: #FFF; text-transform: uppercase; text-align: center; font-weight: 800; flex: 1; }
+    .row-container { display: flex; width: 100%; align-items: center; padding: 18px 0; border-bottom: 1px solid #151515; }
+    .w-col { flex: 1; text-align: center; font-family: 'monospace'; font-size: 20px; font-weight: 800; color: #FFF; }
+    .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; color: #00FF00; text-align: center; padding: 5px; font-size: 12px; border-top: 1px solid #333; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. CÁLCULO DO EIXO (DADOS DE CONTRATOS PERPÉTUOS - TRADINGVIEW)
-@st.cache_data(ttl=600)
-def get_tradingview_eixo():
+# 2. CÁLCULO DO EIXO (INDEX GLOBAL - IGUAL TRADINGVIEW)
+def get_eixo_index():
     try:
         br_tz = pytz.timezone('America/Sao_Paulo')
         now_br = datetime.now(br_tz)
-        
-        # Lógica para travar na Sexta-Feira
         days_to_sub = (now_br.weekday() - 4) % 7
         if days_to_sub == 0 and now_br.hour < 18: days_to_sub = 7
         target_date = now_br - timedelta(days=days_to_sub)
         
-        # Janela 11:30 - 18:00
-        s_dt = br_tz.localize(datetime(target_date.year, target_date.month, target_date.day, 11, 30))
-        e_dt = br_tz.localize(datetime(target_date.year, target_date.month, target_date.day, 18, 0))
+        # Puxa dados da Sexta
+        df = yf.download("BTC-USD", start=target_date.strftime('%Y-%m-%d'), 
+                         end=(target_date + timedelta(days=1)).strftime('%Y-%m-%d'), interval="1m", progress=False)
+        df.index = df.index.tz_convert(br_tz)
+        df_janela = df.between_time('11:30', '18:00')
         
-        # Chama API de Futuros (BTCUSDT Perpetual)
-        url = f"https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1m&startTime={int(s_dt.timestamp()*1000)}&endTime={int(e_dt.timestamp()*1000)}"
-        resp = requests.get(url, timeout=10).json()
-        
-        df = pd.DataFrame(resp, columns=['t','o','h','l','c','v','ct','qv','nt','tb','tq','i'])
-        mx = df['h'].astype(float).max()
-        mn = df['l'].astype(float).min()
+        mx = float(df_janela['High'].max())
+        mn = float(df_janela['Low'].min())
         return (mx + mn) / 2
     except:
-        return 89719.50 # Fallback baseado no fechamento de sexta
+        return 89719.0
 
-# 3. DASHBOARD
+# 3. DASHBOARD OPERACIONAL
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 
-EIXO_TV = get_tradingview_eixo()
+# Recupera Eixo de Sexta
+if 'eixo_fixo' not in st.session_state:
+    st.session_state.eixo_fixo = get_eixo_index()
+
+# Ajuste fino manual (caso queira bater centavo com centavo do seu gráfico)
+eixo_final = st.sidebar.number_input("AJUSTE EIXO MESTRE", value=st.session_state.eixo_fixo, step=1.0)
+
 placeholder = st.empty()
 
 while True:
     try:
-        # Preço Real-Time (Binance Futures)
-        r = requests.get("https://fapi.binance.com/fapi/v1/ticker/price?symbol=BTCUSDT", timeout=2).json()
-        price = float(r['price'])
+        # Preço Atual (Index)
+        data_now = yf.Ticker("BTC-USD").fast_info
+        price = data_now['last_price']
         
-        var = ((price / EIXO_TV) - 1) * 100
+        var = ((price / eixo_final) - 1) * 100
         cor = "#00FF00" if var >= 0 else "#FF0000"
         seta = "▲" if var >= 0 else "▼"
         
@@ -74,19 +74,19 @@ while True:
                 <div class="row-container">
                     <div class="w-col" style="color:#D4AF37;">BTC/USDT</div>
                     <div class="w-col">{price:,.2f}<br><span style="color:{cor}; font-size:15px;">{seta} {var:+.2f}%</span></div>
-                    <div class="w-col" style="color:#FF4444;">{EIXO_TV*1.0122:,.0f}</div>
-                    <div class="w-col" style="color:#FFA500;">{EIXO_TV*1.0083:,.0f}</div>
-                    <div class="h-col" style="color:#FFFF00; font-size:18px; font-weight:800; flex:1; text-align:center;">{EIXO_TV*1.0061:,.0f}</div>
-                    <div class="w-col" style="color:#00CED1;">{EIXO_TV*1.0040:,.0f}</div>
-                    <div class="w-col" style="color:#FFFF00;">{EIXO_TV*0.9939:,.0f}</div>
-                    <div class="w-col" style="color:#00FF00;">{EIXO_TV*0.9878:,.0f}</div>
+                    <div class="w-col" style="color:#FF4444;">{eixo_final*1.0122:,.0f}</div>
+                    <div class="w-col" style="color:#FFA500;">{eixo_final*1.0083:,.0f}</div>
+                    <div class="w-col" style="color:#FFFF00;">{eixo_final*1.0061:,.0f}</div>
+                    <div class="w-col" style="color:#00CED1;">{eixo_final*1.0040:,.0f}</div>
+                    <div class="w-col" style="color:#FFFF00;">{eixo_final*0.9939:,.0f}</div>
+                    <div class="w-col" style="color:#00FF00;">{eixo_final*0.9878:,.0f}</div>
                 </div>
-                <p style='text-align:center; color:#777; font-weight:bold; margin-top:25px;'>EIXO TRADINGVIEW (SEXTA): {EIXO_TV:,.2f}</p>
+                <p style='text-align:center; color:#444; font-weight:bold; margin-top:30px;'>EIXO REF. SEXTA (11:30-18:00 BR): {eixo_final:,.2f}</p>
             """, unsafe_allow_html=True)
             
             br = datetime.now(pytz.timezone('America/Sao_Paulo')).strftime('%H:%M:%S')
-            st.markdown(f'<div class="footer">DADOS: BINANCE FUTURES (TV) | BRASÍLIA: {br}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="footer">DADOS: TRADINGVIEW INDEX | BRASÍLIA: {br}</div>', unsafe_allow_html=True)
             
-        time.sleep(1)
-    except:
         time.sleep(2)
+    except:
+        time.sleep(5)
