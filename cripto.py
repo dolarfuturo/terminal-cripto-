@@ -22,8 +22,6 @@ st.markdown("""
     .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; color: #FFF; text-align: center; padding: 12px; font-size: 13px; border-top: 1px solid #333; display: flex; justify-content: center; align-items: center; gap: 30px; z-index: 1000; }
     .dot { height: 10px; width: 10px; background-color: #00FF00; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 12px #00FF00; animation: blink 1.2s infinite; }
     @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
-    
-    .reset-alert { background-color: #D4AF37; color: #000; text-align: center; font-weight: 900; padding: 8px; font-size: 14px; position: fixed; top: 0; width: 100%; z-index: 2000; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -33,16 +31,16 @@ def get_midpoint_final():
         br_tz = pytz.timezone('America/Sao_Paulo')
         now_br = datetime.now(br_tz)
         if now_br.weekday() >= 5 or (now_br.weekday() == 0 and now_br.hour < 18):
-            return 89792.500
+            return 89792
         target_date = now_br if now_br.hour >= 18 else now_br - timedelta(days=1)
         df = yf.download("BTC-USD", start=target_date.strftime('%Y-%m-%d'), interval="1m", progress=False)
         df.index = df.index.tz_convert(br_tz)
         df_janela = df.between_time('11:30', '18:00')
         if not df_janela.empty:
-            return round((float(df_janela['High'].max()) + float(df_janela['Low'].min())) / 2, 3)
-        return 89792.500
+            return int((float(df_janela['High'].max()) + float(df_janela['Low'].min())) / 2)
+        return 89792
     except:
-        return 89792.500
+        return 89792
 
 # 3. INTERFACE REAL-TIME
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
@@ -57,19 +55,16 @@ while True:
         br_tz, ny_tz = pytz.timezone('America/Sao_Paulo'), pytz.timezone('America/New_York')
         now_br, now_ny = datetime.now(br_tz), datetime.now(ny_tz)
         
-        if now_br.hour == 18 and now_br.minute == 0 and now_br.second < 2:
-            st.session_state.midpoint_val = get_midpoint_final()
-
         ticker = yf.Ticker("BTC-USD")
         price = ticker.fast_info['last_price']
         mp = st.session_state.midpoint_val
         var = ((price / mp) - 1) * 100
+        
+        # Lógica da Seta e Cor
         cor_var = "#00FF00" if var >= 0 else "#FF0000"
+        seta = "▲" if var >= 0 else "▼"
         
         with placeholder.container():
-            if now_br.hour == 18 and now_br.minute == 0:
-                st.markdown('<div class="reset-alert">⚠️ SISTEMA RECALCULADO: MIDPOINT ATUALIZADO</div>', unsafe_allow_html=True)
-
             st.markdown(f"""
                 <div class="header-container">
                     <div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div>
@@ -79,12 +74,12 @@ while True:
                 </div>
                 <div class="row-container">
                     <div class="w-col" style="color:#D4AF37;">BTC/USDT</div>
-                    <div class="w-col">{int(price):,}<br><span style="color:{cor_var}; font-size:15px;">{var:+.2f}%</span></div>
+                    <div class="w-col">{int(price):,}<br><span style="color:{cor_var}; font-size:15px;">{seta} {var:+.2f}%</span></div>
                     <div class="w-col" style="color:#FF4444;">{int(mp*1.0122):,}</div>
                     <div class="w-col" style="color:#FFA500;">{int(mp*1.0083):,}</div>
                     <div class="w-col" style="color:#FFFF00;">{int(mp*1.0061):,}</div>
                     <div class="w-col" style="color:#00CED1;">{int(mp*1.0040):,}</div>
-                    <div class="w-col" style="color:#FFFF00;">{int(mp*0.9939):,}</div>
+                    <div class="w-col" style="color:#FFA500;">{int(mp*0.9939):,}</div>
                     <div class="w-col" style="color:#00FF00;">{int(mp*0.9878):,}</div>
                 </div>
             """, unsafe_allow_html=True)
@@ -92,7 +87,7 @@ while True:
             st.markdown(f"""
                 <div class="footer">
                     <div><span class="dot"></span> LIVESTREAM ATIVO</div>
-                    <div>MIDPOINT: <span style="color:#D4AF37; font-family:monospace;">{mp:,.3f}</span></div>
+                    <div>MIDPOINT: <span style="color:#FFA500; font-family:monospace;">{int(mp):,}</span></div>
                     <div>SÃO PAULO: {now_br.strftime('%H:%M:%S')}</div>
                     <div>NEW YORK: {now_ny.strftime('%H:%M:%S')}</div>
                 </div>
