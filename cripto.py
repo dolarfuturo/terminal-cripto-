@@ -1,132 +1,88 @@
 import streamlit as st
 import pandas as pd
 import time
-import yfinance as yf
+import requests
 from datetime import datetime, timedelta
 import pytz
 
-# 1. CONFIGURAÇÃO ALPHA VISION
-st.set_page_config(page_title="ALPHA VISION BTC", layout="wide", initial_sidebar_state="collapsed")
-
+# 1. ESTILO ALPHA
+st.set_page_config(page_title="ALPHA VISION", layout="wide")
 st.markdown("""
     <style>
     .stApp { background-color: #000000; }
-    .title-gold { color: #D4AF37; font-size: 38px; font-weight: 900; text-align: center; margin-bottom: 0px; }
-    .subtitle-vision { color: #C0C0C0; font-size: 14px; text-align: center; letter-spacing: 5px; margin-bottom: 20px; }
-    
-    .header-container { display: flex; width: 100%; padding: 15px 0; border-bottom: 2px solid #D4AF37; background-color: #080808; }
-    .h-col { font-size: 12px; color: #FFFFFF; text-transform: uppercase; text-align: center; font-weight: 800; flex: 1; }
-    
-    .row-container { display: flex; width: 100%; align-items: center; padding: 15px 0; border-bottom: 1px solid #151515; }
-    .w-col { flex: 1; text-align: center; font-family: 'monospace'; font-size: 18px; font-weight: 800; }
-    
-    .status-box { padding: 8px 2px; border-radius: 2px; font-weight: 900; font-size: 11px; width: 90%; margin: 0 auto; text-transform: uppercase; }
-    .bg-estavel { background-color: #00CED1; color: #000; }
-    .bg-decisao { background-color: #FFFF00; color: #000; }
-    .bg-atencao { background-color: #FFA500; color: #000; }
-    .target-blink { animation: blinker 0.8s linear infinite; }
-    @keyframes blinker { 50% { opacity: 0.3; } }
-    
-    .footer-live { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #000; color: #00FF00; 
-                     text-align: center; padding: 8px; font-size: 13px; font-weight: bold; border-top: 1px solid #333; }
+    .title-gold { color: #D4AF37; font-size: 35px; font-weight: 900; text-align: center; margin-bottom: 20px; }
+    .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background: #080808; }
+    .h-col { font-size: 11px; color: #FFF; text-transform: uppercase; text-align: center; font-weight: 800; flex: 1; }
+    .row-container { display: flex; width: 100%; align-items: center; padding: 12px 0; border-bottom: 1px solid #111; }
+    .w-col { flex: 1; text-align: center; font-family: 'monospace'; font-size: 17px; font-weight: 800; color: #FFF; }
+    .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; color: #00FF00; text-align: center; padding: 5px; font-size: 12px; border-top: 1px solid #333; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. MOTOR DE CÁLCULO (Timeframe 30m | 11:30-18:00 BR)
-def get_institutional_eixo():
+# 2. BUSCA MÁX/MÍN DA SEXTA (FUTUROS BINANCE - MAIS PRÓXIMO DO TRADINGVIEW)
+def get_alpha_eixo():
     try:
         br_tz = pytz.timezone('America/Sao_Paulo')
         now_br = datetime.now(br_tz)
         
-        # Encontra a última Sexta-Feira
-        days_to_subtract = (now_br.weekday() - 4) % 7
-        if days_to_subtract == 0 and now_br.hour < 18:
-            days_to_subtract = 7
-            
-        sexta_puro = now_br - timedelta(days=days_to_subtract)
-        start_f = sexta_puro.replace(hour=0, minute=0, second=0).strftime('%Y-%m-%d')
-        end_f = (sexta_puro + timedelta(days=1)).strftime('%Y-%m-%d')
-
-        ticker = yf.Ticker("BTC-USD")
-        # Ajustado para TIMEFRAME 30m
-        hist = ticker.history(start=start_f, end=end_f, interval="30m")
-        hist.index = hist.index.tz_convert(br_tz)
+        # Lógica para pegar a última sexta-feira
+        days_to_sub = (now_br.weekday() - 4) % 7
+        if days_to_sub == 0 and now_br.hour < 18: days_to_sub = 7
+        target_date = now_br - timedelta(days=days_to_sub)
         
-        # Filtra Janela 11:30 - 18:00
-        df_janela = hist.between_time('11:30', '18:00')
+        # Timestamps 11:30 e 18:00
+        s_dt = br_tz.localize(datetime(target_date.year, target_date.month, target_date.day, 11, 30))
+        e_dt = br_tz.localize(datetime(target_date.year, target_date.month, target_date.day, 18, 0))
         
-        if not df_janela.empty:
-            max_p = df_janela['High'].max()
-            min_p = df_janela['Low'].min()
-            return (max_p + min_p) / 2
-        return 89795.0
+        # Puxa dados de 1m para precisão máxima no pavio
+        url = f"https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1m&startTime={int(s_dt.timestamp()*1000)}&endTime={int(e_dt.timestamp()*1000)}"
+        data = requests.get(url).json()
+        
+        df = pd.DataFrame(data, columns=['t','o','h','l','c','v','ct','qv','nt','tb','tq','i'])
+        mx = df['h'].astype(float).max()
+        mn = df['l'].astype(float).min()
+        return (mx + mn) / 2, mx, mn
     except:
-        return 89795.0
+        return 89795.0, 0, 0
 
-# 3. MONITORAMENTO
+# 3. INTERFACE
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
-EIXO = get_institutional_eixo()
+EIXO, MAX_S, MIN_S = get_alpha_eixo()
 placeholder = st.empty()
 
 while True:
     try:
-        btc = yf.Ticker("BTC-USD").fast_info
-        price = btc['last_price']
-        var_eixo = ((price / EIXO) - 1) * 100
-        
-        seta = "▲" if price >= EIXO else "▼"
-        cor_seta = "#00FF00" if price >= EIXO else "#FF0000"
+        # Preço Atual Futuros (Mais rápido e bate com TV)
+        price = float(requests.get("https://fapi.binance.com/fapi/v1/ticker/price?symbol=BTCUSDT").json()['price'])
+        var = ((price / EIXO) - 1) * 100
+        cor = "#00FF00" if var >= 0 else "#FF0000"
+        seta = "▲" if var >= 0 else "▼"
         
         with placeholder.container():
-            st.markdown("""
-                <div class="header-container">
-                    <div class="h-col">CÓDIGO</div>
-                    <div class="h-col">PREÇO ATUAL</div>
-                    <div class="h-col">EXAUSTÃO TOPO</div>
-                    <div class="h-col">PRÓX. TOPO</div>
-                    <div class="h-col">DECISÃO</div>
-                    <div class="h-col">RESPIRO</div>
-                    <div class="h-col">DECISÃO FUNDO</div>
-                    <div class="h-col">EXAUSTÃO FUNDO</div>
-                    <div class="h-col">SINALIZADOR</div>
-                </div>
-            """, unsafe_allow_html=True)
-
-            def c(p): return EIXO * (1 + (p/100))
-            
-            abs_v = abs(var_eixo)
-            s_txt, s_class = "ESTÁVEL", "bg-estavel"
-            if abs_v >= 1.22: s_txt, s_class = "EXAUSTÃO", "target-blink"
-            elif abs_v >= 0.83: s_txt, s_class = "PRÓX. TOPO", "bg-atencao"
-            elif abs_v >= 0.61: s_txt, s_class = "DECISÃO", "bg-decisao"
-
             st.markdown(f"""
+                <div class="header-container">
+                    <div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div>
+                    <div class="h-col">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div>
+                    <div class="h-col">DECISÃO T.</div><div class="h-col">RESPIRO</div>
+                    <div class="h-col">DECISÃO F.</div><div class="h-col">EXAUSTÃO F.</div>
+                </div>
                 <div class="row-container">
                     <div class="w-col" style="color:#D4AF37;">BTC/USDT</div>
-                    <div class="w-col" style="color:#FFF;">{price:,.2f}<br>
-                        <span style="color:{cor_seta}; font-size:15px;">{seta} {var_eixo:+.2f}%</span>
-                    </div>
-                    <div class="w-col" style="color:#FF4444;">{c(1.22):,.0f}</div>
-                    <div class="w-col" style="color:#FFA500;">{c(0.83):,.0f}</div>
-                    <div class="w-col" style="color:#FFFF00;">{c(0.61):,.0f}</div>
-                    <div class="w-col" style="color:#00CED1;">{c(0.40):,.0f}</div>
-                    <div class="w-col" style="color:#FFFF00;">{c(-0.61):,.0f}</div>
-                    <div class="w-col" style="color:#00FF00;">{c(-1.22):,.0f}</div>
-                    <div class="w-col"><div class="status-box {s_class}">{s_txt}</div></div>
+                    <div class="w-col">{price:,.2f}<br><span style="color:{cor}; font-size:14px;">{seta} {var:+.2f}%</span></div>
+                    <div class="w-col" style="color:#FF4444;">{EIXO*1.0122:,.0f}</div>
+                    <div class="w-col" style="color:#FFA500;">{EIXO*1.0083:,.0f}</div>
+                    <div class="w-col" style="color:#FFFF00;">{EIXO*1.0061:,.0f}</div>
+                    <div class="w-col" style="color:#00CED1;">{EIXO*1.0040:,.0f}</div>
+                    <div class="w-col" style="color:#FFFF00;">{EIXO*0.9939:,.0f}</div>
+                    <div class="w-col" style="color:#00FF00;">{EIXO*0.9878:,.0f}</div>
                 </div>
             """, unsafe_allow_html=True)
             
-            st.markdown(f"<p style='color:#777; text-align:center; font-weight:bold; margin-top:10px;'>EIXO MESTRE (SEXTA-FEIRA | 30M): {EIXO:,.2f}</p>", unsafe_allow_html=True)
-
-            br = datetime.now(pytz.timezone('America/Sao_Paulo')).strftime('%H:%M:%S')
-            ny = datetime.now(pytz.timezone('America/New_York')).strftime('%H:%M:%S')
-            st.markdown(f"""
-                <div class="footer-live">
-                    BRASÍLIA: {br} | NEW YORK: {ny} | RESET: 00:00 UTC
-                </div>
-            """, unsafe_allow_html=True)
+            st.write(f"**CONFERÊNCIA TRADINGVIEW (SEXTA):** MÁX: {MAX_S:,.2f} | MÍN: {MIN_S:,.2f} | **EIXO: {EIXO:,.2f}**")
+            
+            hr = datetime.now(pytz.timezone('America/Sao_Paulo')).strftime('%H:%M:%S')
+            st.markdown(f'<div class="footer">BINANCE FUTURES DATA | BRASÍLIA: {hr} | EIXO FIXO DE SEXTA-FEIRA</div>', unsafe_allow_html=True)
             
         time.sleep(2)
     except:
