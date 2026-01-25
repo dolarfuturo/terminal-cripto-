@@ -5,30 +5,30 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 
-# 1. SETUP ALPHA - LAYOUT WIDE
+# 1. SETUP ALPHA - VISUAL REFINADO
 st.set_page_config(page_title="ALPHA VISION LIVE", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
     <style>
     .stApp { background-color: #000000; }
     .title-container { text-align: center; padding: 15px; }
-    .title-gold { color: #D4AF37; font-size: 34px; font-weight: 900; letter-spacing: 3px; margin-bottom: 0px; }
+    .title-gold { color: #D4AF37; font-size: 34px; font-weight: 900; letter-spacing: 2px; margin-bottom: 0px; }
     
-    /* Subtítulo Largo (H até Y) */
+    /* Ajuste Preciso do Subtítulo (H até Y) */
     .subtitle-white { 
         color: #FFFFFF; 
-        font-size: 18px; 
+        font-size: 16px; 
         font-weight: 300; 
-        letter-spacing: 12px; /* Espaçamento expandido para ocupar a largura do teclado */
-        margin-top: 5px;
+        letter-spacing: 5.5px; /* Calibrado para largura média H-Y */
+        margin-top: 2px;
         text-transform: lowercase;
     }
     
     .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background: #080808; justify-content: space-between; }
     .h-col { font-size: 10px; color: #FFF; text-transform: uppercase; text-align: center; font-weight: 800; flex: 1; }
     
-    .row-container { display: flex; width: 100%; align-items: center; padding: 30px 0; border-bottom: 1px solid #151515; justify-content: space-between; }
-    .w-col { flex: 1; text-align: center; font-family: 'monospace'; font-size: 24px; font-weight: 800; color: #FFF; white-space: nowrap; }
+    .row-container { display: flex; width: 100%; align-items: center; padding: 25px 0; border-bottom: 1px solid #151515; justify-content: space-between; }
+    .w-col { flex: 1; text-align: center; font-family: 'monospace'; font-size: 22px; font-weight: 800; color: #FFF; white-space: nowrap; }
     
     .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; color: #FFF; text-align: center; padding: 15px; font-size: 13px; border-top: 1px solid #333; display: flex; justify-content: center; align-items: center; gap: 35px; z-index: 1000; }
     .dot { height: 10px; width: 10px; background-color: #00FF00; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 12px #00FF00; animation: blink 1.2s infinite; }
@@ -36,12 +36,11 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. MOTOR DE CÁLCULO (MIDPOINT AUTOMÁTICO BINANCE)
-def get_midpoint_v12():
+# 2. MOTOR DE CÁLCULO
+def get_midpoint_v13():
     try:
         br_tz = pytz.timezone('America/Sao_Paulo')
         now_br = datetime.now(br_tz)
-        # Travamento FDS (Conforme sua regra de Midpoint)
         if now_br.weekday() >= 5 or (now_br.weekday() == 0 and now_br.hour < 18):
             return 89792
         target_date = now_br if now_br.hour >= 18 else now_br - timedelta(days=1)
@@ -63,7 +62,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 if 'mp_current' not in st.session_state:
-    st.session_state.mp_current = get_midpoint_v12()
+    st.session_state.mp_current = get_midpoint_v13()
 
 placeholder = st.empty()
 
@@ -72,9 +71,9 @@ while True:
         br_tz, ny_tz = pytz.timezone('America/Sao_Paulo'), pytz.timezone('America/New_York')
         now_br, now_ny = datetime.now(br_tz), datetime.now(ny_tz)
         
-        # Reset Automático (Binance 00:00 UTC -> 18h BR)
+        # Auto-Reset Binance (18:00 BR)
         if now_br.hour == 18 and now_br.minute == 0 and now_br.second < 2:
-            st.session_state.mp_current = get_midpoint_v12()
+            st.session_state.mp_current = get_midpoint_v13()
 
         ticker = yf.Ticker("BTC-USD")
         price = ticker.fast_info['last_price']
