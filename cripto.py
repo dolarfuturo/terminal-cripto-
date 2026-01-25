@@ -1,97 +1,77 @@
-import streamlit as st
-import yfinance as yf
-import time
+# 3. MONITORAMENTO AUTOMÁTICO DO EIXO (11:30 - 18:00)
+st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 
-# Configuração de Estilo "Visão de Tubarão"
-st.set_page_config(page_title="ALPHA VISION CRYPTO", layout="wide")
+def calcular_eixo_automatico():
+    try:
+        ticker = yf.Ticker("BTC-USD")
+        # Puxa dados de hoje com intervalo de 1 minuto para precisão
+        hist = ticker.history(period="1d", interval="1m")
+        if hist.empty: return 89795.0 # Valor de segurança caso falhe
+        
+        # Filtra o horário de Brasília (11:30 às 18:00)
+        # Nota: YFinance usa UTC, Brasília é UTC-3
+        hist.index = hist.index.tz_convert('America/Sao_Paulo')
+        janela_alpha = hist.between_time('11:30', '18:00')
+        
+        if not janela_alpha.empty:
+            maximo = janela_alpha['High'].max()
+            minimo = janela_alpha['Low'].min()
+            return (maximo + minimo) / 2
+        return 89795.0
+    except:
+        return 89795.0
 
-st.markdown("""
-    <style>
-    .main { background-color: #000000; }
-    .stApp { background-color: #000000; }
-    .title { color: #D4AF37; text-align: center; font-family: 'serif'; font-weight: bold; margin-bottom: 0px; }
-    .subtitle { color: #FFFFFF; text-align: center; letter-spacing: 5px; font-size: 12px; margin-bottom: 30px; }
-    
-    table { width: 100%; border-collapse: collapse; color: white; background-color: #000; }
-    th { color: #D4AF37 !important; background-color: #111 !important; padding: 10px; border: 1px solid #333; font-size: 12px; text-align: center; }
-    td { padding: 12px; border: 1px solid #222; text-align: center; font-family: 'monospace'; font-size: 14px; }
-    
-    .up { color: #00ff00; font-weight: bold; }
-    .down { color: #ff0000; font-weight: bold; }
-    </style>
-    """, unsafe_allow_html=True)
+# EIXO CALCULADO PELO MOTOR ALPHA
+EIXO_MESTRE = calcular_eixo_automatico()
+ticker_id = "BTC-USD"
+placeholder = st.empty()
 
-# Cabeçalho Dourado
-st.markdown("<h1 class='title'>ALPHA VISION CRYPTO</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle'>VISÃO DE TUBARÃO</p>", unsafe_allow_html=True)
+while True:
+    try:
+        data = yf.Ticker(ticker_id).fast_info
+        price = data['last_price']
+        change_pct = ((price / EIXO_MESTRE) - 1) * 100
+        
+        with placeholder.container():
+            st.markdown(f"""<div class="header-container">
+                <div class="h-col" style="width:14%; text-align:left; padding-left:10px;">BTC/USDT</div>
+                <div class="h-col" style="width:15%;">EIXO: {EIXO_MESTRE:,.2f}</div>
+                <div class="h-col" style="width:9%;">EXAUSTÃO (1.22)</div>
+                <div class="h-col" style="width:9%;">PRÓX. TOPO (0.83)</div>
+                <div class="h-col" style="width:9%;">DECISÃO (0.61)</div>
+                <div class="h-col" style="width:9%;">RESPIRO (0.40)</div>
+                <div class="h-col" style="width:9%;">RESPIRO F. (-0.40)</div>
+                <div class="h-col" style="width:9%;">DECISÃO F. (-0.61)</div>
+                <div class="h-col" style="width:14%;">SINALIZADOR</div></div>""", unsafe_allow_html=True)
 
-# Lista de Ativos e Eixo Mestre (Imagem 1000027192)
-ativos = ["BTC-USD", "ETH-USD", "SOL-USD", "BNB-USD", "XRP-USD", "DOGE-USD", "ADA-USD"]
-EIXO_BTC = 89795.0
-
-def get_table_data():
-    rows = ""
-    for ticker in ativos:
-        try:
-            # Puxa preço real do Yahoo Finance
-            data = yf.Ticker(ticker).fast_info
-            price = data['last_price']
-            change = ((price / data['previous_close']) - 1) * 100
+            def calc(p): return EIXO_MESTRE * (1 + (p/100))
             
-            color = "up" if change >= 0 else "down"
-            arrow = "▲" if change >= 0 else "▼"
+            abs_c = abs(change_pct)
+            s_txt, s_class = "ESTÁVEL", "bg-estavel"
+            if abs_c >= 1.22: s_txt, s_class = "EXAUSTÃO", "target-blink-red" if change_pct > 0 else "target-blink-green"
+            elif abs_c >= 0.83: s_txt, s_class = "PRÓX. TOPO", "bg-atencao"
+            elif abs_c >= 0.61: s_txt, s_class = "REGIÃO DE DECISÃO", "bg-decisao"
+
+            arrow = "▲" if price >= EIXO_MESTRE else "▼"
+            t_color = "#00FF00" if price >= EIXO_MESTRE else "#FF0000"
+
+            st.markdown(f"""
+                <div class="row-container">
+                    <div class="w-ativo" style="color:#D4AF37;">BTC/USDT</div>
+                    <div class="w-price">{price:,.2f} <span style="color:{t_color};">{arrow}</span>
+                        <span class="perc-val" style="color:{t_color};">{change_pct:+.2f}% do Eixo</span></div>
+                    <div class="w-target" style="color:#FF4444; width:9%;">{calc(1.22):,.2f}</div>
+                    <div class="w-target" style="color:#FFA500; width:9%;">{calc(0.83):,.2f}</div>
+                    <div class="w-target" style="color:#FFFF00; width:9%;">{calc(0.61):,.2f}</div>
+                    <div class="w-target" style="color:#00CED1; width:9%;">{calc(0.40):,.2f}</div>
+                    <div class="w-target" style="color:#00CED1; width:9%;">{calc(-0.40):,.2f}</div>
+                    <div class="w-target" style="color:#FFFF00; width:9%;">{calc(-0.61):,.2f}</div>
+                    <div class="w-sinal"><div class="status-box {s_class}">{s_txt}</div></div>
+                </div>
+            """, unsafe_allow_html=True)
             
-            # Referência para cálculo (Eixo para BTC, Preço para os outros)
-            ref = EIXO_BTC if ticker == "BTC-USD" else price
-            def val(p): return f"{ref * (1 + (p/100)):,.2f}"
-
-            rows += f"""
-            <tr>
-                <td style='color:#D4AF37; font-weight:bold;'>{ticker.replace("-USD", "/USDT")}</td>
-                <td class='{color}'>{price:,.2f}<br><small>{arrow} {change:.2f}%</small></td>
-                <td>{val(1.22)}</td>
-                <td>{val(0.83)}</td>
-                <td>{val(0.61)}</td>
-                <td>{val(0.40)}</td>
-                <td>{val(-0.40)}</td>
-                <td>{val(-0.61)}</td>
-                <td>{val(-0.83)}</td>
-                <td>{val(-1.22)}</td>
-            </tr>
-            """
-        except:
-            continue
-    return rows
-
-# Construção da Tabela com os nomes da sua planilha
-tabela_html = f"""
-<table>
-    <thead>
-        <tr>
-            <th>CÓDIGO</th>
-            <th>PREÇO ATUAL</th>
-            <th>EXAUSTÃO TOPO<br>(1.22%)</th>
-            <th>PRÓX. TOPO<br>(0.83%)</th>
-            <th>DECISÃO<br>(0.61%)</th>
-            <th>RESPIRO<br>(0.40%)</th>
-            <th>RESPIRO FUNDO<br>(-0.40%)</th>
-            <th>DECISÃO FUNDO<br>(-0.61%)</th>
-            <th>PRÓX. FUNDO<br>(-0.83%)</th>
-            <th>EXAUSTÃO FUNDO<br>(-1.22%)</th>
-        </tr>
-    </thead>
-    <tbody>
-        {get_table_data()}
-    </tbody>
-</table>
-"""
-
-# O SEGREDO ESTÁ AQUI: Renderiza o HTML em vez de mostrar o texto
-st.markdown(tabela_html, unsafe_allow_html=True)
-
-# Rodapé com Horário de Brasília
-st.markdown(f"<p style='color:#444; text-align:center; font-size:10px; margin-top:20px;'>Atualizado em: {time.strftime('%H:%M:%S')} | Reset 00:00 UTC</p>", unsafe_allow_html=True)
-
-# Motor de atualização (A cada 5 segundos para não ser bloqueado)
-time.sleep(5)
-st.rerun()
+            st.markdown(f'<div class="footer-live">🟢 EIXO DINÂMICO (11:30-18:00 BR) | RESET 00:00 UTC</div>', unsafe_allow_html=True)
+            
+        time.sleep(2)
+    except:
+        time.sleep(5)
