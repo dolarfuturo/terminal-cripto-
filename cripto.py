@@ -32,24 +32,24 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. MOTOR DE INTELIGÊNCIA DO EIXO (SEG-SEX | 11:30-18:00 BR)
+# 2. MOTOR DE CÁLCULO (Timeframe 30m | 11:30-18:00 BR)
 def get_institutional_eixo():
     try:
         br_tz = pytz.timezone('America/Sao_Paulo')
         now_br = datetime.now(br_tz)
         
-        # Se for Sábado (5) ou Domingo (6), ou Segunda antes das 18h, busca dados da Sexta
-        if now_br.weekday() == 5: # Sábado
-            target_date = now_br - timedelta(days=1)
-        elif now_br.weekday() == 6: # Domingo
-            target_date = now_br - timedelta(days=2)
-        elif now_br.weekday() == 0 and now_br.hour < 18: # Segunda antes do fechamento
-            target_date = now_br - timedelta(days=3)
-        else:
-            target_date = now_br
+        # Encontra a última Sexta-Feira
+        days_to_subtract = (now_br.weekday() - 4) % 7
+        if days_to_subtract == 0 and now_br.hour < 18:
+            days_to_subtract = 7
+            
+        sexta_puro = now_br - timedelta(days=days_to_subtract)
+        start_f = sexta_puro.replace(hour=0, minute=0, second=0).strftime('%Y-%m-%d')
+        end_f = (sexta_puro + timedelta(days=1)).strftime('%Y-%m-%d')
 
         ticker = yf.Ticker("BTC-USD")
-        hist = ticker.history(start=target_date.strftime('%Y-%m-%d'), interval="1m")
+        # Ajustado para TIMEFRAME 30m
+        hist = ticker.history(start=start_f, end=end_f, interval="30m")
         hist.index = hist.index.tz_convert(br_tz)
         
         # Filtra Janela 11:30 - 18:00
@@ -59,11 +59,11 @@ def get_institutional_eixo():
             max_p = df_janela['High'].max()
             min_p = df_janela['Low'].min()
             return (max_p + min_p) / 2
-        return 89795.0 # Fallback de segurança
+        return 89795.0
     except:
         return 89795.0
 
-# 3. MONITORAMENTO REAL-TIME
+# 3. MONITORAMENTO
 st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle-vision">VISÃO DE TUBARÃO</div>', unsafe_allow_html=True)
 
@@ -80,7 +80,6 @@ while True:
         cor_seta = "#00FF00" if price >= EIXO else "#FF0000"
         
         with placeholder.container():
-            # Cabeçalho sem porcentagens, apenas nomes
             st.markdown("""
                 <div class="header-container">
                     <div class="h-col">CÓDIGO</div>
@@ -97,7 +96,6 @@ while True:
 
             def c(p): return EIXO * (1 + (p/100))
             
-            # Lógica de Sinalizador
             abs_v = abs(var_eixo)
             s_txt, s_class = "ESTÁVEL", "bg-estavel"
             if abs_v >= 1.22: s_txt, s_class = "EXAUSTÃO", "target-blink"
@@ -120,10 +118,8 @@ while True:
                 </div>
             """, unsafe_allow_html=True)
             
-            # Eixo fixo abaixo do preço
-            st.markdown(f"<p style='color:#777; text-align:center; font-weight:bold; margin-top:10px;'>EIXO MESTRE ATIVO: {EIXO:,.2f}</p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='color:#777; text-align:center; font-weight:bold; margin-top:10px;'>EIXO MESTRE (SEXTA-FEIRA | 30M): {EIXO:,.2f}</p>", unsafe_allow_html=True)
 
-            # Relógios e Reset
             br = datetime.now(pytz.timezone('America/Sao_Paulo')).strftime('%H:%M:%S')
             ny = datetime.now(pytz.timezone('America/New_York')).strftime('%H:%M:%S')
             st.markdown(f"""
