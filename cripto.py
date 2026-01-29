@@ -91,8 +91,26 @@ while True:
             st.rerun()
 
 
-        cor_var = "#00FF00" if var >= 0 else "#FF0000"
+                # --- LÓGICA DE SINALIZADORES TEMPORÁRIOS ---
+        abs_var = abs(var)
+        
+        # 1. SINAL DE ROMPIMENTO (Apenas entre 1.20 e 1.22)
+        if 1.20 <= abs_var < 1.22:
+            base_color = "#00FF00" if var > 0 else "#FF0000"
+            # Sinaliza rápido antes de pular o eixo
+            cor_var = "#FFFFFF" if int(time.time() * 5) % 2 == 0 else base_color
+            
+        # 2. SINALIZADOR AMARELO (Apenas na passagem do 0.61)
+        elif 0.58 <= abs_var <= 0.64:
+            cor_var = "#FFFF00"
+            
+        # 3. CORES NORMAIS (Fora das zonas de sinalização)
+        else:
+            cor_var = "#00FF00" if var >= 0 else "#FF0000"
+            
         seta = "▲" if var >= 0 else "▼"
+
+
         
         with placeholder.container():
             st.markdown(f"""
