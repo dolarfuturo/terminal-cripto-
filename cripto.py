@@ -118,7 +118,8 @@ while True:
 
 
         
-                with placeholder.container():
+                        # --- PARTE VISUAL DO TERMINAL (COLUNAS E GRÁFICOS) ---
+        with placeholder.container():
             # Criamos 4 colunas: Preço | Gráfico 1 | Exaustão | Gráfico 2
             c1, c2, c3, c4 = st.columns([1.5, 2, 1.5, 2])
 
@@ -127,18 +128,19 @@ while True:
                 st.markdown(f"<div style='color:{cor_var}; font-size:22px; font-weight:bold;'>{price:.2f}</div>", unsafe_allow_html=True)
             
             with c2:
-                # Gráfico de linha ao lado do preço
+                # Gráfico móvel ao lado do preço
                 st.line_chart(st.session_state.precos_hist, height=70, use_container_width=True)
 
             with c3:
-                # Valor da Exaustão Fundo (Linha 137 da sua foto antiga)
+                # Valor da Exaustão Fundo
                 ex_fundo = int(mp * 0.9878)
                 st.markdown(f"<div style='color:#888; font-size:12px;'>EXAUSTÃO F.</div>", unsafe_allow_html=True)
                 st.markdown(f"<div style='color:#FF4B4B; font-size:20px; font-weight:bold;'>{ex_fundo}</div>", unsafe_allow_html=True)
 
             with c4:
-                # Gráfico de área ao lado da exaustão fundo
+                # Gráfico móvel ao lado da exaustão fundo
                 st.area_chart(st.session_state.precos_hist, height=70, use_container_width=True)
+
 
             
             st.markdown(f"""
