@@ -117,29 +117,27 @@ while True:
         seta = "▲" if var >= 0 else "▼"
 
 
-        
-                        # --- PARTE VISUAL DO TERMINAL (COLUNAS E GRÁFICOS) ---
-        with placeholder.container():
-            # Criamos 4 colunas: Preço | Gráfico 1 | Exaustão | Gráfico 2
-            c1, c2, c3, c4 = st.columns([1.5, 2, 1.5, 2])
+                with placeholder.container():
+            # Ajustamos as colunas: Preço ganha muito espaço (3) e o gráfico fica pequeno (1)
+            c1, c2, c3, c4 = st.columns([3, 1, 3, 1])
 
             with c1:
-                st.markdown(f"<div style='color:#D4AF37; font-size:12px;'>BTC/USDT</div>", unsafe_allow_html=True)
-                st.markdown(f"<div style='color:{cor_var}; font-size:22px; font-weight:bold;'>{price:.2f}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='color:#D4AF37; font-size:12px; margin-bottom:-10px;'>BTC/USDT</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='color:{cor_var}; font-size:32px; font-weight:bold;'>{price:.2f}</div>", unsafe_allow_html=True)
             
             with c2:
-                # Gráfico móvel ao lado do preço
-                st.line_chart(st.session_state.precos_hist, height=70, use_container_width=True)
+                # Forçamos o gráfico de linha puro e bem pequeno
+                st.line_chart(st.session_state.precos_hist, height=50, use_container_width=True)
 
             with c3:
-                # Valor da Exaustão Fundo
                 ex_fundo = int(mp * 0.9878)
-                st.markdown(f"<div style='color:#888; font-size:12px;'>EXAUSTÃO F.</div>", unsafe_allow_html=True)
-                st.markdown(f"<div style='color:#FF4B4B; font-size:20px; font-weight:bold;'>{ex_fundo}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='color:#888; font-size:12px; margin-bottom:-10px;'>EXAUSTÃO F.</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='color:#FF4B4B; font-size:28px; font-weight:bold;'>{ex_fundo}</div>", unsafe_allow_html=True)
 
             with c4:
-                # Gráfico móvel ao lado da exaustão fundo
-                st.area_chart(st.session_state.precos_hist, height=70, use_container_width=True)
+                # Linha pura também para a exaustão
+                st.line_chart(st.session_state.precos_hist, height=50, use_container_width=True)
+
 
 
             
