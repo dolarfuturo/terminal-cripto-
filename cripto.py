@@ -116,8 +116,7 @@ while True:
             
         seta = "▲" if var >= 0 else "▼"
 
-
-                with placeholder.container():
+        with placeholder.container():
             # Ajustamos as colunas: Preço ganha muito espaço (3) e o gráfico fica pequeno (1)
             c1, c2, c3, c4 = st.columns([3, 1, 3, 1])
 
