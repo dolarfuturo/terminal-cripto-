@@ -91,9 +91,9 @@ while True:
             st.rerun()
 
 
-                        # --- LÓGICA DE DECISÃO ALPHA (FILTRO 1.30%) ---
+                        # --- LÓGICA DE DECISÃO ALPHA (FILTRO 1.50%) ---
         abs_var = abs(var)
-        limite_rompimento = 1.30
+        limite_rompimento = 1.50
         
         if 'mp_anterior' not in st.session_state:
             st.session_state.mp_current = mp # Inicializa se necessário
@@ -102,8 +102,8 @@ while True:
         # 1. VALIDAÇÃO DE ROMPIMENTO (O "JÁ ERA")
         if var >= limite_rompimento:
             st.session_state.mp_anterior = mp
-            st.session_state.mp_current = int(mp * 1.0130) 
-            st.toast("🚀 PATAMAR CONFIRMADO: Eixo subiu (1.30%)", icon="📈")
+            st.session_state.mp_current = int(mp * 1.0150) 
+            st.toast("🚀 PATAMAR CONFIRMADO: Eixo subiu (1.50%)", icon="📈")
             st.rerun()
 
         elif var <= -limite_rompimento:
