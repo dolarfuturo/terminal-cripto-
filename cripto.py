@@ -79,16 +79,17 @@ while True:
         price = ticker.fast_info['last_price']
         mp = st.session_state.mp_current
         var = ((price / mp) - 1) * 100
-                # --- LÓGICA DE ESCADA: AJUSTE AUTOMÁTICO DO PATAMAR ---
-        # Se o preço atingir a Exaustão T (1.22%), a Max vira o novo Eixo
+                   # --- LÓGICA DE ESCADA: AJUSTE AUTOMÁTICO DO PATAMAR ---
         if var >= 1.22:
             st.session_state.mp_current = int(mp * 1.0122)
+            st.toast("⚡ ROMPIMENTO: NOVO EIXO!", icon="📈")
             st.rerun() 
             
-        # Se o preço atingir a Exaustão F (-1.22%), a Min vira o novo Eixo
         elif var <= -1.22:
             st.session_state.mp_current = int(mp * 0.9878)
+            st.toast("⚠️ QUEDA: EIXO RECALIBRADO!", icon="📉")
             st.rerun()
+
 
         cor_var = "#00FF00" if var >= 0 else "#FF0000"
         seta = "▲" if var >= 0 else "▼"
