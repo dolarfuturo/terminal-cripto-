@@ -92,6 +92,12 @@ while True:
 
 
                 # --- LÓGICA DE SINALIZADORES TEMPORÁRIOS ---
+               # Memória para o gráfico se mover
+        if 'precos_hist' not in st.session_state:
+            st.session_state.precos_hist = [price] * 20
+        st.session_state.precos_hist.append(price)
+        st.session_state.precos_hist = st.session_state.precos_hist[-20:]
+
         abs_var = abs(var)
         
         # 1. SINAL DE ROMPIMENTO (Apenas entre 1.20 e 1.22)
@@ -112,25 +118,28 @@ while True:
 
 
         
-        with placeholder.container():
-            st.markdown(f"""
-                <div class="header-container">
-                    <div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div>
-                    <div class="h-col">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div>
-                    <div class="h-col">DECISÃO</div><div class="h-col">RESPIRO</div>
-                    <div class="h-col">PRÓX. AO F.</div><div class="h-col">EXAUSTÃO F.</div>
-                </div>
-                <div class="row-container">
-                    <div class="w-col" style="color:#D4AF37;">BTC/USDT</div>
-                    <div class="w-col">{int(price):,}<br><span style="color:{cor_var}; font-size:15px;">{seta} {var:+.2f}%</span></div>
-                    <div class="w-col" style="color:#FF4444;">{int(mp*1.0122):,}</div>
-                    <div class="w-col" style="color:#FFA500;">{int(mp*1.0083):,}</div>
-                    <div class="w-col" style="color:#FFFF00;">{int(mp*1.0061):,}</div>
-                    <div class="w-col" style="color:#00CED1;">{int(mp*1.0040):,}</div>
-                    <div class="w-col" style="color:#FFA500;">{int(mp*0.9939):,}</div>
-                    <div class="w-col" style="color:#00FF00;">{int(mp*0.9878):,}</div>
-                </div>
-            """, unsafe_allow_html=True)
+                with placeholder.container():
+            # Criamos 4 colunas: Preço | Gráfico 1 | Exaustão | Gráfico 2
+            c1, c2, c3, c4 = st.columns([1.5, 2, 1.5, 2])
+
+            with c1:
+                st.markdown(f"<div style='color:#D4AF37; font-size:12px;'>BTC/USDT</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='color:{cor_var}; font-size:22px; font-weight:bold;'>{price:.2f}</div>", unsafe_allow_html=True)
+            
+            with c2:
+                # Gráfico de linha ao lado do preço
+                st.line_chart(st.session_state.precos_hist, height=70, use_container_width=True)
+
+            with c3:
+                # Valor da Exaustão Fundo (Linha 137 da sua foto antiga)
+                ex_fundo = int(mp * 0.9878)
+                st.markdown(f"<div style='color:#888; font-size:12px;'>EXAUSTÃO F.</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='color:#FF4B4B; font-size:20px; font-weight:bold;'>{ex_fundo}</div>", unsafe_allow_html=True)
+
+            with c4:
+                # Gráfico de área ao lado da exaustão fundo
+                st.area_chart(st.session_state.precos_hist, height=70, use_container_width=True)
+
             
             st.markdown(f"""
                 <div class="footer">
