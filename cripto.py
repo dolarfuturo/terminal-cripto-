@@ -111,73 +111,55 @@ while True:
             st.toast("⚠️ QUEDA CONFIRMADA: Novo andar validado (1.35%).", icon="📉")
             st.rerun()
 
-        # --- 2. VOLTA PARA BASE (Se o repique falhar) ---
-        # Se o eixo tinha subido, mas o preço caiu abaixo da base antiga
+                # --- 2. VOLTA PARA BASE (Elasticidade) ---
         if st.session_state.mp_current > st.session_state.mp_anterior and price < st.session_state.mp_anterior:
             st.session_state.mp_current = st.session_state.mp_anterior
             st.toast("🔄 RETORNO: Rompimento falso, voltando para base.", icon="↩️")
             st.rerun()
-
-        # Se o eixo tinha descido, mas o preço subiu acima da base antiga
         elif st.session_state.mp_current < st.session_state.mp_anterior and price > st.session_state.mp_anterior:
             st.session_state.mp_current = st.session_state.mp_anterior
             st.toast("🔄 RETORNO: Recuperação de base anterior.", icon="↩️")
             st.rerun()
 
-
-        # 3. LÓGICA DE CORES E RESET BINANCE
+        # --- 3. LÓGICA DE CORES E SINALIZAÇÃO ---
         cor_var = "#00FF00" if var >= 0 else "#FF0000"
         animacao = ""
+        seta = "▲" if var >= 0 else "▼"
         
         if 0.59 <= abs_var <= 0.64:
-            cor_var = "#FFFF00"
+            cor_var = "#FFFF00" # ACENDE AMARELO (DECISÃO)
         elif 1.20 <= abs_var <= 1.25:
-            cor_var = "#00FF00" if var < 0 else "#FF0000"
-            animacao = "animation: blink 0.4s infinite;"
+            animacao = "animation: blink 0.4s infinite;" # PISCA (EXAUSTÃO)
 
-        seta = "▲" if var >= 0 else "▼"
-
-        # Auto-Reset Binance (21:00 BR / 00:00 UTC)
+        # Reset Binance (00:00 UTC / 21:00 BR)
         if now_br.hour == 21 and now_br.minute == 0 and now_br.second < 2:
             st.session_state.mp_current = get_midpoint_v13()
 
-
+        # --- 4. INTERFACE VISUAL (BLOCOS ALVO) ---
         with placeholder.container():
             st.markdown(f"""
                 <style>
                 @keyframes blink {{ 0% {{ opacity: 1; }} 50% {{ opacity: 0.1; }} 100% {{ opacity: 1; }} }}
+                .h-col, .v-col {{ flex: 1; text-align: center; font-family: sans-serif; }}
                 </style>
-                <div class="header-container">
-                    <div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div>
-                    <div class="h-col">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div>
-                    <div class="h-col">DECISÃO</div><div class="h-col">RESPIRO</div>
-                    <div class="h-col">PRÓX. AO F.</div><div class="h-col">EXAUSTÃO F.</div>
+                <div style="display: flex; justify-content: space-between; background-color: #000; padding: 10px; border-bottom: 1px solid #333;">
+                    <div class="h-col">CÓDIGO</div>
+                    <div class="h-col">PREÇO ATUAL</div>
+                    <div class="h-col" style="color: {cor_var if var > 0 else '#888'}; {animacao if var > 0 else ''}">EXAUSTÃO T.</div>
+                    <div class="h-col">PRÓX. TOPO</div>
+                    <div class="h-col" style="color: {cor_var if 0.59 <= abs_var <= 0.64 else '#888'};">DECISÃO</div>
+                    <div class="h-col">RESPIRO</div>
+                    <div class="h-col">PRÓX. AO F.</div>
+                    <div class="h-col" style="color: {cor_var if var < 0 else '#888'}; {animacao if var < 0 else ''}">EXAUSTÃO F.</div>
                 </div>
-                <div class="row-container">
-                    <div class="w-col" style="color:#D4AF37;">BTC/USDT</div>
-                    <div class="w-col" style="{animacao}">
-                        {int(price):,}<br>
-                        <span style="color:{cor_var}; font-size:18px; font-weight:bold;">{seta} {var:+.2f}%</span>
-                    </div>
-                    <div class="w-col" style="color:#FF4444;">{int(mp*1.0122):,}</div>
-                    <div class="w-col" style="color:#FFA500;">{int(mp*1.0083):,}</div>
-                    <div class="w-col" style="color:#FFFF00;">{int(mp*1.0061):,}</div>
-                    <div class="w-col" style="color:#00CED1;">{int(mp*1.0040):,}</div>
-                    <div class="w-col" style="color:#FFA500;">{int(mp*0.9939):,}</div>
-                    <div class="w-col" style="color:#00FF00;">{int(mp*0.9878):,}</div>
-                </div>
-            """, unsafe_allow_html=True)
-
-            
-            st.markdown(f"""
-                <div class="footer">
-                    <div><span class="dot"></span> LIVESTREAM ATIVO</div>
-                    <div>MIDPOINT: <span style="color:#FFA500; font-family:monospace;">{int(mp):,}</span></div>
-                    <div>BRASÍLIA: {now_br.strftime('%H:%M:%S')}</div>
-                    <div>NEW YORK: {now_ny.strftime('%H:%M:%S')}</div>
+                <div style="display: flex; justify-content: space-between; background-color: #000; padding: 20px 10px;">
+                    <div class="v-col" style="color: #FFD700; font-size: 18px;">BTC/USDT</div>
+                    <div class="v-col">{price:,.0f}<br><span style="font-size: 14px; color: {cor_var};">{seta} {var:.2f}%</span></div>
+                    <div class="v-col" style="color: {cor_var if var > 0 else '#FF4B4B'}; {animacao if var > 0 else ''}">{exaustao_t:,.0f}</div>
+                    <div class="v-col">{prox_topo:,.0f}</div>
+                    <div class="v-col" style="color: {cor_var if 0.59 <= abs_var <= 0.64 else '#FFF'};">{decisao:,.0f}</div>
+                    <div class="v-col">{respiro:,.0f}</div>
+                    <div class="v-col">{prox_f:,.0f}</div>
+                    <div class="v-col" style="color: {cor_var if var < 0 else '#00FF00'}; {animacao if var < 0 else ''}">{exaustao_f:,.0f}</div>
                 </div>
             """, unsafe_allow_html=True)
-            
-        time.sleep(1)
-    except:
-        time.sleep(5)
