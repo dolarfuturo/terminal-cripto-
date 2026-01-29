@@ -111,7 +111,16 @@ while True:
             st.toast("⚠️ QUEDA CONFIRMADA: Novo andar validado (1.35%).", icon="📉")
             st.rerun()
 
-                       # --- 2. VOLTA PARA BASE (Elasticidade) ---
+       # --- 2. CÁLCULO DOS PREÇOS ALVO ---
+        mp = st.session_state.mp_current
+        exaustao_t = mp * 1.0122
+        prox_topo  = mp * 1.0084
+        decisao    = mp * 1.0061
+        respiro    = mp * 0.9946
+        prox_f     = mp * 0.9904
+        exaustao_f = mp * 0.9878
+
+        # --- 3. VOLTA PARA BASE (Elasticidade) ---
         if st.session_state.mp_current > st.session_state.mp_anterior and price < st.session_state.mp_anterior:
             st.session_state.mp_current = st.session_state.mp_anterior
             st.rerun()
@@ -119,7 +128,7 @@ while True:
             st.session_state.mp_current = st.session_state.mp_anterior
             st.rerun()
 
-        # --- 3. LÓGICA DE CORES E SINALIZAÇÃO ---
+        # --- 4. LÓGICA DE CORES E SINALIZAÇÃO ---
         cor_var = "#00FF00" if var >= 0 else "#FF0000"
         animacao = ""
         seta = "▲" if var >= 0 else "▼"
@@ -129,25 +138,22 @@ while True:
         elif 1.20 <= abs_var <= 1.25:
             animacao = "animation: blink 0.4s infinite;"
 
-        if now_br.hour == 21 and now_br.minute == 0 and now_br.second < 2:
-            st.session_state.mp_current = get_midpoint_v13()
-
-        # --- 4. INTERFACE VISUAL (BLOCOS ALVO) ---
+        # --- 5. INTERFACE VISUAL (BLOCOS ALVO) ---
         with placeholder.container():
             st.markdown(f"""
                 <style>
                 @keyframes blink {{ 0% {{ opacity: 1; }} 50% {{ opacity: 0.1; }} 100% {{ opacity: 1; }} }}
                 .h-col, .v-col {{ flex: 1; text-align: center; font-family: sans-serif; background-color: #000; }}
                 </style>
-                <div style="display: flex; justify-content: space-between; padding: 10px;">
-                    <div class="h-col" style="color: #888;">CÓDIGO</div>
-                    <div class="h-col" style="color: #888;">PREÇO ATUAL</div>
-                    <div class="h-col" style="color: {cor_var if var > 0 else '#888'}; {animacao if var > 0 else ''}">EXAUSTÃO T.</div>
-                    <div class="h-col" style="color: #888;">PRÓX. TOPO</div>
-                    <div class="h-col" style="color: {cor_var if 0.59 <= abs_var <= 0.64 else '#888'};">DECISÃO</div>
-                    <div class="h-col" style="color: #888;">RESPIRO</div>
-                    <div class="h-col" style="color: #888;">PRÓX. AO F.</div>
-                    <div class="h-col" style="color: {cor_var if var < 0 else '#888'}; {animacao if var < 0 else ''}">EXAUSTÃO F.</div>
+                <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333;">
+                    <div class="h-col" style="color: #888; font-size: 10px;">CÓDIGO</div>
+                    <div class="h-col" style="color: #888; font-size: 10px;">PREÇO ATUAL</div>
+                    <div class="h-col" style="color: {cor_var if var > 0 else '#888'}; {animacao if var > 0 else ''}; font-size: 10px;">EXAUSTÃO T.</div>
+                    <div class="h-col" style="color: #888; font-size: 10px;">PRÓX. TOPO</div>
+                    <div class="h-col" style="color: {cor_var if 0.59 <= abs_var <= 0.64 else '#888'}; font-size: 10px;">DECISÃO</div>
+                    <div class="h-col" style="color: #888; font-size: 10px;">RESPIRO</div>
+                    <div class="h-col" style="color: #888; font-size: 10px;">PRÓX. AO F.</div>
+                    <div class="h-col" style="color: {cor_var if var < 0 else '#888'}; {animacao if var < 0 else ''}; font-size: 10px;">EXAUSTÃO F.</div>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 20px 10px;">
                     <div class="v-col" style="color: #FFD700; font-size: 18px;">BTC/USDT</div>
@@ -161,6 +167,5 @@ while True:
                 </div>
             """, unsafe_allow_html=True)
 
-# --- FECHAMENTO DO BLOCO TRY (IMPORTANTE PARA TIRAR O ERRO) ---
     except Exception as e:
         st.error(f"Erro na atualização: {e}")
