@@ -91,54 +91,28 @@ while True:
             st.rerun()
 
 
-                # --- LÓGICA DE SINALIZADORES TEMPORÁRIOS ---
-               # Memória para o gráfico se mover
-        if 'precos_hist' not in st.session_state:
-            st.session_state.precos_hist = [price] * 20
-        st.session_state.precos_hist.append(price)
-        st.session_state.precos_hist = st.session_state.precos_hist[-20:]
-
-        abs_var = abs(var)
-        
-        # 1. SINAL DE ROMPIMENTO (Apenas entre 1.20 e 1.22)
-        if 1.20 <= abs_var < 1.22:
-            base_color = "#00FF00" if var > 0 else "#FF0000"
-            # Sinaliza rápido antes de pular o eixo
-            cor_var = "#FFFFFF" if int(time.time() * 5) % 2 == 0 else base_color
-            
-        # 2. SINALIZADOR AMARELO (Apenas na passagem do 0.61)
-        elif 0.58 <= abs_var <= 0.64:
-            cor_var = "#FFFF00"
-            
-        # 3. CORES NORMAIS (Fora das zonas de sinalização)
-        else:
-            cor_var = "#00FF00" if var >= 0 else "#FF0000"
-            
+        cor_var = "#00FF00" if var >= 0 else "#FF0000"
         seta = "▲" if var >= 0 else "▼"
-
+        
         with placeholder.container():
-            # Ajustamos as colunas: Preço ganha muito espaço (3) e o gráfico fica pequeno (1)
-            c1, c2, c3, c4 = st.columns([3, 1, 3, 1])
-
-            with c1:
-                st.markdown(f"<div style='color:#D4AF37; font-size:12px; margin-bottom:-10px;'>BTC/USDT</div>", unsafe_allow_html=True)
-                st.markdown(f"<div style='color:{cor_var}; font-size:32px; font-weight:bold;'>{price:.2f}</div>", unsafe_allow_html=True)
-            
-            with c2:
-                # Forçamos o gráfico de linha puro e bem pequeno
-                st.line_chart(st.session_state.precos_hist, height=50, use_container_width=True)
-
-            with c3:
-                ex_fundo = int(mp * 0.9878)
-                st.markdown(f"<div style='color:#888; font-size:12px; margin-bottom:-10px;'>EXAUSTÃO F.</div>", unsafe_allow_html=True)
-                st.markdown(f"<div style='color:#FF4B4B; font-size:28px; font-weight:bold;'>{ex_fundo}</div>", unsafe_allow_html=True)
-
-            with c4:
-                # Linha pura também para a exaustão
-                st.line_chart(st.session_state.precos_hist, height=50, use_container_width=True)
-
-
-
+            st.markdown(f"""
+                <div class="header-container">
+                    <div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div>
+                    <div class="h-col">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div>
+                    <div class="h-col">DECISÃO</div><div class="h-col">RESPIRO</div>
+                    <div class="h-col">PRÓX. AO F.</div><div class="h-col">EXAUSTÃO F.</div>
+                </div>
+                <div class="row-container">
+                    <div class="w-col" style="color:#D4AF37;">BTC/USDT</div>
+                    <div class="w-col">{int(price):,}<br><span style="color:{cor_var}; font-size:15px;">{seta} {var:+.2f}%</span></div>
+                    <div class="w-col" style="color:#FF4444;">{int(mp*1.0122):,}</div>
+                    <div class="w-col" style="color:#FFA500;">{int(mp*1.0083):,}</div>
+                    <div class="w-col" style="color:#FFFF00;">{int(mp*1.0061):,}</div>
+                    <div class="w-col" style="color:#00CED1;">{int(mp*1.0040):,}</div>
+                    <div class="w-col" style="color:#FFA500;">{int(mp*0.9939):,}</div>
+                    <div class="w-col" style="color:#00FF00;">{int(mp*0.9878):,}</div>
+                </div>
+            """, unsafe_allow_html=True)
             
             st.markdown(f"""
                 <div class="footer">
