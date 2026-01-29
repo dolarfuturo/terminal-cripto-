@@ -91,81 +91,93 @@ while True:
             st.rerun()
 
 
-                                        # --- LÓGICA DE DECISÃO ALPHA (FILTRO 1.35%) ---
-        abs_var = abs(var)
-        limite_rompimento = 1.35
+                                # --- LÓGICA DE ESTABILIDADE ALPHA (FILTRO 1.50%) ---
+        limite_rompimento = 1.50
         
         if 'mp_anterior' not in st.session_state:
             st.session_state.mp_anterior = mp
 
-        # 1. VALIDAÇÃO DE ROMPIMENTO (O "JÁ ERA")
+        # 1. VALIDAÇÃO DE ALTA (Rompimento acima de 1.50%)
         if var >= limite_rompimento:
             st.session_state.mp_anterior = mp
-            st.session_state.mp_current = int(mp * 1.0135) 
-            st.toast("🚀 TENDÊNCIA CONFIRMADA: Eixo subiu (1.35%)", icon="📈")
+            st.session_state.mp_current = int(mp * 1.0150) 
+            st.toast("🚀 TENDÊNCIA CONFIRMADA: Eixo subiu (1.50%)", icon="📈")
             st.rerun()
 
+        # 2. VALIDAÇÃO DE BAIXA (Rompimento abaixo de -1.50%)
         elif var <= -limite_rompimento:
             st.session_state.mp_anterior = mp
-            st.session_state.mp_current = int(mp * 0.9865)
-            st.toast("⚠️ QUEDA CONFIRMADA: Novo andar validado (1.35%).", icon="📉")
+            st.session_state.mp_current = int(mp * 0.9850)
+            st.toast("📉 QUEDA CONFIRMADA: Eixo desceu (1.50%)", icon="⚠️")
             st.rerun()
 
-       # --- 2. CÁLCULO DOS PREÇOS ALVO ---
-        mp = st.session_state.mp_current
-        exaustao_t = mp * 1.0122
-        prox_topo  = mp * 1.0084
-        decisao    = mp * 1.0061
-        respiro    = mp * 0.9946
-        prox_f     = mp * 0.9904
-        exaustao_f = mp * 0.9878
-
-        # --- 3. VOLTA PARA BASE (Elasticidade) ---
-        if st.session_state.mp_current > st.session_state.mp_anterior and price < st.session_state.mp_anterior:
+        # 3. FILTRO DE FALSO ROMPIMENTO (Volta para o eixo anterior se falhar)
+        elif (mp > st.session_state.mp_anterior and price < st.session_state.mp_anterior) or \
+             (mp < st.session_state.mp_anterior and price > st.session_state.mp_anterior):
             st.session_state.mp_current = st.session_state.mp_anterior
-            st.rerun()
-        elif st.session_state.mp_current < st.session_state.mp_anterior and price > st.session_state.mp_anterior:
-            st.session_state.mp_current = st.session_state.mp_anterior
+            st.toast("🔄 RETORNO À BASE: Rompimento não validado.", icon="↩️")
             st.rerun()
 
-        # --- 4. LÓGICA DE CORES E SINALIZAÇÃO ---
+        # 2. VOLTA PARA BASE (Se o repique falhar e cruzar o eixo anterior)
+        elif (mp > st.session_state.mp_anterior and price < st.session_state.mp_anterior) or \
+             (mp < st.session_state.mp_anterior and price > st.session_state.mp_anterior):
+            st.session_state.mp_current = st.session_state.mp_anterior
+            st.toast("🔄 RETORNO: Preço não sustentou o novo patamar.", icon="↩️")
+            st.rerun()
+
+        # 3. LÓGICA DE CORES E RESET BINANCE
         cor_var = "#00FF00" if var >= 0 else "#FF0000"
         animacao = ""
-        seta = "▲" if var >= 0 else "▼"
         
         if 0.59 <= abs_var <= 0.64:
-            cor_var = "#FFFF00" 
+            cor_var = "#FFFF00"
         elif 1.20 <= abs_var <= 1.25:
+            cor_var = "#00FF00" if var < 0 else "#FF0000"
             animacao = "animation: blink 0.4s infinite;"
 
-        # --- 5. INTERFACE VISUAL (BLOCOS ALVO) ---
+        seta = "▲" if var >= 0 else "▼"
+
+        # Auto-Reset Binance (21:00 BR / 00:00 UTC)
+        if now_br.hour == 21 and now_br.minute == 0 and now_br.second < 2:
+            st.session_state.mp_current = get_midpoint_v13()
+
+
         with placeholder.container():
             st.markdown(f"""
                 <style>
                 @keyframes blink {{ 0% {{ opacity: 1; }} 50% {{ opacity: 0.1; }} 100% {{ opacity: 1; }} }}
-                .h-col, .v-col {{ flex: 1; text-align: center; font-family: sans-serif; background-color: #000; }}
                 </style>
-                <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333;">
-                    <div class="h-col" style="color: #888; font-size: 10px;">CÓDIGO</div>
-                    <div class="h-col" style="color: #888; font-size: 10px;">PREÇO ATUAL</div>
-                    <div class="h-col" style="color: {cor_var if var > 0 else '#888'}; {animacao if var > 0 else ''}; font-size: 10px;">EXAUSTÃO T.</div>
-                    <div class="h-col" style="color: #888; font-size: 10px;">PRÓX. TOPO</div>
-                    <div class="h-col" style="color: {cor_var if 0.59 <= abs_var <= 0.64 else '#888'}; font-size: 10px;">DECISÃO</div>
-                    <div class="h-col" style="color: #888; font-size: 10px;">RESPIRO</div>
-                    <div class="h-col" style="color: #888; font-size: 10px;">PRÓX. AO F.</div>
-                    <div class="h-col" style="color: {cor_var if var < 0 else '#888'}; {animacao if var < 0 else ''}; font-size: 10px;">EXAUSTÃO F.</div>
+                <div class="header-container">
+                    <div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div>
+                    <div class="h-col">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div>
+                    <div class="h-col">DECISÃO</div><div class="h-col">RESPIRO</div>
+                    <div class="h-col">PRÓX. AO F.</div><div class="h-col">EXAUSTÃO F.</div>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 20px 10px;">
-                    <div class="v-col" style="color: #FFD700; font-size: 18px;">BTC/USDT</div>
-                    <div class="v-col" style="font-size: 24px;">{price:,.0f}<br><span style="font-size: 14px; color: {cor_var};">{seta} {var:.2f}%</span></div>
-                    <div class="v-col" style="color: {cor_var if var > 0 else '#FF4B4B'}; {animacao if var > 0 else ''}; font-size: 24px;">{exaustao_t:,.0f}</div>
-                    <div class="v-col" style="font-size: 24px;">{prox_topo:,.0f}</div>
-                    <div class="v-col" style="color: {cor_var if 0.59 <= abs_var <= 0.64 else '#FFF'}; font-size: 24px;">{decisao:,.0f}</div>
-                    <div class="v-col" style="font-size: 24px;">{respiro:,.0f}</div>
-                    <div class="v-col" style="font-size: 24px;">{prox_f:,.0f}</div>
-                    <div class="v-col" style="color: {cor_var if var < 0 else '#00FF00'}; {animacao if var < 0 else ''}; font-size: 24px;">{exaustao_f:,.0f}</div>
+                <div class="row-container">
+                    <div class="w-col" style="color:#D4AF37;">BTC/USDT</div>
+                    <div class="w-col" style="{animacao}">
+                        {int(price):,}<br>
+                        <span style="color:{cor_var}; font-size:18px; font-weight:bold;">{seta} {var:+.2f}%</span>
+                    </div>
+                    <div class="w-col" style="color:#FF4444;">{int(mp*1.0122):,}</div>
+                    <div class="w-col" style="color:#FFA500;">{int(mp*1.0083):,}</div>
+                    <div class="w-col" style="color:#FFFF00;">{int(mp*1.0061):,}</div>
+                    <div class="w-col" style="color:#00CED1;">{int(mp*1.0040):,}</div>
+                    <div class="w-col" style="color:#FFA500;">{int(mp*0.9939):,}</div>
+                    <div class="w-col" style="color:#00FF00;">{int(mp*0.9878):,}</div>
                 </div>
             """, unsafe_allow_html=True)
 
-    except Exception as e:
-        st.error(f"Erro na atualização: {e}")
+            
+            st.markdown(f"""
+                <div class="footer">
+                    <div><span class="dot"></span> LIVESTREAM ATIVO</div>
+                    <div>MIDPOINT: <span style="color:#FFA500; font-family:monospace;">{int(mp):,}</span></div>
+                    <div>BRASÍLIA: {now_br.strftime('%H:%M:%S')}</div>
+                    <div>NEW YORK: {now_ny.strftime('%H:%M:%S')}</div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        time.sleep(1)
+    except:
+        time.sleep(5)
