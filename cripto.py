@@ -91,11 +91,32 @@ while True:
             st.rerun()
 
 
-        cor_var = "#00FF00" if var >= 0 else "#FF0000"
+                # --- LÓGICA DE SINALIZAÇÃO ALPHA VISION ---
+        abs_var = abs(var)
+        cor_var = "#00FF00" if var >= 0 else "#FF0000" 
+        animacao = ""
+
+        # 1. GATILHO AMARELO (0.59% até 0.64%)
+        if 0.59 <= abs_var <= 0.64:
+            cor_var = "#FFFF00"
+        
+        # 2. GATILHO PISCAR (1.20% até 1.25%)
+        elif 1.20 <= abs_var <= 1.25:
+            # Se cair (-1.20), pisca VERDE | Se subir (1.20), pisca VERMELHO
+            cor_var = "#00FF00" if var < 0 else "#FF0000"
+            animacao = "animation: blink 0.4s infinite;"
+
         seta = "▲" if var >= 0 else "▼"
         
+        # Reset Binance Automático (21:00 BR / 00:00 UTC)
+        if now_br.hour == 21 and now_br.minute == 0 and now_br.second < 2:
+            st.session_state.mp_current = get_midpoint_v13()
+
         with placeholder.container():
             st.markdown(f"""
+                <style>
+                @keyframes blink {{ 0% {{ opacity: 1; }} 50% {{ opacity: 0.1; }} 100% {{ opacity: 1; }} }}
+                </style>
                 <div class="header-container">
                     <div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div>
                     <div class="h-col">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div>
@@ -104,7 +125,10 @@ while True:
                 </div>
                 <div class="row-container">
                     <div class="w-col" style="color:#D4AF37;">BTC/USDT</div>
-                    <div class="w-col">{int(price):,}<br><span style="color:{cor_var}; font-size:15px;">{seta} {var:+.2f}%</span></div>
+                    <div class="w-col" style="{animacao}">
+                        {int(price):,}<br>
+                        <span style="color:{cor_var}; font-size:18px; font-weight:bold;">{seta} {var:+.2f}%</span>
+                    </div>
                     <div class="w-col" style="color:#FF4444;">{int(mp*1.0122):,}</div>
                     <div class="w-col" style="color:#FFA500;">{int(mp*1.0083):,}</div>
                     <div class="w-col" style="color:#FFFF00;">{int(mp*1.0061):,}</div>
@@ -113,6 +137,7 @@ while True:
                     <div class="w-col" style="color:#00FF00;">{int(mp*0.9878):,}</div>
                 </div>
             """, unsafe_allow_html=True)
+
             
             st.markdown(f"""
                 <div class="footer">
