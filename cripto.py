@@ -111,14 +111,12 @@ while True:
             st.toast("⚠️ QUEDA CONFIRMADA: Novo andar validado (1.35%).", icon="📉")
             st.rerun()
 
-                # --- 2. VOLTA PARA BASE (Elasticidade) ---
+                       # --- 2. VOLTA PARA BASE (Elasticidade) ---
         if st.session_state.mp_current > st.session_state.mp_anterior and price < st.session_state.mp_anterior:
             st.session_state.mp_current = st.session_state.mp_anterior
-            st.toast("🔄 RETORNO: Rompimento falso, voltando para base.", icon="↩️")
             st.rerun()
         elif st.session_state.mp_current < st.session_state.mp_anterior and price > st.session_state.mp_anterior:
             st.session_state.mp_current = st.session_state.mp_anterior
-            st.toast("🔄 RETORNO: Recuperação de base anterior.", icon="↩️")
             st.rerun()
 
         # --- 3. LÓGICA DE CORES E SINALIZAÇÃO ---
@@ -127,11 +125,10 @@ while True:
         seta = "▲" if var >= 0 else "▼"
         
         if 0.59 <= abs_var <= 0.64:
-            cor_var = "#FFFF00" # ACENDE AMARELO (DECISÃO)
+            cor_var = "#FFFF00" 
         elif 1.20 <= abs_var <= 1.25:
-            animacao = "animation: blink 0.4s infinite;" # PISCA (EXAUSTÃO)
+            animacao = "animation: blink 0.4s infinite;"
 
-        # Reset Binance (00:00 UTC / 21:00 BR)
         if now_br.hour == 21 and now_br.minute == 0 and now_br.second < 2:
             st.session_state.mp_current = get_midpoint_v13()
 
@@ -140,26 +137,30 @@ while True:
             st.markdown(f"""
                 <style>
                 @keyframes blink {{ 0% {{ opacity: 1; }} 50% {{ opacity: 0.1; }} 100% {{ opacity: 1; }} }}
-                .h-col, .v-col {{ flex: 1; text-align: center; font-family: sans-serif; }}
+                .h-col, .v-col {{ flex: 1; text-align: center; font-family: sans-serif; background-color: #000; }}
                 </style>
-                <div style="display: flex; justify-content: space-between; background-color: #000; padding: 10px; border-bottom: 1px solid #333;">
-                    <div class="h-col">CÓDIGO</div>
-                    <div class="h-col">PREÇO ATUAL</div>
+                <div style="display: flex; justify-content: space-between; padding: 10px;">
+                    <div class="h-col" style="color: #888;">CÓDIGO</div>
+                    <div class="h-col" style="color: #888;">PREÇO ATUAL</div>
                     <div class="h-col" style="color: {cor_var if var > 0 else '#888'}; {animacao if var > 0 else ''}">EXAUSTÃO T.</div>
-                    <div class="h-col">PRÓX. TOPO</div>
+                    <div class="h-col" style="color: #888;">PRÓX. TOPO</div>
                     <div class="h-col" style="color: {cor_var if 0.59 <= abs_var <= 0.64 else '#888'};">DECISÃO</div>
-                    <div class="h-col">RESPIRO</div>
-                    <div class="h-col">PRÓX. AO F.</div>
+                    <div class="h-col" style="color: #888;">RESPIRO</div>
+                    <div class="h-col" style="color: #888;">PRÓX. AO F.</div>
                     <div class="h-col" style="color: {cor_var if var < 0 else '#888'}; {animacao if var < 0 else ''}">EXAUSTÃO F.</div>
                 </div>
-                <div style="display: flex; justify-content: space-between; background-color: #000; padding: 20px 10px;">
+                <div style="display: flex; justify-content: space-between; padding: 20px 10px;">
                     <div class="v-col" style="color: #FFD700; font-size: 18px;">BTC/USDT</div>
-                    <div class="v-col">{price:,.0f}<br><span style="font-size: 14px; color: {cor_var};">{seta} {var:.2f}%</span></div>
-                    <div class="v-col" style="color: {cor_var if var > 0 else '#FF4B4B'}; {animacao if var > 0 else ''}">{exaustao_t:,.0f}</div>
-                    <div class="v-col">{prox_topo:,.0f}</div>
-                    <div class="v-col" style="color: {cor_var if 0.59 <= abs_var <= 0.64 else '#FFF'};">{decisao:,.0f}</div>
-                    <div class="v-col">{respiro:,.0f}</div>
-                    <div class="v-col">{prox_f:,.0f}</div>
-                    <div class="v-col" style="color: {cor_var if var < 0 else '#00FF00'}; {animacao if var < 0 else ''}">{exaustao_f:,.0f}</div>
+                    <div class="v-col" style="font-size: 24px;">{price:,.0f}<br><span style="font-size: 14px; color: {cor_var};">{seta} {var:.2f}%</span></div>
+                    <div class="v-col" style="color: {cor_var if var > 0 else '#FF4B4B'}; {animacao if var > 0 else ''}; font-size: 24px;">{exaustao_t:,.0f}</div>
+                    <div class="v-col" style="font-size: 24px;">{prox_topo:,.0f}</div>
+                    <div class="v-col" style="color: {cor_var if 0.59 <= abs_var <= 0.64 else '#FFF'}; font-size: 24px;">{decisao:,.0f}</div>
+                    <div class="v-col" style="font-size: 24px;">{respiro:,.0f}</div>
+                    <div class="v-col" style="font-size: 24px;">{prox_f:,.0f}</div>
+                    <div class="v-col" style="color: {cor_var if var < 0 else '#00FF00'}; {animacao if var < 0 else ''}; font-size: 24px;">{exaustao_f:,.0f}</div>
                 </div>
             """, unsafe_allow_html=True)
+
+# --- FECHAMENTO DO BLOCO TRY (IMPORTANTE PARA TIRAR O ERRO) ---
+    except Exception as e:
+        st.error(f"Erro na atualização: {e}")
