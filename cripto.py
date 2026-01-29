@@ -91,25 +91,31 @@ while True:
             st.rerun()
 
 
-                        # --- LÓGICA DE DECISÃO ALPHA (FILTRO 1.50%) ---
-        abs_var = abs(var)
+                                # --- LÓGICA DE ESTABILIDADE ALPHA (FILTRO 1.50%) ---
         limite_rompimento = 1.50
         
         if 'mp_anterior' not in st.session_state:
-            st.session_state.mp_current = mp # Inicializa se necessário
             st.session_state.mp_anterior = mp
 
-        # 1. VALIDAÇÃO DE ROMPIMENTO (O "JÁ ERA")
+        # 1. VALIDAÇÃO DE ALTA (Rompimento acima de 1.50%)
         if var >= limite_rompimento:
             st.session_state.mp_anterior = mp
             st.session_state.mp_current = int(mp * 1.0150) 
-            st.toast("🚀 PATAMAR CONFIRMADO: Eixo subiu (1.50%)", icon="📈")
+            st.toast("🚀 TENDÊNCIA CONFIRMADA: Eixo subiu (1.50%)", icon="📈")
             st.rerun()
 
+        # 2. VALIDAÇÃO DE BAIXA (Rompimento abaixo de -1.50%)
         elif var <= -limite_rompimento:
             st.session_state.mp_anterior = mp
-            st.session_state.mp_current = int(mp * 0.9870)
-            st.toast("⚠️ QUEDA CONFIRMADA: Novo andar validado.", icon="📉")
+            st.session_state.mp_current = int(mp * 0.9850)
+            st.toast("📉 QUEDA CONFIRMADA: Eixo desceu (1.50%)", icon="⚠️")
+            st.rerun()
+
+        # 3. FILTRO DE FALSO ROMPIMENTO (Volta para o eixo anterior se falhar)
+        elif (mp > st.session_state.mp_anterior and price < st.session_state.mp_anterior) or \
+             (mp < st.session_state.mp_anterior and price > st.session_state.mp_anterior):
+            st.session_state.mp_current = st.session_state.mp_anterior
+            st.toast("🔄 RETORNO À BASE: Rompimento não validado.", icon="↩️")
             st.rerun()
 
         # 2. VOLTA PARA BASE (Se o repique falhar e cruzar o eixo anterior)
