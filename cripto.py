@@ -111,26 +111,19 @@ while True:
             st.toast("⚠️ QUEDA CONFIRMADA: Novo andar validado (1.50%).", icon="📉")
             st.rerun()
 
-        # 2. VOLTA PARA BASE (Se o repique falhar e cruzar o eixo anterior)
-        elif (mp > st.session_state.mp_anterior and price < st.session_state.mp_anterior) or \
-             (mp < st.session_state.mp_anterior and price > st.session_state.mp_anterior):
+        # --- 2. VOLTA PARA BASE (Se o repique falhar) ---
+        # Se o eixo tinha subido, mas o preço caiu abaixo da base antiga
+        if st.session_state.mp_current > st.session_state.mp_anterior and price < st.session_state.mp_anterior:
             st.session_state.mp_current = st.session_state.mp_anterior
-            st.toast("🔄 RETORNO: Preço não sustentou o novo patamar.", icon="↩️")
+            st.toast("🔄 RETORNO: Rompimento falso, voltando para base.", icon="↩️")
             st.rerun()
 
-        # 3. FILTRO DE FALSO ROMPIMENTO (Volta para o eixo anterior se falhar)
-        elif (mp > st.session_state.mp_anterior and price < st.session_state.mp_anterior) or \
-             (mp < st.session_state.mp_anterior and price > st.session_state.mp_anterior):
+        # Se o eixo tinha descido, mas o preço subiu acima da base antiga
+        elif st.session_state.mp_current < st.session_state.mp_anterior and price > st.session_state.mp_anterior:
             st.session_state.mp_current = st.session_state.mp_anterior
-            st.toast("🔄 RETORNO À BASE: Rompimento não validado.", icon="↩️")
+            st.toast("🔄 RETORNO: Recuperação de base anterior.", icon="↩️")
             st.rerun()
 
-        # 2. VOLTA PARA BASE (Se o repique falhar e cruzar o eixo anterior)
-        elif (mp > st.session_state.mp_anterior and price < st.session_state.mp_anterior) or \
-             (mp < st.session_state.mp_anterior and price > st.session_state.mp_anterior):
-            st.session_state.mp_current = st.session_state.mp_anterior
-            st.toast("🔄 RETORNO: Preço não sustentou o novo patamar.", icon="↩️")
-            st.rerun()
 
         # 3. LÓGICA DE CORES E RESET BINANCE
         cor_var = "#00FF00" if var >= 0 else "#FF0000"
