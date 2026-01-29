@@ -68,8 +68,8 @@ placeholder = st.empty()
 
 while True:
     try:
-        br_tz, ny_tz = pytz.timezone('America/Sao_Paulo'), pytz.timezone('America/New_York')
-        now_br, now_ny = datetime.now(br_tz), datetime.now(ny_tz)
+        br_tz, ny_tz, lon_tz = pytz.timezone('America/Sao_Paulo'), pytz.timezone('America/New_York'), pytz.timezone('Europe/London')
+        now_br, now_ny, now_lon = datetime.now(br_tz), datetime.now(ny_tz), datetime.now(lon_tz)
         
         # Auto-Reset Binance (18:00 BR)
         if now_br.hour == 18 and now_br.minute == 0 and now_br.second < 2:
@@ -117,7 +117,8 @@ while True:
             st.markdown(f"""
                 <div class="footer">
                     <div><span class="dot"></span> LIVESTREAM ATIVO</div>
-                    <div>MIDPOINT: <span style="color:#FFA500; font-family:monospace;">{int(mp):,}</span></div>
+                    <div>ancoravision: <span style="color:#FFA500; font-family:monospace;">{int(mp):,}</span></div>
+                    <div>LONDRES: {now_lon.strftime('%H:%M:%S')}</div>
                     <div>BRASÍLIA: {now_br.strftime('%H:%M:%S')}</div>
                     <div>NEW YORK: {now_ny.strftime('%H:%M:%S')}</div>
                 </div>
