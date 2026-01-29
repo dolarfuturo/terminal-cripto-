@@ -91,26 +91,50 @@ while True:
             st.rerun()
 
 
-                # --- LÓGICA DE SINALIZAÇÃO ALPHA VISION ---
+                        # --- LÓGICA DE DECISÃO ALPHA (FILTRO 1.30%) ---
         abs_var = abs(var)
-        cor_var = "#00FF00" if var >= 0 else "#FF0000" 
-        animacao = ""
+        limite_rompimento = 1.30
+        
+        if 'mp_anterior' not in st.session_state:
+            st.session_state.mp_current = mp # Inicializa se necessário
+            st.session_state.mp_anterior = mp
 
-        # 1. GATILHO AMARELO (0.59% até 0.64%)
+        # 1. VALIDAÇÃO DE ROMPIMENTO (O "JÁ ERA")
+        if var >= limite_rompimento:
+            st.session_state.mp_anterior = mp
+            st.session_state.mp_current = int(mp * 1.0130) 
+            st.toast("🚀 PATAMAR CONFIRMADO: Eixo subiu (1.30%)", icon="📈")
+            st.rerun()
+
+        elif var <= -limite_rompimento:
+            st.session_state.mp_anterior = mp
+            st.session_state.mp_current = int(mp * 0.9870)
+            st.toast("⚠️ QUEDA CONFIRMADA: Novo andar validado.", icon="📉")
+            st.rerun()
+
+        # 2. VOLTA PARA BASE (Se o repique falhar e cruzar o eixo anterior)
+        elif (mp > st.session_state.mp_anterior and price < st.session_state.mp_anterior) or \
+             (mp < st.session_state.mp_anterior and price > st.session_state.mp_anterior):
+            st.session_state.mp_current = st.session_state.mp_anterior
+            st.toast("🔄 RETORNO: Preço não sustentou o novo patamar.", icon="↩️")
+            st.rerun()
+
+        # 3. LÓGICA DE CORES E RESET BINANCE
+        cor_var = "#00FF00" if var >= 0 else "#FF0000"
+        animacao = ""
+        
         if 0.59 <= abs_var <= 0.64:
             cor_var = "#FFFF00"
-        
-        # 2. GATILHO PISCAR (1.20% até 1.25%)
         elif 1.20 <= abs_var <= 1.25:
-            # Se cair (-1.20), pisca VERDE | Se subir (1.20), pisca VERMELHO
             cor_var = "#00FF00" if var < 0 else "#FF0000"
             animacao = "animation: blink 0.4s infinite;"
 
         seta = "▲" if var >= 0 else "▼"
-        
-        # Reset Binance Automático (21:00 BR / 00:00 UTC)
+
+        # Auto-Reset Binance (21:00 BR / 00:00 UTC)
         if now_br.hour == 21 and now_br.minute == 0 and now_br.second < 2:
             st.session_state.mp_current = get_midpoint_v13()
+
 
         with placeholder.container():
             st.markdown(f"""
