@@ -91,9 +91,9 @@ while True:
             st.rerun()
 
 
-                                        # --- LÓGICA DE DECISÃO ALPHA (FILTRO 1.50%) ---
+                                        # --- LÓGICA DE DECISÃO ALPHA (FILTRO 1.35%) ---
         abs_var = abs(var)
-        limite_rompimento = 1.50
+        limite_rompimento = 1.35
         
         if 'mp_anterior' not in st.session_state:
             st.session_state.mp_anterior = mp
@@ -101,14 +101,14 @@ while True:
         # 1. VALIDAÇÃO DE ROMPIMENTO (O "JÁ ERA")
         if var >= limite_rompimento:
             st.session_state.mp_anterior = mp
-            st.session_state.mp_current = int(mp * 1.0150) 
-            st.toast("🚀 TENDÊNCIA CONFIRMADA: Eixo subiu (1.50%)", icon="📈")
+            st.session_state.mp_current = int(mp * 1.0135) 
+            st.toast("🚀 TENDÊNCIA CONFIRMADA: Eixo subiu (1.35%)", icon="📈")
             st.rerun()
 
         elif var <= -limite_rompimento:
             st.session_state.mp_anterior = mp
-            st.session_state.mp_current = int(mp * 0.9850)
-            st.toast("⚠️ QUEDA CONFIRMADA: Novo andar validado (1.50%).", icon="📉")
+            st.session_state.mp_current = int(mp * 0.9865)
+            st.toast("⚠️ QUEDA CONFIRMADA: Novo andar validado (1.35%).", icon="📉")
             st.rerun()
 
         # --- 2. VOLTA PARA BASE (Se o repique falhar) ---
