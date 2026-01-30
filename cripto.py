@@ -113,14 +113,15 @@ while True:
                 </div>
                 <div class="row-container">
                     <div class="w-col" style="color:#D4AF37;">BTC/USDT</div>
-                    <div class="w-col">{int(price):,}<br><span style="color:{cor_var}; font-size:15px;">{seta} {var:+.2f}%</span></div>
+                    <div class="w-col">
+                    <span style="font-size:16px;">{int(price):,}</span><br>
+                    <span style="color:{cor_var}; font-size:12px; font-weight:bold;">{seta} {var:+.2f}%</span>
                     <div class="w-col" style="{estilo_ex_t}">{int(mp*1.0122):,}</div>
                     <div class="w-col" style="color:#FFA500;">{int(mp*1.0083):,}</div>
                     <div class="w-col" style="color:#FFFF00; {fundo_decisao}">{int(mp*1.0061):,}</div>
                     <div class="w-col" style="color:#00CED1;">{int(mp*1.0040):,}</div>
                     <div class="w-col" style="color:#FFA500;">{int(mp*0.9939):,}</div>
                     <div class="w-col" style="{estilo_ex_f}">{int(mp*0.9878):,}</div>
-                </div>
             """, unsafe_allow_html=True)
 
             
