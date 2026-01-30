@@ -120,8 +120,18 @@ while True:
                     <div class="w-col" style="color:#FFA500; display: flex; align-items: center; justify-content: center;">{int(mp*0.9939):,}</div>
                     <div class="w-col" style="display: flex; align-items: center; justify-content: center; {estilo_ex_f}">{int(mp*0.9878):,}</div>
                 </div>
-            """, unsafe_allow_html=True)
 
+                <div style="display: flex; justify-content: center; gap: 80px; margin-top: 15px; padding-bottom: 5px;">
+                    <div style="text-align: center;">
+                        <div style="color: #888; font-size: 10px; text-transform: uppercase;">ResetVision (18h)</div>
+                        <div style="color: #ffffff; font-size: 18px; font-weight: bold;">{int(mp_fixo):,}</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: #888; font-size: 10px; text-transform: uppercase;">ÂncoraVision (Móvel)</div>
+                        <div style="color: #00e6ff; font-size: 18px; font-weight: bold;">{int(mp):,}</div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
 
                                                
             st.markdown(f"""
