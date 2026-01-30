@@ -100,9 +100,12 @@ while True:
             estilo_ex_t = "color: #FF4444; animation: blink 0.4s infinite;" if (1.20 <= var < 1.35) else "color: #FF4444;"
             estilo_ex_f = "color: #00FF00; animation: blink 0.4s infinite;" if (-1.35 < var <= -1.20) else "color: #00FF00;"
 
-                                    # Lógica de segurança para as variáveis de visualização
-            rv_exibir = mp_fixo if 'mp_fixo' in locals() else price
-            av_exibir = mp if 'mp' in locals() else price
+                                                # Lógica correta para o ResetVision (Média de Máx e Mín do período)
+            # Se o mp_fixo ainda não foi calculado pelo sistema, ele usa o preço atual como segurança
+            if 'max_periodo' in locals() and 'min_periodo' in locals():
+                mp_calculado = (max_periodo + min_periodo) / 2
+            else:
+                mp_calculado = mp_fixo if 'mp_fixo' in locals() else price
 
             st.markdown(f"""
                 <div class="header-container">
@@ -117,22 +120,22 @@ while True:
                         <div style="font-weight: bold; line-height: 1.1;">{int(price):,}</div>
                         <div style="color:{cor_var}; font-size:11px; font-weight:bold; margin-top: 2px;">{seta} {var:+.2f}%</div>
                     </div>
-                    <div class="w-col" style="display: flex; align-items: center; justify-content: center; {estilo_ex_t}">{int(av_exibir*1.0122):,}</div>
-                    <div class="w-col" style="color:#FFA500; display: flex; align-items: center; justify-content: center;">{int(av_exibir*1.0083):,}</div>
-                    <div class="w-col" style="display: flex; align-items: center; justify-content: center; {fundo_decisao}">{int(av_exibir*1.0061):,}</div>
-                    <div class="w-col" style="color:#00CED1; display: flex; align-items: center; justify-content: center;">{int(av_exibir*1.0040):,}</div>
-                    <div class="w-col" style="color:#FFA500; display: flex; align-items: center; justify-content: center;">{int(av_exibir*0.9939):,}</div>
-                    <div class="w-col" style="display: flex; align-items: center; justify-content: center; {estilo_ex_f}">{int(av_exibir*0.9878):,}</div>
+                    <div class="w-col" style="display: flex; align-items: center; justify-content: center; {estilo_ex_t}">{int(mp*1.0122):,}</div>
+                    <div class="w-col" style="color:#FFA500; display: flex; align-items: center; justify-content: center;">{int(mp*1.0083):,}</div>
+                    <div class="w-col" style="display: flex; align-items: center; justify-content: center; {fundo_decisao}">{int(mp*1.0061):,}</div>
+                    <div class="w-col" style="color:#00CED1; display: flex; align-items: center; justify-content: center;">{int(mp*1.0040):,}</div>
+                    <div class="w-col" style="color:#FFA500; display: flex; align-items: center; justify-content: center;">{int(mp*0.9939):,}</div>
+                    <div class="w-col" style="display: flex; align-items: center; justify-content: center; {estilo_ex_f}">{int(mp*0.9878):,}</div>
                 </div>
 
-                <div style="display: flex; justify-content: center; gap: 60px; margin-top: 15px; padding-bottom: 5px;">
+                <div style="display: flex; justify-content: center; gap: 80px; margin-top: 15px; padding-bottom: 5px;">
                     <div style="text-align: center;">
-                        <div style="color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">ResetVision (Média 11:30-18h)</div>
-                        <div style="color: #ffffff; font-size: 18px; font-weight: bold;">{int(rv_exibir):,}</div>
+                        <div style="color: #888; font-size: 10px; text-transform: uppercase;">ResetVision (Média Máx/Min)</div>
+                        <div style="color: #ffffff; font-size: 19px; font-weight: bold;">{int(mp_calculado):,}</div>
                     </div>
                     <div style="text-align: center;">
-                        <div style="color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">ÂncoraVision (Móvel)</div>
-                        <div style="color: #00e6ff; font-size: 18px; font-weight: bold;">{int(av_exibir):,}</div>
+                        <div style="color: #888; font-size: 10px; text-transform: uppercase;">ÂncoraVision (Cálculo Ativo)</div>
+                        <div style="color: #00e6ff; font-size: 19px; font-weight: bold;">{int(mp):,}</div>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
