@@ -100,10 +100,20 @@ while True:
             estilo_ex_t = "color: #FF4444; animation: blink 0.4s infinite;" if (1.20 <= var < 1.35) else "color: #FF4444;"
             estilo_ex_f = "color: #00FF00; animation: blink 0.4s infinite;" if (-1.35 < var <= -1.20) else "color: #00FF00;"
 
-                                                                                  # RV (ResetVision) chama a sua função do motor de cálculo (Fixo)
-            # AV (ÂncoraVision) usa o 'mp' que está rodando em tempo real (Móvel)
+                                                                                             # RV (ResetVision) e AV (ÂncoraVision)
             rv_valor = get_midpoint_v13() 
             av_valor = mp if 'mp' in locals() else price
+
+            # CÁLCULO DA VARIAÇÃO (PREÇO ATUAL vs RESETVISION)
+            var_reset = ((price / rv_valor) - 1) * 100
+            
+            # DEFINIÇÃO DE COR E SETA BASEADA NO RESULTADO
+            if var_reset >= 0:
+                cor_v = "#00FF00"  # Verde Neon
+                seta_v = "▲"
+            else:
+                cor_v = "#FF4444"  # Vermelho Vivo
+                seta_v = "▼"
 
             st.markdown(f"""
                 <div class="header-container">
@@ -116,7 +126,7 @@ while True:
                     <div class="w-col" style="color:#D4AF37; font-weight:bold; display: flex; align-items: center; justify-content: center;">BTC/USDT</div>
                     <div class="w-col" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
                         <div style="font-weight: bold; line-height: 1.1;">{int(price):,}</div>
-                        <div style="color:{cor_var}; font-size:11px; font-weight:bold; margin-top: 2px;">{seta} {var:+.2f}%</div>
+                        <div style="color:{cor_v}; font-size:11px; font-weight:bold; margin-top: 2px;">{seta_v} {var_reset:+.2f}%</div>
                     </div>
                     <div class="w-col" style="display: flex; align-items: center; justify-content: center; {estilo_ex_t}">{int(av_valor*1.0122):,}</div>
                     <div class="w-col" style="color:#FFA500; display: flex; align-items: center; justify-content: center;">{int(av_valor*1.0083):,}</div>
