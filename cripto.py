@@ -100,28 +100,28 @@ while True:
             estilo_ex_t = "color: #FF4444; animation: blink 0.4s infinite;" if (1.20 <= var < 1.35) else "color: #FF4444;"
             estilo_ex_f = "color: #00FF00; animation: blink 0.4s infinite;" if (-1.35 < var <= -1.20) else "color: #00FF00;"
 
-            st.markdown(f"""
-                <style>
-                @keyframes blink {{ 0% {{ opacity: 1; }} 50% {{ opacity: 0.1; }} 100% {{ opacity: 1; }} }}
-                .h-col, .w-col {{ text-align: center; padding: 10px; border: 1px solid #444; }}
-                </style>
+                                    st.markdown(f"""
                 <div class="header-container">
                     <div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div>
-                    <div class="h-col" style="{estilo_ex_t}">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div>
+                    <div class="h-col" style="color:#FF4444; {estilo_ex_t}">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div>
                     <div class="h-col" style="color:#FFFF00;">DECISÃO</div><div class="h-col">RESPIRO</div>
-                    <div class="h-col">PRÓX. AO F.</div><div class="h-col" style="{estilo_ex_f}">EXAUSTÃO F.</div>
+                    <div class="h-col">PRÓX. AO F.</div><div class="h-col" style="color:#00FF00; {estilo_ex_f}">EXAUSTÃO F.</div>
                 </div>
                 <div class="row-container">
-                    <div class="w-col" style="color:#D4AF37;">BTC/USDT</div>
-                    <div class="w-col">{int(price):,}<br><span style="color:{cor_var}; font-size:15px;">{seta} {var:+.2f}%</span></div>
-                    <div class="w-col" style="{estilo_ex_t}">{int(mp*1.0122):,}</div>
+                    <div class="w-col" style="color:#D4AF37; font-weight:bold;">BTC/USDT</div>
+                    <div class="w-col">
+                        <span style="font-size:16px;">{int(price):,}</span><br>
+                        <span style="color:{cor_var}; font-size:11px; font-weight:bold;">{seta} {var:+.2f}%</span>
+                    </div>
+                    <div class="w-col" style="color:#FF4444; {estilo_ex_t}">{int(mp*1.0122):,}</div>
                     <div class="w-col" style="color:#FFA500;">{int(mp*1.0083):,}</div>
                     <div class="w-col" style="color:#FFFF00; {fundo_decisao}">{int(mp*1.0061):,}</div>
                     <div class="w-col" style="color:#00CED1;">{int(mp*1.0040):,}</div>
                     <div class="w-col" style="color:#FFA500;">{int(mp*0.9939):,}</div>
-                    <div class="w-col" style="{estilo_ex_f}">{int(mp*0.9878):,}</div>
+                    <div class="w-col" style="color:#00FF00; {estilo_ex_f}">{int(mp*0.9878):,}</div>
                 </div>
             """, unsafe_allow_html=True)
+
 
             
             st.markdown(f"""
