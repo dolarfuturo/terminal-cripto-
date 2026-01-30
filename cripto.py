@@ -100,10 +100,9 @@ while True:
             estilo_ex_t = "color: #FF4444; animation: blink 0.4s infinite;" if (1.20 <= var < 1.35) else "color: #FF4444;"
             estilo_ex_f = "color: #00FF00; animation: blink 0.4s infinite;" if (-1.35 < var <= -1.20) else "color: #00FF00;"
 
-                                                                       # Definição das variáveis de exibição
-            # RV (ResetVision) = Fixo (calculado no período anterior)
-            # AV (ÂncoraVision) = Móvel (calculado pelo movimento atual)
-            rv_valor = mp_fixo if 'mp_fixo' in locals() else price
+                                                                                  # RV (ResetVision) chama a sua função do motor de cálculo (Fixo)
+            # AV (ÂncoraVision) usa o 'mp' que está rodando em tempo real (Móvel)
+            rv_valor = get_midpoint_v13() 
             av_valor = mp if 'mp' in locals() else price
 
             st.markdown(f"""
@@ -129,11 +128,11 @@ while True:
 
                 <div style="display: flex; justify-content: center; gap: 80px; margin-top: 15px; padding-bottom: 5px;">
                     <div style="text-align: center;">
-                        <div style="color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">ResetVision (Fixo 24h)</div>
+                        <div style="color: #888; font-size: 10px; text-transform: uppercase;">ResetVision (Fixo 24h)</div>
                         <div style="color: #ffffff; font-size: 19px; font-weight: bold;">{int(rv_valor):,}</div>
                     </div>
                     <div style="text-align: center;">
-                        <div style="color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">ÂncoraVision (Móvel)</div>
+                        <div style="color: #888; font-size: 10px; text-transform: uppercase;">ÂncoraVision (Móvel)</div>
                         <div style="color: #00e6ff; font-size: 19px; font-weight: bold;">{int(av_valor):,}</div>
                     </div>
                 </div>
