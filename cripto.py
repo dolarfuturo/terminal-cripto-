@@ -100,14 +100,11 @@ while True:
             estilo_ex_t = "color: #FF4444; animation: blink 0.4s infinite;" if (1.20 <= var < 1.35) else "color: #FF4444;"
             estilo_ex_f = "color: #00FF00; animation: blink 0.4s infinite;" if (-1.35 < var <= -1.20) else "color: #00FF00;"
 
-                                                           # --- LÓGICA DE CÁLCULO DO RESETVISION ---
-            # Se não houver dados do período, usamos o preço atual como base de segurança
-            max_p = max_periodo if 'max_periodo' in locals() else price
-            min_p = min_periodo if 'min_periodo' in locals() else price
-            
-            # Cálculo oficial: (Máxima + Mínima) / 2
-            reset_vision_calc = (max_p + min_p) / 2
-            ancora_vision_calc = mp if 'mp' in locals() else price
+                                                                       # Definição das variáveis de exibição
+            # RV (ResetVision) = Fixo (calculado no período anterior)
+            # AV (ÂncoraVision) = Móvel (calculado pelo movimento atual)
+            rv_valor = mp_fixo if 'mp_fixo' in locals() else price
+            av_valor = mp if 'mp' in locals() else price
 
             st.markdown(f"""
                 <div class="header-container">
@@ -122,22 +119,22 @@ while True:
                         <div style="font-weight: bold; line-height: 1.1;">{int(price):,}</div>
                         <div style="color:{cor_var}; font-size:11px; font-weight:bold; margin-top: 2px;">{seta} {var:+.2f}%</div>
                     </div>
-                    <div class="w-col" style="display: flex; align-items: center; justify-content: center; {estilo_ex_t}">{int(ancora_vision_calc*1.0122):,}</div>
-                    <div class="w-col" style="color:#FFA500; display: flex; align-items: center; justify-content: center;">{int(ancora_vision_calc*1.0083):,}</div>
-                    <div class="w-col" style="display: flex; align-items: center; justify-content: center; {fundo_decisao}">{int(ancora_vision_calc*1.0061):,}</div>
-                    <div class="w-col" style="color:#00CED1; display: flex; align-items: center; justify-content: center;">{int(ancora_vision_calc*1.0040):,}</div>
-                    <div class="w-col" style="color:#FFA500; display: flex; align-items: center; justify-content: center;">{int(ancora_vision_calc*0.9939):,}</div>
-                    <div class="w-col" style="display: flex; align-items: center; justify-content: center; {estilo_ex_f}">{int(ancora_vision_calc*0.9878):,}</div>
+                    <div class="w-col" style="display: flex; align-items: center; justify-content: center; {estilo_ex_t}">{int(av_valor*1.0122):,}</div>
+                    <div class="w-col" style="color:#FFA500; display: flex; align-items: center; justify-content: center;">{int(av_valor*1.0083):,}</div>
+                    <div class="w-col" style="display: flex; align-items: center; justify-content: center; {fundo_decisao}">{int(av_valor*1.0061):,}</div>
+                    <div class="w-col" style="color:#00CED1; display: flex; align-items: center; justify-content: center;">{int(av_valor*1.0040):,}</div>
+                    <div class="w-col" style="color:#FFA500; display: flex; align-items: center; justify-content: center;">{int(av_valor*0.9939):,}</div>
+                    <div class="w-col" style="display: flex; align-items: center; justify-content: center; {estilo_ex_f}">{int(av_valor*0.9878):,}</div>
                 </div>
 
                 <div style="display: flex; justify-content: center; gap: 80px; margin-top: 15px; padding-bottom: 5px;">
                     <div style="text-align: center;">
-                        <div style="color: #888; font-size: 10px; text-transform: uppercase;">ResetVision (Méd. 11:30-18h)</div>
-                        <div style="color: #ffffff; font-size: 19px; font-weight: bold;">{int(reset_vision_calc):,}</div>
+                        <div style="color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">ResetVision (Fixo 24h)</div>
+                        <div style="color: #ffffff; font-size: 19px; font-weight: bold;">{int(rv_valor):,}</div>
                     </div>
                     <div style="text-align: center;">
-                        <div style="color: #888; font-size: 10px; text-transform: uppercase;">ÂncoraVision (Móvel)</div>
-                        <div style="color: #00e6ff; font-size: 19px; font-weight: bold;">{int(ancora_vision_calc):,}</div>
+                        <div style="color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">ÂncoraVision (Móvel)</div>
+                        <div style="color: #00e6ff; font-size: 19px; font-weight: bold;">{int(av_valor):,}</div>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
