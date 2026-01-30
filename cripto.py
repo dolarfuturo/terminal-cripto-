@@ -108,17 +108,17 @@ while True:
                     <div class="h-col">PRÓX. AO F.</div><div class="h-col" style="color:#00FF00; {estilo_ex_f}">EXAUSTÃO F.</div>
                 </div>
                 <div class="row-container">
-                    <div class="w-col" style="color:#D4AF37; font-weight:bold;">BTC/USDT</div>
-                    <div class="w-col" style="position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <div style="font-weight: bold;">{int(price):,}</div>
-                        <div style="color:{cor_var}; font-size:11px; margin-top: -2px;">{seta} {var:+.2f}%</div>
+                    <div class="w-col" style="color:#D4AF37; font-weight:bold; display: flex; align-items: center; justify-content: center;">BTC/USDT</div>
+                    <div class="w-col" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <div style="font-weight: bold; line-height: 1.1;">{int(price):,}</div>
+                        <div style="color:{cor_var}; font-size:11px; font-weight:bold; margin-top: 2px;">{seta} {var:+.2f}%</div>
                     </div>
-                    <div class="w-col" style="color:#FF4444; {estilo_ex_t}">{int(mp*1.0122):,}</div>
-                    <div class="w-col" style="color:#FFA500;">{int(mp*1.0083):,}</div>
-                    <div class="w-col" style="color:#FFFF00; {fundo_decisao}">{int(mp*1.0061):,}</div>
-                    <div class="w-col" style="color:#00CED1;">{int(mp*1.0040):,}</div>
-                    <div class="w-col" style="color:#FFA500;">{int(mp*0.9939):,}</div>
-                    <div class="w-col" style="color:#00FF00; {estilo_ex_f}">{int(mp*0.9878):,}</div>
+                    <div class="w-col" style="color:#FF4444; {estilo_ex_t}; display: flex; align-items: center; justify-content: center;">{int(mp*1.0122):,}</div>
+                    <div class="w-col" style="color:#FFA500; display: flex; align-items: center; justify-content: center;">{int(mp*1.0083):,}</div>
+                    <div class="w-col" style="color:#FFFF00; {fundo_decisao}; display: flex; align-items: center; justify-content: center;">{int(mp*1.0061):,}</div>
+                    <div class="w-col" style="color:#00CED1; display: flex; align-items: center; justify-content: center;">{int(mp*1.0040):,}</div>
+                    <div class="w-col" style="color:#FFA500; display: flex; align-items: center; justify-content: center;">{int(mp*0.9939):,}</div>
+                    <div class="w-col" style="color:#00FF00; {estilo_ex_f}; display: flex; align-items: center; justify-content: center;">{int(mp*0.9878):,}</div>
                 </div>
             """, unsafe_allow_html=True)
 
