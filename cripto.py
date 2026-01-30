@@ -80,13 +80,13 @@ while True:
         mp = st.session_state.mp_current
         var = ((price / mp) - 1) * 100
                    # --- LÓGICA DE ESCADA: AJUSTE AUTOMÁTICO DO PATAMAR ---
-        if var >= 1.35:
-            st.session_state.mp_current = int(mp * 1.0135)
+        if var >= 1.22:
+            st.session_state.mp_current = int(mp * 1.0122)
             st.toast("⚡ ROMPIMENTO: NOVO EIXO!", icon="📈")
             st.rerun() 
             
-        elif var <= -1.35:
-            st.session_state.mp_current = int(mp * 0.9865)
+        elif var <= -1.22:
+            st.session_state.mp_current = int(mp * 0.9878)
             st.toast("⚠️ QUEDA: EIXO RECALIBRADO!", icon="📉")
             st.rerun()
 
