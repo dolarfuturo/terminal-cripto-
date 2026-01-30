@@ -100,7 +100,7 @@ while True:
             estilo_ex_t = "color: #FF4444; animation: blink 0.4s infinite;" if (1.20 <= var < 1.35) else "color: #FF4444;"
             estilo_ex_f = "color: #00FF00; animation: blink 0.4s infinite;" if (-1.35 < var <= -1.20) else "color: #00FF00;"
 
-                        st.markdown(f"""
+                                    st.markdown(f"""
                 <div class="header-container">
                     <div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div>
                     <div class="h-col" style="color:#FF4444; {estilo_ex_t}">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div>
@@ -121,6 +121,7 @@ while True:
                     <div class="w-col" style="color:#00FF00; {estilo_ex_f}">{int(mp*0.9878):,}</div>
                 </div>
             """, unsafe_allow_html=True)
+
                                                
             st.markdown(f"""
                 <div class="footer">
