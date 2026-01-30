@@ -109,9 +109,9 @@ while True:
                 </div>
                 <div class="row-container">
                     <div class="w-col" style="color:#D4AF37; font-weight:bold;">BTC/USDT</div>
-                    <div class="w-col">
+                    <div class="w-col" style="font-weight:bold;">
                         {int(price):,}<br>
-                        <span style="color:{cor_var}; font-size:11px; font-weight:bold;">{seta} {var:+.2f}%</span>
+                        <span style="color:{cor_var}; font-size:11px;">{seta} {var:+.2f}%</span>
                     </div>
                     <div class="w-col" style="color:#FF4444; {estilo_ex_t}">{int(mp*1.0122):,}</div>
                     <div class="w-col" style="color:#FFA500;">{int(mp*1.0083):,}</div>
