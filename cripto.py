@@ -92,12 +92,11 @@ while True:
                 # Lógica de Escada Individual
                 if var_mp >= cfg["gatilho"]:
                     st.session_state.data_ativos[ticker]["mp"] = mp * (1 + cfg["mov"])
-                    st.toast(f"⚡ {cfg['nome']} ROMPEU EIXO", icon="📈")
-                    st.rerun()
+                    
+                    
                 elif var_mp <= -cfg["gatilho"]:
                     st.session_state.data_ativos[ticker]["mp"] = mp * (1 - cfg["mov"])
-                    st.toast(f"⚠️ {cfg['nome']} RECALIBRADO", icon="📉")
-                    st.rerun()
+                    
 
                 cor_v = "#00FF00" if var_rv >= 0 else "#FF4444"
                 seta_v = "▲" if var_rv >= 0 else "▼"
