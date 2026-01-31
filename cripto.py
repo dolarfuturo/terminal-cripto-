@@ -62,7 +62,10 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 if 'mp_current' not in st.session_state:
-    st.session_state.mp_current = get_midpoint_v13()
+     valor_base = get_midpoint_v13()
+     st.session_state.mp_current = valor_base
+     st.session_state.rv_fixed = valor_base
+
 
 placeholder = st.empty()
 
@@ -73,7 +76,10 @@ while True:
         
         # Auto-Reset Binance (18:00 BR)
         if now_br.hour == 18 and now_br.minute == 0 and now_br.second < 2:
-            st.session_state.mp_current = get_midpoint_v13()
+           novo_valor = get_midpoint_v13()
+           st.session_state.mp_current = novo_valor
+           st.session_state.rv_fixed = novo_valor
+        st.rerun()
 
         ticker = yf.Ticker("BTC-USD")
         price = ticker.fast_info['last_price']
@@ -101,7 +107,7 @@ while True:
             estilo_ex_f = "color: #00FF00; animation: blink 0.4s infinite;" if (-1.35 < var <= -1.20) else "color: #00FF00;"
 
                                                                                              # RV (ResetVision) e AV (ÂncoraVision)
-            rv_valor = get_midpoint_v13() 
+            rv_valor = st.session_state.rv_fixed
             av_valor = mp if 'mp' in locals() else price
 
             # CÁLCULO DA VARIAÇÃO (PREÇO ATUAL vs RESETVISION)
