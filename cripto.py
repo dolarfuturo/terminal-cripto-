@@ -41,17 +41,17 @@ def get_midpoint_v13():
     try:
         br_tz = pytz.timezone('America/Sao_Paulo')
         now_br = datetime.now(br_tz)
-        if now_br.weekday() > 6:
-            return 89792
+        if now_br.weekday() >= 5 or (now_br.weekday() == 0 and now_br.hour < 18):
+            return 82632
         target_date = now_br if now_br.hour >= 18 else now_br - timedelta(days=1)
         df = yf.download("BTC-USD", start=target_date.strftime('%Y-%m-%d'), interval="1m", progress=False)
         df.index = df.index.tz_convert(br_tz)
         df_window = df.between_time('11:30', '18:00')
         if not df_window.empty:
             return int((float(df_window['High'].max()) + float(df_window['Low'].min())) / 2)
-        return 89792
+        return 82632
     except:
-        return 89792
+        return 82632
 
 # 3. INTERFACE REAL-TIME
 st.markdown("""
