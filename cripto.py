@@ -41,7 +41,7 @@ def get_midpoint_v13():
     try:
         br_tz = pytz.timezone('America/Sao_Paulo')
         now_br = datetime.now(br_tz)
-        if now_br.weekday() >= 6
+        if now_br.weekday() > 6:
             return 89792
         target_date = now_br if now_br.hour >= 18 else now_br - timedelta(days=1)
         df = yf.download("BTC-USD", start=target_date.strftime('%Y-%m-%d'), interval="1m", progress=False)
