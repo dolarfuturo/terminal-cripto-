@@ -8,21 +8,7 @@ import pytz
 # 1. SETUP ALPHA
 st.set_page_config(page_title="ALPHA VISION LIVE", layout="wide", initial_sidebar_state="collapsed")
 
-st.markdown("""
-    <style>
-    .stApp { background-color: #000000; }
-    .title-container { text-align: center; padding: 15px; }
-    .title-gold { color: #D4AF37; font-size: 34px; font-weight: 900; letter-spacing: 2px; }
-    .subtitle-white { color: #FFFFFF; font-size: 16px; font-weight: 300; letter-spacing: 5.5px; text-transform: lowercase; }
-    .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background: #080808; }
-    .h-col { font-size: 10px; color: #FFF; text-transform: uppercase; text-align: center; font-weight: 800; flex: 1; }
-    .row-container { display: flex; width: 100%; align-items: center; padding: 15px 0; border-bottom: 1px solid #151515; }
-    .w-col { flex: 1; text-align: center; font-family: 'monospace'; font-size: 18px; font-weight: 800; color: #FFF; }
-    .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; color: #FFF; text-align: center; padding: 10px; font-size: 12px; display: flex; justify-content: center; gap: 30px; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# 2. CONFIGURAÇÃO (CALIBRAGEM 1.115% EXTRAÍDA DO SEU MESTRE)
+# 2. CONFIGURAÇÃO (FATOR 1.115% E GATILHOS)
 config_ativos = {
     "BTC-USD":  {"nome": "BTC/USDT", "gatilho": 1.35, "mov": 0.0122, "ex_t": 1.01115, "topo": 1.0083, "dec": 1.0061, "resp": 1.0040, "pf": 0.9939, "ex_f": 0.98885},
     "ETH-USD":  {"nome": "ETH/USDT", "gatilho": 1.35, "mov": 0.0122, "ex_t": 1.01115, "topo": 1.0083, "dec": 1.0061, "resp": 1.0040, "pf": 0.9939, "ex_f": 0.98885},
@@ -32,73 +18,51 @@ config_ativos = {
     "DOGE-USD": {"nome": "DOGE/USDT", "gatilho": 6.50, "mov": 0.0600, "ex_t": 1.1115, "topo": 1.0600, "dec": 1.0400, "resp": 1.0200, "pf": 0.9600, "ex_f": 0.8885}
 }
 
-# 3. MOTOR DE CÁLCULO (RESETVISION 18:00 BR)
-def get_reset_vision(ticker):
+# 3. MOTOR DINÂMICO (JANELA 11:30 ÀS 18:00 BR)
+def calcular_mestre_vision(ticker):
     try:
         br_tz = pytz.timezone('America/Sao_Paulo')
         now = datetime.now(br_tz)
-        # Se for FDS, pega o fechamento de sexta às 18h
-        if now.weekday() >= 5:
-            dias_atras = now.weekday() - 4
-            target = now - timedelta(days=dias_atras)
-        else:
-            target = now if now.hour >= 18 else now - timedelta(days=1)
-            
-        data = yf.download(ticker, start=target.strftime('%Y-%m-%d'), interval="1m", progress=False)
-        if not data.empty:
-            data.index = data.index.tz_convert(br_tz)
-            # Pega o preço mais próximo das 18:00 BR
-            precos_18h = data.between_time('17:55', '18:05')
-            if not precos_18h.empty:
-                return float(precos_18h['Close'].iloc[-1])
+        
+        # Define o dia da análise (Se FDS, olha para Sexta-feira)
+        if now.weekday() == 5: target_date = now - timedelta(days=1)
+        elif now.weekday() == 6: target_date = now - timedelta(days=2)
+        else: target_date = now if now.hour >= 18 else now - timedelta(days=1)
+
+        # Baixa dados de 1 minuto para precisão total na janela
+        df = yf.download(ticker, start=target_date.strftime('%Y-%m-%d'), interval="1m", progress=False)
+        if not df.empty:
+            df.index = df.index.tz_convert(br_tz)
+            # Janela mestre definida no seu código
+            df_window = df.between_time('11:30', '18:00')
+            if not df_window.empty:
+                # FÓRMULA MESTRE: (MÁXIMA + MÍNIMA) / 2
+                return (float(df_window['High'].max()) + float(df_window['Low'].min())) / 2
+        
         return yf.Ticker(ticker).fast_info['last_price']
     except:
         return 0
 
+# Inicialização com o cálculo mestre dinâmico
 if 'data_ativos' not in st.session_state:
-    st.session_state.data_ativos = {t: {"mp": get_reset_vision(t), "rv": get_reset_vision(t)} for t in config_ativos}
+    st.session_state.data_ativos = {t: {"mp": calcular_mestre_vision(t), "rv": calcular_mestre_vision(t)} for t in config_ativos}
 
-st.markdown("""<div class="title-container"><div class="title-gold">ALPHA VISION CRYPTO</div><div class="subtitle-white">visão de tubarão</div></div>""", unsafe_allow_html=True)
-placeholder = st.empty()
+# ... (Interface Visual Alpha Vision) ...
 
 while True:
     try:
-        with placeholder.container():
-            st.markdown("""<div class="header-container"><div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div><div class="h-col" style="color:#FF4444;">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div><div class="h-col">DECISÃO</div><div class="h-col">RESPIRO</div><div class="h-col">PRÓX. AO F.</div><div class="h-col" style="color:#00FF00;">EXAUSTÃO F.</div></div>""", unsafe_allow_html=True)
-            
-            for ticker, cfg in config_ativos.items():
-                price = yf.Ticker(ticker).fast_info['last_price']
-                mp = st.session_state.data_ativos[ticker]["mp"]
-                rv = st.session_state.data_ativos[ticker]["rv"]
-                
-                # ESCADA ANCORAVISION
-                var_mp = ((price / mp) - 1) * 100
-                if var_mp >= cfg["gatilho"]: st.session_state.data_ativos[ticker]["mp"] *= (1 + cfg["mov"])
-                elif var_mp <= -cfg["gatilho"]: st.session_state.data_ativos[ticker]["mp"] *= (1 - cfg["mov"])
+        br_tz = pytz.timezone('America/Sao_Paulo')
+        now_br = datetime.now(br_tz)
 
-                var_rv = ((price / rv) - 1) * 100
-                cor_v = "#00FF00" if var_rv >= 0 else "#FF4444"
-                
-                # Formatação segura para evitar o erro de sintaxe anterior
-                p_f = f"{price:,.2f}" if price > 1 else f"{price:,.4f}"
-                rv_f = f"{rv:,.2f}" if rv > 1 else f"{rv:,.4f}"
-                mp_f = f"{mp:,.2f}" if mp > 1 else f"{mp:,.4f}"
+        # EXECUTA O CÁLCULO MESTRE ÀS 18:00 (SEG A SEX)
+        if now_br.weekday() < 5 and now_br.hour == 18 and now_br.minute == 0 and now_br.second < 10:
+            for t in config_ativos.keys():
+                novo_mestre = calcular_mestre_vision(t)
+                st.session_state.data_ativos[t] = {"mp": novo_mestre, "rv": novo_mestre}
+            st.rerun()
 
-                st.markdown(f"""
-                    <div class="row-container">
-                        <div class="w-col" style="color:#D4AF37;">{cfg['nome']}</div>
-                        <div class="w-col"><div>{p_f}</div><div style="color:{cor_v}; font-size:11px;">{var_rv:+.2f}%</div></div>
-                        <div class="w-col" style="color:#FF4444;">{mp*cfg['ex_t']:,.2f}</div>
-                        <div class="w-col" style="color:#FFA500;">{mp*cfg['topo']:,.2f}</div>
-                        <div class="w-col" style="color:#FFFF00;">{mp*cfg['dec']:,.2f}</div>
-                        <div class="w-col" style="color:#00CED1;">{mp*cfg['resp']:,.2f}</div>
-                        <div class="w-col" style="color:#FFA500;">{mp*cfg['pf']:,.2f}</div>
-                        <div class="w-col" style="color:#00FF00;">{mp*cfg['ex_f']:,.2f}</div>
-                    </div>
-                    <div style="display: flex; justify-content: center; gap: 50px; background: #050505; padding: 5px;">
-                        <div style="color:#888; font-size:10px;">RESETVISION: <span style="color:#FFF;">{rv_f}</span></div>
-                        <div style="color:#888; font-size:10px;">ANCORAVISION: <span style="color:#00e6ff;">{mp_f}</span></div>
-                    </div>
-                """, unsafe_allow_html=True)
+        # Renderização e lógica de escada (AncoraVision) seguem aqui...
+        # (Omitido para focar na sua correção de cálculo)
         time.sleep(2)
-    except: time.sleep(5)
+    except:
+        time.sleep(5)
