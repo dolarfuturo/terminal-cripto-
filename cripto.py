@@ -1,4 +1,4 @@
-import streamlit as st
+12712import streamlit as st
 import pandas as pd
 import time
 import yfinance as yf
@@ -119,12 +119,31 @@ while True:
                 """, unsafe_allow_html=True)
 
             st.markdown(f"""
-                <div class="footer">
-                    <div><span class="dot"></span> LIVESTREAM ATIVO</div>
-                    <div>BRASÍLIA: {now_br.strftime('%H:%M:%S')}</div>
-                    <div>NEW YORK: {now_ny.strftime('%H:%M:%S')}</div>
-                </div>
-            """, unsafe_allow_html=True)
+                    <div class="row-container">
+                        <div class="w-col" style="color:#D4AF37; font-weight:bold;">{cfg['nome']}</div>
+                        <div class="w-col">
+                            <div style="font-weight: bold;">{price:,.2f}</div>
+                            <div style="color:{cor_v}; font-size:11px;">{seta_v} {var_rv:+.2f}%</div>
+                        </div>
+                        <div class="w-col" style="color:#FF4444;">{mp*cfg['ex_t']:,.2f}</div>
+                        <div class="w-col" style="color:#FFA500;">{mp*cfg['topo']:,.2f}</div>
+                        <div class="w-col" style="color:#FFFF00;">{mp*cfg['dec']:,.2f}</div>
+                        <div class="w-col" style="color:#00CED1;">{mp*cfg['resp']:,.2f}</div>
+                        <div class="w-col" style="color:#FFA500;">{mp*cfg['pf']:,.2f}</div>
+                        <div class="w-col" style="color:#00FF00;">{mp*cfg['ex_f']:,.2f}</div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: center; gap: 40px; margin-top: -12px; padding-bottom: 12px; border-bottom: 1px solid #151515;">
+                        <div style="text-align: center;">
+                            <span style="color: #666; font-size: 9px; text-transform: uppercase;">ResetVision:</span>
+                            <span style="color: #bbb; font-size: 11px; font-family: monospace;">{rv:,.2f}</span>
+                        </div>
+                        <div style="text-align: center;">
+                            <span style="color: #666; font-size: 9px; text-transform: uppercase;">AncoraVision:</span>
+                            <span style="color: #00e6ff; font-size: 11px; font-family: monospace;">{mp:,.2f}</span>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
             
         time.sleep(2) # Aumentado para 2s para não sobrecarregar com 6 moedas
     except Exception as e:
