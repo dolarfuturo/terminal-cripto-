@@ -79,7 +79,7 @@ while True:
            novo_valor = get_midpoint_v13()
            st.session_state.mp_current = novo_valor
            st.session_state.rv_fixed = novo_valor
-        st.rerun()
+           st.rerun()
 
         ticker = yf.Ticker("BTC-USD")
         price = ticker.fast_info['last_price']
