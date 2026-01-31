@@ -88,13 +88,12 @@ while True:
                     # --- LÓGICA DE ESCADA: GATILHO 1.35% | MOVIMENTO 1.22% ---
         if var >= 1.35:
             st.session_state.mp_current = int(mp * 1.0122)
-            st.toast("⚡ ROMPIMENTO: NOVO EIXO (1.22%)", icon="📈")
-            st.rerun() 
+            
             
         elif var <= -1.35:
             st.session_state.mp_current = int(mp * 0.9878)
-            st.toast("⚠️ QUEDA: EIXO RECALIBRADO (1.22%)", icon="📉")
-            st.rerun()
+            
+            
 
         cor_var = "#00FF00" if var >= 0 else "#FF0000"
         seta = "▲" if var >= 0 else "▼"
