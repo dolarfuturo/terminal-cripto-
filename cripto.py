@@ -152,7 +152,7 @@ while True:
                 </div>
             """, unsafe_allow_html=True)
 
-st.markdown("""
+    st.markdown("""
     <style>
     .stApp { background-color: #000000; }
     .title-container { text-align: center; padding: 15px; }
