@@ -44,7 +44,7 @@ def get_midpoint_v13():
         if now_br.weekday() >= 5 or (now_br.weekday() == 0 and now_br.hour < 18):
             return 82632
         target_date = now_br if now_br.hour >= 18 else now_br - timedelta(days=1)
-        df = yf.download("ETH-USD", start=target_date.strftime('%Y-%m-%d'), interval="1m", progress=False)
+        df = yf.download("BTC-USD", start=target_date.strftime('%Y-%m-%d'), interval="1m", progress=False)
         df.index = df.index.tz_convert(br_tz)
         df_window = df.between_time('11:30', '18:00')
         if not df_window.empty:
@@ -81,7 +81,7 @@ while True:
            st.session_state.rv_fixed = novo_valor
            st.rerun()
 
-        ticker = yf.Ticker("ETH-USD")
+        ticker = yf.Ticker("BTC-USD")
         price = ticker.fast_info['last_price']
         mp = st.session_state.mp_current
         var = ((price / mp) - 1) * 100
