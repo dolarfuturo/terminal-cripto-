@@ -24,36 +24,37 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. CONFIGURAÇÃO DA HIERARQUIA (BTC: 1.22% | ALTS: 6.00%)
+# 2. CONFIGURAÇÃO DA HIERARQUIA (CALIBRAGEM 1.115%)
 config_ativos = {
-    "BTC-USD":  {"nome": "BTC/USDT", "gatilho": 1.35, "mov": 0.0122, "ex_t": 1.0122, "topo": 1.0083, "dec": 1.0061, "resp": 1.0040, "pf": 0.9939, "ex_f": 0.9878},
-    "ETH-USD":  {"nome": "ETH/USDT", "gatilho": 1.35, "mov": 0.0122, "ex_t": 1.0122, "topo": 1.0083, "dec": 1.0061, "resp": 1.0040, "pf": 0.9939, "ex_f": 0.9878},
-    "SOL-USD":  {"nome": "SOL/USDT", "gatilho": 6.50, "mov": 0.0600, "ex_t": 1.1200, "topo": 1.0600, "dec": 1.0400, "resp": 1.0200, "pf": 0.9600, "ex_f": 0.8800},
-    "BNB-USD":  {"nome": "BNB/USDT", "gatilho": 6.50, "mov": 0.0600, "ex_t": 1.1200, "topo": 1.0600, "dec": 1.0400, "resp": 1.0200, "pf": 0.9600, "ex_f": 0.8800},
-    "XRP-USD":  {"nome": "XRP/USDT", "gatilho": 6.50, "mov": 0.0600, "ex_t": 1.1200, "topo": 1.0600, "dec": 1.0400, "resp": 1.0200, "pf": 0.9600, "ex_f": 0.8800},
-    "DOGE-USD": {"nome": "DOGE/USDT", "gatilho": 6.50, "mov": 0.0600, "ex_t": 1.1200, "topo": 1.0600, "dec": 1.0400, "resp": 1.0200, "pf": 0.9600, "ex_f": 0.8800}
+    "BTC-USD":  {"nome": "BTC/USDT", "gatilho": 1.35, "mov": 0.0122, "ex_t": 1.01115, "topo": 1.0083, "dec": 1.0061, "resp": 1.0040, "pf": 0.9939, "ex_f": 0.98885},
+    "ETH-USD":  {"nome": "ETH/USDT", "gatilho": 1.35, "mov": 0.0122, "ex_t": 1.01115, "topo": 1.0083, "dec": 1.0061, "resp": 1.0040, "pf": 0.9939, "ex_f": 0.98885},
+    "SOL-USD":  {"nome": "SOL/USDT", "gatilho": 6.50, "mov": 0.0600, "ex_t": 1.1115, "topo": 1.0600, "dec": 1.0400, "resp": 1.0200, "pf": 0.9600, "ex_f": 0.8885},
+    "BNB-USD":  {"nome": "BNB/USDT", "gatilho": 6.50, "mov": 0.0600, "ex_t": 1.1115, "topo": 1.0600, "dec": 1.0400, "resp": 1.0200, "pf": 0.9600, "ex_f": 0.8885},
+    "XRP-USD":  {"nome": "XRP/USDT", "gatilho": 6.50, "mov": 0.0600, "ex_t": 1.1115, "topo": 1.0600, "dec": 1.0400, "resp": 1.0200, "pf": 0.9600, "ex_f": 0.8885},
+    "DOGE-USD": {"nome": "DOGE/USDT", "gatilho": 6.50, "mov": 0.0600, "ex_t": 1.1115, "topo": 1.0600, "dec": 1.0400, "resp": 1.0200, "pf": 0.9600, "ex_f": 0.8885}
 }
 
-# 3. MOTOR DE CÁLCULO (BINANCE RESET 18:00 BR)
-def get_midpoint_multi(ticker_symbol):
+# 3. MOTOR DE CÁLCULO (BUSCA FECHAMENTO 18:00 BR)
+def get_closing_18h(ticker_symbol):
     try:
         br_tz = pytz.timezone('America/Sao_Paulo')
-        now_br = datetime.now(br_tz)
-        target_date = now_br if now_br.hour >= 18 else now_br - timedelta(days=1)
-        df = yf.download(ticker_symbol, start=target_date.strftime('%Y-%m-%d'), interval="1m", progress=False)
-        df.index = df.index.tz_convert(br_tz)
-        df_window = df.between_time('11:30', '18:00')
-        if not df_window.empty:
-            return (float(df_window['High'].max()) + float(df_window['Low'].min())) / 2
+        now = datetime.now(br_tz)
+        if now.weekday() == 5: target = now - timedelta(days=1)
+        elif now.weekday() == 6: target = now - timedelta(days=2)
+        else: target = now if now.hour >= 18 else now - timedelta(days=1)
+
+        df = yf.download(ticker_symbol, start=target.strftime('%Y-%m-%d'), interval="1m", progress=False)
+        if not df.empty:
+            df.index = df.index.tz_convert(br_tz)
+            prices_18h = df.between_time('17:50', '18:05')
+            if not prices_18h.empty: return float(prices_18h['Close'].iloc[-1])
         return yf.Ticker(ticker_symbol).fast_info['last_price']
-    except: return None
+    except: return 0
 
 if 'data_ativos' not in st.session_state:
-    st.session_state.data_ativos = {}
-    for ticker in config_ativos.keys():
-        val = get_midpoint_multi(ticker)
-        st.session_state.data_ativos[ticker] = {"mp": val, "rv": val}
+    st.session_state.data_ativos = {t: {"mp": get_closing_18h(t), "rv": get_closing_18h(t)} for t in config_ativos}
 
+# INTERFACE
 st.markdown("""<div class="title-container"><div class="title-gold">ALPHA VISION CRYPTO</div><div class="subtitle-white">visão de tubarão</div></div>""", unsafe_allow_html=True)
 placeholder = st.empty()
 
@@ -62,6 +63,13 @@ while True:
         br_tz, ny_tz = pytz.timezone('America/Sao_Paulo'), pytz.timezone('America/New_York')
         now_br, now_ny = datetime.now(br_tz), datetime.now(ny_tz)
 
+        # AUTO-RESET 18:00 BR (SEG-SEX)
+        if now_br.weekday() < 5 and now_br.hour == 18 and now_br.minute == 0 and now_br.second < 10:
+            for t in config_ativos.keys():
+                val = get_closing_18h(t)
+                st.session_state.data_ativos[t] = {"mp": val, "rv": val}
+            st.rerun()
+
         with placeholder.container():
             st.markdown("""<div class="header-container"><div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div><div class="h-col" style="color:#FF4444;">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div><div class="h-col" style="color:#FFFF00;">DECISÃO</div><div class="h-col">RESPIRO</div><div class="h-col">PRÓX. AO F.</div><div class="h-col" style="color:#00FF00;">EXAUSTÃO F.</div></div>""", unsafe_allow_html=True)
             
@@ -69,36 +77,31 @@ while True:
                 price = yf.Ticker(ticker).fast_info['last_price']
                 mp, rv = st.session_state.data_ativos[ticker]["mp"], st.session_state.data_ativos[ticker]["rv"]
                 
-                # LÓGICA DE ESCADA (ANCORAVISION)
+                # ESCADA ANCORAVISION
                 var_mp = ((price / mp) - 1) * 100
                 if var_mp >= cfg["gatilho"]: st.session_state.data_ativos[ticker]["mp"] *= (1 + cfg["mov"])
                 elif var_mp <= -cfg["gatilho"]: st.session_state.data_ativos[ticker]["mp"] *= (1 - cfg["mov"])
 
-                # VARIAÇÃO DE TELA (RESETVISION)
                 var_rv = ((price / rv) - 1) * 100
                 cor_v = "#00FF00" if var_rv >= 0 else "#FF4444"
-                seta_v = "▲" if var_rv >= 0 else "▼"
-                
+                fmt = ":,.2f" if price > 1 else ":,.4f"
+
                 st.markdown(f"""
                     <div class="row-container">
-                        <div class="w-col" style="color:#D4AF37; font-weight:bold;">{cfg['nome']}</div>
-                        <div class="w-col">
-                            <div style="font-weight: bold;">{price:,.2f}</div>
-                            <div style="color:{cor_v}; font-size:11px;">{seta_v} {var_rv:+.2f}%</div>
-                        </div>
-                        <div class="w-col" style="color:#FF4444;">{mp*cfg['ex_t']:,.2f}</div>
-                        <div class="w-col" style="color:#FFA500;">{mp*cfg['topo']:,.2f}</div>
-                        <div class="w-col" style="color:#FFFF00;">{mp*cfg['dec']:,.2f}</div>
-                        <div class="w-col" style="color:#00CED1;">{mp*cfg['resp']:,.2f}</div>
-                        <div class="w-col" style="color:#FFA500;">{mp*cfg['pf']:,.2f}</div>
-                        <div class="w-col" style="color:#00FF00;">{mp*cfg['ex_f']:,.2f}</div>
+                        <div class="w-col" style="color:#D4AF37;">{cfg['nome']}</div>
+                        <div class="w-col"><div>{price{fmt}}</div><div style="color:{cor_v}; font-size:11px;">{var_rv:+.2f}%</div></div>
+                        <div class="w-col" style="color:#FF4444;">{mp*cfg['ex_t']{fmt}}</div>
+                        <div class="w-col" style="color:#FFA500;">{mp*cfg['topo']{fmt}}</div>
+                        <div class="w-col" style="color:#FFFF00;">{mp*cfg['dec']{fmt}}</div>
+                        <div class="w-col" style="color:#00CED1;">{mp*cfg['resp']{fmt}}</div>
+                        <div class="w-col" style="color:#FFA500;">{mp*cfg['pf']{fmt}}</div>
+                        <div class="w-col" style="color:#00FF00;">{mp*cfg['ex_f']{fmt}}</div>
                     </div>
                     <div style="display: flex; justify-content: center; gap: 40px; margin-top: -12px; padding-bottom: 12px; border-bottom: 1px solid #151515;">
-                        <div style="text-align: center;"><span style="color: #666; font-size: 9px;">RESETVISION:</span> <span style="color: #bbb; font-size: 11px;">{rv:,.2f}</span></div>
-                        <div style="text-align: center;"><span style="color: #666; font-size: 9px;">ANCORAVISION:</span> <span style="color: #00e6ff; font-size: 11px;">{mp:,.2f}</span></div>
+                        <div style="text-align: center;"><span style="color: #666; font-size: 9px;">RESETVISION (18h):</span> <span style="color: #bbb; font-size: 11px;">{rv{fmt}}</span></div>
+                        <div style="text-align: center;"><span style="color: #666; font-size: 9px;">ANCORAVISION:</span> <span style="color: #00e6ff; font-size: 11px;">{mp{fmt}}</span></div>
                     </div>
                 """, unsafe_allow_html=True)
-
-            st.markdown(f"""<div class="footer"><div><span class="dot"></span>LIVESTREAM ATIVO</div><div>BRASÍLIA: {now_br.strftime('%H:%M:%S')}</div><div>NY: {now_ny.strftime('%H:%M:%S')}</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class="footer"><div><span class="dot"></span>LIVE</div><div>LONDRES: {datetime.now(pytz.timezone('Europe/London')).strftime('%H:%M:%S')}</div><div>BRASÍLIA: {now_br.strftime('%H:%M:%S')}</div><div>NY: {now_ny.strftime('%H:%M:%S')}</div></div>""", unsafe_allow_html=True)
         time.sleep(2)
     except: time.sleep(5)
