@@ -15,11 +15,25 @@ COINS_CONFIG = {
     "XRP-USD":  {"label": "XRP/USDT",  "fb": 2.50,  "dec": 4},
     "DOGE-USD": {"label": "DOGE/USDT", "fb": 0.35,  "dec": 4}
 }
+# --- COPIE DAQUI ---
+def get_midpoint_v13(ticker, fallback):
+    try:
+        import yfinance as yf
+        data = yf.download(ticker, period="1d", interval="1m", progress=False)
+        if not data.empty:
+            return float(data['Close'].iloc[0])
+        return float(fallback)
+    except:
+        return float(fallback)
+
 for ticker in COINS_CONFIG:
     if f'mp_{ticker}' not in st.session_state:
         val = get_midpoint_v13(ticker, COINS_CONFIG[ticker]['fb'])
         st.session_state[f'mp_{ticker}'] = val
         st.session_state[f'rv_{ticker}'] = val
+# --- ATÉ AQUI ---
+
+ 
 
 st.markdown("""
     <style>
