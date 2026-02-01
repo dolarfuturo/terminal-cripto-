@@ -64,15 +64,23 @@ st.markdown("""
         .w-col { font-size: 18px; font-weight: bold; color: #FFF; }
 
         /* ESTE BLOCO CENTRALIZA O RESET E ÂNCORA */
-        .vision-block {
+                .vision-block {
             display: flex;
-            justify-content: center; /* Centraliza horizontalmente */
-            gap: 80px;               /* Espaço entre Reset e Âncora */
-            width: 100%;             /* Ocupa a largura total da tela */
-            padding: 5px 0 20px 0;
-            margin-top: -10px;       /* Traz para mais perto da linha de cima */
-            border-bottom: 2px solid #111;
+            justify-content: center; /* Centraliza no meio da tela */
+            gap: 100px;              /* Aumenta o espaço entre Reset e Âncora */
+            width: 100%;
+            padding: 10px 0 25px 0;
+            margin-top: -15px;
+            border-bottom: 1px solid #222;
         }
+        .v-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        .v-label { font-size: 11px; color: #666; font-weight: bold; }
+        .v-val { font-size: 18px; font-weight: 900; } /* Aumentei o tamanho do número */
+       }
         .v-item { 
             display: flex; 
             flex-direction: column; 
