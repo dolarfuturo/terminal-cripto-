@@ -55,10 +55,14 @@ def get_alpha_midpoint(ticker):
         return yf.Ticker(ticker).fast_info['last_price']
     except: return 0
 
-# CSS VISUAL - COMPACTO + CLOCKS + DOT PULSATING
+# CSS VISUAL ATUALIZADO (TOP FIXO + DIVISOR EM NEGRITO)
 st.markdown("""
     <style>
     .stApp { background-color: #000000; }
+    
+    /* CONGELAR TOPO */
+    .sticky-wrapper { position: sticky; top: 0; background: #000; z-index: 1000; padding-bottom: 5px; }
+    
     .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 5px 20px; background: #050505; border-bottom: 1px solid #1a1a1a; }
     .clocks { display: flex; gap: 30px; color: #888; font-family: monospace; font-size: 12px; }
     .clock-item b { color: #FFF; }
@@ -66,15 +70,18 @@ st.markdown("""
     .dot { height: 8px; width: 8px; background-color: #00FF00; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0% { transform: scale(0.9); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); } 70% { transform: scale(1); opacity: 0.6; box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); } 100% { transform: scale(0.9); opacity: 1; } }
     
-    .title-gold { color: #D4AF37; font-size: 30px; font-weight: 900; text-align: center; margin-top: 10px; }
-    .subtitle-white { color: #FFFFFF; font-size: 14px; text-align: center; letter-spacing: 4px; text-transform: lowercase; margin-bottom: 10px; }
+    .title-gold { color: #D4AF37; font-size: 30px; font-weight: 900; text-align: center; margin-top: 5px; }
+    .subtitle-white { color: #FFFFFF; font-size: 13px; text-align: center; letter-spacing: 4px; text-transform: lowercase; margin-bottom: 10px; }
     
-    .header-container { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; padding: 6px 0; border-bottom: 2px solid #D4AF37; background: #080808; position: sticky; top: 0; z-index: 999; }
+    .header-container { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; padding: 8px 0; border-bottom: 2px solid #D4AF37; background: #080808; }
     .h-col { font-size: 10px; color: #FFF; text-align: center; font-weight: 800; }
-    .row-container { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; align-items: center; padding: 8px 0 2px 0; }
+    
+    /* LINHAS E DIVISORES */
+    .row-container { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; align-items: center; padding: 12px 0 2px 0; }
     .w-col { text-align: center; font-family: 'monospace'; font-size: 17px; font-weight: 800; color: #FFF; }
-    .vision-block { display: flex; justify-content: center; gap: 60px; padding: 2px 0 8px 0; border-bottom: 1px solid #222; margin-bottom: 2px; }
+    .vision-block { display: flex; justify-content: center; gap: 60px; padding: 2px 0 12px 0; border-bottom: 3px solid #333; margin-bottom: 2px; } /* NEGRITO NA DIVISÃO */
     .v-item { text-align: center; }
+    
     @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
     </style>
     """, unsafe_allow_html=True)
@@ -89,14 +96,8 @@ placeholder = st.empty()
 
 while True:
     try:
-        # RELÓGIOS
-        tz_br = pytz.timezone('America/Sao_Paulo')
-        tz_ny = pytz.timezone('America/New_York')
-        tz_ld = pytz.timezone('Europe/London')
-        
-        now_br = datetime.now(tz_br)
-        now_ny = datetime.now(tz_ny)
-        now_ld = datetime.now(tz_ld)
+        tz_br, tz_ny, tz_ld = pytz.timezone('America/Sao_Paulo'), pytz.timezone('America/New_York'), pytz.timezone('Europe/London')
+        now_br, now_ny, now_ld = datetime.now(tz_br), datetime.now(tz_ny), datetime.now(tz_ld)
 
         if now_br.weekday() < 5 and now_br.hour == 18 and now_br.minute == 0 and now_br.second < 5:
             for t in COINS_CONFIG:
@@ -106,33 +107,34 @@ while True:
             st.rerun()
 
         with placeholder.container():
-            # TOP BAR COM CLOCKS E LIVE DOT
+            # BLOCO FIXO NO TOPO
             st.markdown(f"""
-                <div class="top-bar">
-                    <div class="live-indicator"><span class="dot"></span> LIVESTREAM</div>
-                    <div class="clocks">
-                        <div class="clock-item">BRASÍLIA: <b>{now_br.strftime('%H:%M:%S')}</b></div>
-                        <div class="clock-item">NEW YORK: <b>{now_ny.strftime('%H:%M:%S')}</b></div>
-                        <div class="clock-item">LONDON: <b>{now_ld.strftime('%H:%M:%S')}</b></div>
+                <div class="sticky-wrapper">
+                    <div class="top-bar">
+                        <div class="live-indicator"><span class="dot"></span> LIVESTREAM</div>
+                        <div class="clocks">
+                            <div class="clock-item">BRASÍLIA: <b>{now_br.strftime('%H:%M:%S')}</b></div>
+                            <div class="clock-item">NEW YORK: <b>{now_ny.strftime('%H:%M:%S')}</b></div>
+                            <div class="clock-item">LONDON: <b>{now_ld.strftime('%H:%M:%S')}</b></div>
+                        </div>
+                    </div>
+                    <div class="title-gold">ALPHA VISION CRYPTO</div>
+                    <div class="subtitle-white">visão de tubarão</div>
+                    <div class="header-container">
+                        <div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div>
+                        <div class="h-col" style="color:#FF4444;">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div>
+                        <div class="h-col" style="color:#FFFF00;">DECISÃO</div><div class="h-col">RESPIRO</div>
+                        <div class="h-col">PRÓX. AO F.</div><div class="h-col" style="color:#00FF00;">EXAUSTÃO F.</div>
                     </div>
                 </div>
-                <div class="title-gold">ALPHA VISION CRYPTO</div>
-                <div class="subtitle-white">visão de tubarão</div>
             """, unsafe_allow_html=True)
-
-            st.markdown('<div class="header-container"><div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div><div class="h-col" style="color:#FF4444;">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div><div class="h-col" style="color:#FFFF00;">DECISÃO</div><div class="h-col">RESPIRO</div><div class="h-col">PRÓX. AO F.</div><div class="h-col" style="color:#00FF00;">EXAUSTÃO F.</div></div>', unsafe_allow_html=True)
 
             for t, info in COINS_CONFIG.items():
                 price = yf.Ticker(t).fast_info['last_price']
-                mp = st.session_state[f'mp_{t}']
-                rv = st.session_state[f'rv_{t}']
+                mp, rv = st.session_state[f'mp_{t}'], st.session_state[f'rv_{t}']
                 
-                if t in ["BTC-USD", "ETH-USD"]:
-                    g_ex, g_mov, g_dec, g_res = 1.35, 1.0122, 1.0061, 1.0040
-                    label_regua = "1.22%"
-                else:
-                    g_ex, g_mov, g_dec, g_res = 13.5, 1.122, 1.061, 1.040
-                    label_regua = "12.2%"
+                if t in ["BTC-USD", "ETH-USD"]: g_ex, g_mov, g_dec, g_res, label_regua = 1.35, 1.0122, 1.0061, 1.0040, "1.22%"
+                else: g_ex, g_mov, g_dec, g_res, label_regua = 13.5, 1.122, 1.061, 1.040, "12.2%"
                 
                 var_escada = ((price / mp) - 1) * 100
                 if var_escada >= g_ex: st.session_state[f'mp_{t}'] = mp * g_mov
