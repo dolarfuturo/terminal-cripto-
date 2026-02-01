@@ -50,9 +50,45 @@ st.markdown("""
         margin-top: 2px;
         text-transform: lowercase;
     }
-    
-    .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background: #080808; justify-content: space-between; }
-    .h-col { font-size: 10px; color: #FFF; text-transform: uppercase; text-align: center; font-weight: 800; flex: 1; }
+            /* Configuração das Colunas Principais */
+        .header-container, .row-container {
+            display: grid;
+            grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr;
+            width: 100%;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+            align-items: center;
+            text-align: center;
+        }
+        .h-col { font-size: 10px; color: #888; font-weight: bold; text-transform: uppercase; }
+        .w-col { font-size: 18px; font-weight: bold; color: #FFF; }
+
+        /* ESTE BLOCO CENTRALIZA O RESET E ÂNCORA */
+        .vision-block {
+            display: flex;
+            justify-content: center; /* Centraliza horizontalmente */
+            gap: 80px;               /* Espaço entre Reset e Âncora */
+            width: 100%;             /* Ocupa a largura total da tela */
+            padding: 5px 0 20px 0;
+            margin-top: -10px;       /* Traz para mais perto da linha de cima */
+            border-bottom: 2px solid #111;
+        }
+        .v-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;     /* Centraliza o texto interno */
+        }
+        .v-label { font-size: 9px; color: #666; font-weight: bold; margin-bottom: 2px; }
+        .v-val { font-size: 14px; font-weight: 900; }
+
+                        padding: 5px 0 15px 0;
+            margin-top: -10px;
+            border-bottom: 2px solid #111;
+        }
+        .v-item { display: flex; flex-direction: column; align-items: center; }
+        .v-label { font-size: 9px; color: #555; font-weight: bold; }
+        .v-val { font-size: 13px; font-weight: bold; }
+
     
     .row-container { display: flex; width: 100%; align-items: center; padding: 25px 0; border-bottom: 1px solid #151515; justify-content: space-between; }
     .w-col { flex: 1; text-align: center; font-family: 'monospace'; font-size: 22px; font-weight: 800; color: #FFF; white-space: nowrap; }
