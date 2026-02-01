@@ -129,7 +129,7 @@ while True:
                     <div class="h-col">PRÓX. AO F.</div><div class="h-col" style="color:#00FF00;">EXAUSTÃO F.</div>
                 </div>
                 <div class="row-container">
-                    <div class="w-col" style="color:#D4AF37; font-weight:bold; display: flex; align-items: center; justify-content: center;">BTC/USDT</div>
+                    <div class="w-col" style="color:#D4AF37; font-weight:bold; display: flex; align-items: center; justify-content: center;">ETH/USDT</div>
                     <div class="w-col" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
                         <div style="font-weight: bold; line-height: 1.1;">{int(price):,}</div>
                         <div style="color:{cor_v}; font-size:11px; font-weight:bold; margin-top: 2px;">{seta_v} {var_reset:+.2f}%</div>
