@@ -42,16 +42,16 @@ def get_midpoint_v13():
         br_tz = pytz.timezone('America/Sao_Paulo')
         now_br = datetime.now(br_tz)
         if now_br.weekday() >= 5 or (now_br.weekday() == 0 and now_br.hour < 18):
-            return 82632
+            return 2900
         target_date = now_br if now_br.hour >= 18 else now_br - timedelta(days=1)
-        df = yf.download("BTC-USD", start=target_date.strftime('%Y-%m-%d'), interval="1m", progress=False)
+        df = yf.download("ETH-USD", start=target_date.strftime('%Y-%m-%d'), interval="1m", progress=False)
         df.index = df.index.tz_convert(br_tz)
         df_window = df.between_time('11:30', '18:00')
         if not df_window.empty:
             return int((float(df_window['High'].max()) + float(df_window['Low'].min())) / 2)
-        return 82632
+        return 2900
     except:
-        return 82632
+        return 2900
 
 # 3. INTERFACE REAL-TIME
 st.markdown("""
@@ -81,7 +81,7 @@ while True:
            st.session_state.rv_fixed = novo_valor
            st.rerun()
 
-        ticker = yf.Ticker("BTC-USD")
+        ticker = yf.Ticker("ETH-USD")
         price = ticker.fast_info['last_price']
         mp = st.session_state.mp_current
         var = ((price / mp) - 1) * 100
