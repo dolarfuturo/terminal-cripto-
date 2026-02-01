@@ -5,35 +5,44 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 
-# 1. SETUP ALPHA - VISUAL REFINADO
+# 1. SETUP ALPHA - VISUAL REFINADO E COMPACTADO
 st.set_page_config(page_title="ALPHA VISION LIVE", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
     <style>
+    /* Remove espaços vazios no topo e laterais do Streamlit */
+    .block-container { padding-top: 1rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem; }
     .stApp { background-color: #000000; }
-    .title-container { text-align: center; padding: 15px; }
-    .title-gold { color: #D4AF37; font-size: 34px; font-weight: 900; letter-spacing: 2px; margin-bottom: 0px; }
-    .subtitle-white { color: #FFFFFF; font-size: 16px; font-weight: 300; letter-spacing: 5.5px; margin-top: 2px; text-transform: lowercase; }
     
-    .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background: #080808; justify-content: space-between; }
-    .h-col { font-size: 10px; color: #FFF; text-transform: uppercase; text-align: center; font-weight: 800; flex: 1; }
+    .title-container { text-align: center; padding: 5px; }
+    .title-gold { color: #D4AF37; font-size: 28px; font-weight: 900; letter-spacing: 2px; margin-bottom: 0px; }
+    .subtitle-white { color: #FFFFFF; font-size: 14px; font-weight: 300; letter-spacing: 4px; text-transform: lowercase; }
     
-    .row-container { display: flex; width: 100%; align-items: center; padding: 25px 0 10px 0; justify-content: space-between; }
-    .w-col { flex: 1; text-align: center; font-family: 'monospace'; font-size: 22px; font-weight: 800; color: #FFF; white-space: nowrap; }
+    .header-container { display: flex; width: 100%; padding: 8px 0; border-bottom: 2px solid #D4AF37; background: #080808; justify-content: space-between; margin-top: 10px; }
+    .h-col { font-size: 9px; color: #FFF; text-transform: uppercase; text-align: center; font-weight: 800; flex: 1; }
     
-    /* ESTILO EXATO DA IMAGEM: RV E AV CENTRALIZADOS */
-    .vision-container { display: flex; justify-content: center; gap: 60px; margin-top: 10px; padding-bottom: 30px; border-bottom: 1px solid #151515; }
-    .v-box { text-align: center; }
-    .v-label { color: #888; font-size: 9px; text-transform: uppercase; margin-bottom: 2px; }
-    .v-value { color: #ffffff; font-size: 19px; font-weight: bold; font-family: 'monospace'; }
+    .row-container { display: flex; width: 100%; align-items: center; padding: 15px 0 5px 0; justify-content: space-between; }
+    .w-col { flex: 1; text-align: center; font-family: 'monospace'; font-size: 20px; font-weight: 800; color: #FFF; white-space: nowrap; }
     
-    .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; color: #FFF; text-align: center; padding: 15px; font-size: 13px; border-top: 1px solid #333; display: flex; justify-content: center; align-items: center; gap: 35px; z-index: 1000; }
-    .dot { height: 10px; width: 10px; background-color: #00FF00; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 12px #00FF00; animation: blink 1.2s infinite; }
+    /* BLOCO DE VISÃO CENTRALIZADO (ESTILO IMAGEM) */
+    .vision-container { 
+        display: flex; 
+        justify-content: center; 
+        gap: 40px; 
+        padding-bottom: 15px; 
+        border-bottom: 1px solid #222; 
+        margin-top: -5px;
+    }
+    .v-box { text-align: center; min-width: 120px; }
+    .v-label { color: #888; font-size: 8px; text-transform: uppercase; margin-bottom: 1px; font-weight: bold; }
+    .v-value { color: #ffffff; font-size: 17px; font-weight: bold; font-family: 'monospace'; }
+    
+    .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; color: #FFF; text-align: center; padding: 10px; font-size: 11px; border-top: 1px solid #333; display: flex; justify-content: center; align-items: center; gap: 20px; z-index: 1000; }
+    .dot { height: 8px; width: 8px; background-color: #00FF00; border-radius: 50%; display: inline-block; margin-right: 5px; box-shadow: 0 0 10px #00FF00; animation: blink 1.2s infinite; }
     @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. MOTOR DE CÁLCULO
 def get_midpoint_v13(ticker, fallback):
     try:
         br_tz = pytz.timezone('America/Sao_Paulo')
@@ -55,11 +64,11 @@ CONFIG = {
 
 st.markdown("""<div class="title-container"><div class="title-gold">ALPHA VISION CRYPTO</div><div class="subtitle-white">visão de tubarão</div></div>""", unsafe_allow_html=True)
 
-for ticker in CONFIG:
-    if f'mp_{ticker}' not in st.session_state:
-        val = get_midpoint_v13(ticker, CONFIG[ticker]['fallback'])
-        st.session_state[f'mp_{ticker}'] = val
-        st.session_state[f'rv_{ticker}'] = val
+for t in CONFIG:
+    if f'mp_{t}' not in st.session_state:
+        val = get_midpoint_v13(t, CONFIG[t]['fallback'])
+        st.session_state[f'mp_{t}'] = val
+        st.session_state[f'rv_{t}'] = val
 
 placeholder = st.empty()
 
@@ -69,6 +78,7 @@ while True:
         br_tz = pytz.timezone('America/Sao_Paulo')
         now_br = datetime.now(br_tz)
         
+        # Reset 00:00 UTC (Binance)
         if now_utc.hour == 0 and now_utc.minute == 0 and now_utc.second < 2:
             for t in CONFIG:
                 novo = get_midpoint_v13(t, CONFIG[t]['fallback'])
@@ -92,17 +102,16 @@ while True:
                 var_reset = ((price / rv) - 1) * 100
                 cor_v = "#00FF00" if var_reset >= 0 else "#FF4444"
                 seta_v = "▲" if var_reset >= 0 else "▼"
-                abs_v = abs(var_esc)
                 
-                f_dec = "background: rgba(255, 255, 0, 0.3);" if 0.59 <= abs_v <= 0.65 else ""
+                abs_v = abs(var_esc)
+                f_dec = "background: rgba(255, 255, 0, 0.25);" if 0.59 <= abs_v <= 0.65 else ""
                 e_ext = "color: #FF4444; animation: blink 0.4s infinite;" if (1.20 <= var_esc < 1.35) else "color: #FF4444;"
                 e_exf = "color: #00FF00; animation: blink 0.4s infinite;" if (-1.35 < var_esc <= -1.20) else "color: #00FF00;"
 
-                # Interface Principal do Ativo
                 st.markdown(f"""
                     <div class="row-container">
                         <div class="w-col" style="color:#D4AF37;">{info['label']}</div>
-                        <div class="w-col"><div>{int(price):,}</div><div style="color:{cor_v}; font-size:11px;">{seta_v} {var_reset:+.2f}%</div></div>
+                        <div class="w-col"><div>{int(price):,}</div><div style="color:{cor_v}; font-size:10px;">{seta_v} {var_reset:+.2f}%</div></div>
                         <div class="w-col" style="{e_ext}">{int(mp*1.0122):,}</div>
                         <div class="w-col" style="color:#FFA500;">{int(mp*1.0083):,}</div>
                         <div class="w-col" style="{f_dec}">{int(mp*1.0061):,}</div>
@@ -122,7 +131,6 @@ while True:
                     </div>
                 """, unsafe_allow_html=True)
 
-            st.markdown(f"""<div class="footer"><div><span class="dot"></span> LIVE ATIVO</div><div>LONDRES: {datetime.now(pytz.timezone('Europe/London')).strftime('%H:%M:%S')}</div><div>BRASÍLIA: {now_br.strftime('%H:%M:%S')}</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class="footer"><div><span class="dot"></span> LIVE</div><div>BR: {now_br.strftime('%H:%M:%S')}</div><div>UTC: {now_utc.strftime('%H:%M:%S')}</div></div>""", unsafe_allow_html=True)
             
         time.sleep(1)
-    except: time.sleep(5)
