@@ -16,15 +16,19 @@ st.markdown("""
     .subtitle-white { color: #FFFFFF; font-size: 16px; font-weight: 300; letter-spacing: 5.5px; margin-top: 2px; text-transform: lowercase; }
     .header-container { display: flex; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background: #080808; justify-content: space-between; }
     .h-col { font-size: 10px; color: #FFF; text-transform: uppercase; text-align: center; font-weight: 800; flex: 1; }
-    .row-container { display: flex; width: 100%; align-items: center; padding: 25px 0; border-bottom: 1px solid #151515; justify-content: space-between; }
+    .row-container { display: flex; width: 100%; align-items: center; padding: 20px 0 10px 0; border-bottom: 1px solid #151515; justify-content: space-between; }
     .w-col { flex: 1; text-align: center; font-family: 'monospace'; font-size: 22px; font-weight: 800; color: #FFF; white-space: nowrap; }
+    .info-sub-row { display: flex; justify-content: center; gap: 50px; padding-bottom: 15px; border-bottom: 1px solid #151515; margin-bottom: 10px; }
+    .sub-item { text-align: center; }
+    .sub-label { color: #888; font-size: 9px; text-transform: uppercase; margin-bottom: 2px; }
+    .sub-value { color: #ffffff; font-size: 16px; font-weight: bold; font-family: 'monospace'; }
     .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; color: #FFF; text-align: center; padding: 15px; font-size: 13px; border-top: 1px solid #333; display: flex; justify-content: center; align-items: center; gap: 35px; z-index: 1000; }
     .dot { height: 10px; width: 10px; background-color: #00FF00; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 12px #00FF00; animation: blink 1.2s infinite; }
     @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. MOTOR DE CÁLCULO DUAL
+# 2. MOTOR DE CÁLCULO
 def get_midpoint_v13(ticker, fallback):
     try:
         br_tz = pytz.timezone('America/Sao_Paulo')
@@ -40,15 +44,15 @@ def get_midpoint_v13(ticker, fallback):
     except:
         return fallback
 
-# CONFIGURAÇÃO DOS ATIVOS (BTC EM PRIMEIRO)
+# CONFIGURAÇÃO (BTC PRIMEIRO)
 CONFIG = {
     "BTC-USD": {"label": "BTC/USDT", "fallback": 82632},
     "ETH-USD": {"label": "ETH/USDT", "fallback": 2900}
 }
 
-# 3. INTERFACE E ESTADOS
 st.markdown("""<div class="title-container"><div class="title-gold">ALPHA VISION CRYPTO</div><div class="subtitle-white">visão de tubarão</div></div>""", unsafe_allow_html=True)
 
+# Inicialização de Estados
 for ticker in CONFIG:
     if f'mp_{ticker}' not in st.session_state:
         val = get_midpoint_v13(ticker, CONFIG[ticker]['fallback'])
@@ -60,8 +64,8 @@ placeholder = st.empty()
 while True:
     try:
         now_utc = datetime.now(pytz.utc)
-        br_tz, ny_tz, lon_tz = pytz.timezone('America/Sao_Paulo'), pytz.timezone('America/New_York'), pytz.timezone('Europe/London')
-        now_br, now_ny, now_lon = datetime.now(br_tz), datetime.now(ny_tz), datetime.now(lon_tz)
+        br_tz = pytz.timezone('America/Sao_Paulo')
+        now_br = datetime.now(br_tz)
         
         # Reset Binance (00:00 UTC)
         if now_utc.hour == 0 and now_utc.minute == 0 and now_utc.second < 2:
@@ -93,6 +97,7 @@ while True:
                 estilo_ex_t = "color: #FF4444; animation: blink 0.4s infinite;" if (1.20 <= var < 1.35) else "color: #FF4444;"
                 estilo_ex_f = "color: #00FF00; animation: blink 0.4s infinite;" if (-1.35 < var <= -1.20) else "color: #00FF00;"
 
+                # Linha Principal do Ativo
                 st.markdown(f"""
                     <div class="row-container">
                         <div class="w-col" style="color:#D4AF37;">{info['label']}</div>
@@ -104,16 +109,19 @@ while True:
                         <div class="w-col" style="color:#FFA500;">{int(mp*0.9939):,}</div>
                         <div class="w-col" style="{estilo_ex_f}">{int(mp*0.9878):,}</div>
                     </div>
+                    <div class="info-sub-row">
+                        <div class="sub-item">
+                            <div class="sub-label">ResetVision (24h)</div>
+                            <div class="sub-value">{int(rv):,}</div>
+                        </div>
+                        <div class="sub-item">
+                            <div class="sub-label">ÂncoraVision (Móvel)</div>
+                            <div class="sub-value" style="color: #00e6ff;">{int(mp):,}</div>
+                        </div>
+                    </div>
                 """, unsafe_allow_html=True)
 
-            st.markdown(f"""
-                <div class="footer">
-                    <div><span class="dot"></span> LIVESTREAM ATIVO</div>
-                    <div>LONDRES: {now_lon.strftime('%H:%M:%S')}</div>
-                    <div>BRASÍLIA: {now_br.strftime('%H:%M:%S')}</div>
-                    <div>NEW YORK: {now_ny.strftime('%H:%M:%S')}</div>
-                </div>
-            """, unsafe_allow_html=True)
+            st.markdown(f"""<div class="footer"><div><span class="dot"></span> LIVE ATIVO</div><div>LONDRES: {datetime.now(pytz.timezone('Europe/London')).strftime('%H:%M:%S')}</div><div>BRASÍLIA: {now_br.strftime('%H:%M:%S')}</div></div>""", unsafe_allow_html=True)
             
         time.sleep(1)
     except:
