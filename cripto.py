@@ -17,26 +17,37 @@ COINS_CONFIG = {
     "DOGE-USD": {"label": "DOGE/USDT", "dec": 4}
 }
 
-# FUNÇÃO MESTRE: Cálculo (Máx + Mín) / 2 entre 11:30 e 18:00 BR
+def get_calculation_date():
+    br_tz = pytz.timezone('America/Sao_Paulo')
+    now = datetime.now(br_tz)
+    # Se for Sábado(5) ou Domingo(6), ou Segunda(0) antes das 18h, a base é a Sexta anterior
+    if now.weekday() == 5: return now - timedelta(days=1)
+    if now.weekday() == 6: return now - timedelta(days=2)
+    if now.weekday() == 0 and now.hour < 18: return now - timedelta(days=3)
+    # Se for dia de semana antes das 18h, usa o dia anterior
+    if now.hour < 18: return now - timedelta(days=1)
+    return now
+
 def get_alpha_midpoint(ticker):
     try:
         br_tz = pytz.timezone('America/Sao_Paulo')
-        now_br = datetime.now(br_tz)
-        # Se for fim de semana ou antes das 18h de segunda, busca o último dia útil
-        target_date = now_br if now_br.hour >= 18 else now_br - timedelta(days=1)
+        target_date = get_calculation_date()
         
-        df = yf.download(ticker, start=(target_date - timedelta(days=2)).strftime('%Y-%m-%d'), interval="1m", progress=False)
+        # Baixa dados do dia alvo
+        start_fetch = target_date.strftime('%Y-%m-%d')
+        end_fetch = (target_date + timedelta(days=1)).strftime('%Y-%m-%d')
+        
+        df = yf.download(ticker, start=start_fetch, end=end_fetch, interval="1m", progress=False)
+        if df.empty: return yf.Ticker(ticker).fast_info['last_price']
+        
         df.index = df.index.tz_convert(br_tz)
-        
-        # Filtra entre 11:30 e 18:00
         df_window = df.between_time('11:30', '18:00')
         
         if not df_window.empty:
-            midpoint = (float(df_window['High'].max()) + float(df_window['Low'].min())) / 2
-            return midpoint
+            return (float(df_window['High'].max()) + float(df_window['Low'].min())) / 2
         return yf.Ticker(ticker).fast_info['last_price']
     except:
-        return yf.Ticker(ticker).fast_info['last_price']
+        return 0
 
 # CSS VISUAL
 st.markdown("""
@@ -54,12 +65,12 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# Inicialização de Memória com o Cálculo (Máx + Mín / 2)
+# Inicialização de Memória
 for t in COINS_CONFIG:
-    if f'mp_{t}' not in st.session_state:
+    if f'rv_{t}' not in st.session_state:
         val = get_alpha_midpoint(t)
-        st.session_state[f'mp_{t}'] = val
         st.session_state[f'rv_{t}'] = val
+        st.session_state[f'mp_{t}'] = val
 
 placeholder = st.empty()
 
@@ -68,12 +79,12 @@ while True:
         br_tz = pytz.timezone('America/Sao_Paulo')
         now_br = datetime.now(br_tz)
         
-        # RESET 18:00 BR (Segunda a Sexta) - Novo Cálculo Máx+Mín/2
+        # RESET OFICIAL: 18:00 BR (Segunda a Sexta)
         if now_br.weekday() < 5 and now_br.hour == 18 and now_br.minute == 0 and now_br.second < 5:
             for t in COINS_CONFIG:
                 val = get_alpha_midpoint(t)
-                st.session_state[f'mp_{t}'] = val
                 st.session_state[f'rv_{t}'] = val
+                st.session_state[f'mp_{t}'] = val
             st.rerun()
 
         with placeholder.container():
@@ -85,7 +96,7 @@ while True:
                 mp = st.session_state[f'mp_{t}']
                 rv = st.session_state[f'rv_{t}']
                 
-                # Lógica Escada 1.35% / 1.22%
+                # Lógica Escada
                 var_escada = ((price / mp) - 1) * 100
                 if var_escada >= 1.35: st.session_state[f'mp_{t}'] = mp * 1.0122
                 elif var_escada <= -1.35: st.session_state[f'mp_{t}'] = mp * 0.9878
