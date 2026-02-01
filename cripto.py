@@ -5,7 +5,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 
-# 1. SETUP ALPHA VISION MOBILE FULL
+# 1. SETUP ALPHA
 st.set_page_config(page_title="ALPHA VISION LIVE", layout="wide", initial_sidebar_state="collapsed")
 
 COINS_CONFIG = {
@@ -18,7 +18,17 @@ COINS_CONFIG = {
     "ADA-USD": {"label": "ADA/USDT", "dec": 4},
     "AVAX-USD": {"label": "AVAX/USDT", "dec": 2},
     "DOT-USD": {"label": "DOT/USDT", "dec": 2},
-    "LINK-USD": {"label": "LINK/USDT", "dec": 2}
+    "LINK-USD": {"label": "LINK/USDT", "dec": 2},
+    "MATIC-USD": {"label": "POL/USDT", "dec": 4},
+    "TRX-USD": {"label": "TRX/USDT", "dec": 4},
+    "LTC-USD": {"label": "LTC/USDT", "dec": 2},
+    "BCH-USD": {"label": "BCH/USDT", "dec": 2},
+    "SHIB-USD": {"label": "SHIB/USDT", "dec": 6},
+    "NEAR-USD": {"label": "NEAR/USDT", "dec": 3},
+    "APT-USD": {"label": "APT/USDT", "dec": 2},
+    "UNI-USD": {"label": "UNI/USDT", "dec": 2},
+    "STX-USD": {"label": "STX/USDT", "dec": 3},
+    "ARB-USD": {"label": "ARB/USDT", "dec": 4}
 }
 
 def get_calculation_date():
@@ -45,46 +55,46 @@ def get_alpha_midpoint(ticker):
         return yf.Ticker(ticker).fast_info['last_price']
     except: return 0
 
-# CSS MOBILE FULL RESPONSIVE - CORRIGIDO
+# CSS AVANÇADO PARA TRAVAMENTO REAL
 st.markdown("""
     <style>
+    /* Reset de overflow para permitir o sticky */
     .stApp { background-color: #000000; }
-    [data-testid="stVerticalBlock"] { padding-top: 150px !important; }
+    [data-testid="stVerticalBlock"] > div:first-child {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background-color: #000000;
+    }
+    
     .top-header-fixed {
-        position: fixed; top: 0; left: 0; right: 0;
-        height: 140px; background: #000; z-index: 9999;
-        border-bottom: 2px solid #D4AF37; text-align: center;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        position: sticky;
+        top: 0;
+        background: #000000;
+        z-index: 1000;
+        border-bottom: 2px solid #D4AF37;
     }
-    .title-gold { color: #D4AF37; font-size: 24px; font-weight: 900; letter-spacing: 2px; margin: 0; }
-    .mobile-card {
-        background: #0A0A0A; border: 1px solid #1A1A1A;
-        border-radius: 15px; padding: 15px; margin-bottom: 15px;
-    }
-    .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 12px; }
-    .coin-name { color: #D4AF37; font-size: 22px; font-weight: 800; }
-    .coin-price { color: #FFF; font-size: 22px; font-weight: 800; font-family: monospace; }
-    .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .data-item { background: #111; padding: 12px; border-radius: 10px; text-align: center; border: 1px solid #222; }
-    .val-label { font-size: 10px; color: #777; text-transform: uppercase; margin-bottom: 4px; font-weight: bold; }
-    .val-price { font-size: 16px; font-weight: bold; font-family: monospace; }
-    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+    .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 5px 20px; background: #050505; border-bottom: 1px solid #1a1a1a; }
+    .clocks { display: flex; gap: 30px; color: #888; font-family: monospace; font-size: 12px; }
+    .clock-item b { color: #FFF; }
+    .live-indicator { display: flex; align-items: center; gap: 8px; color: #FFF; font-size: 12px; font-weight: bold; }
+    .dot { height: 8px; width: 8px; background-color: #00FF00; border-radius: 50%; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { transform: scale(0.9); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); } 70% { transform: scale(1); opacity: 0.6; box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); } 100% { transform: scale(0.9); opacity: 1; } }
+    
+    .title-gold { color: #D4AF37; font-size: 28px; font-weight: 900; text-align: center; margin-top: 5px; }
+    .subtitle-white { color: #FFFFFF; font-size: 12px; text-align: center; letter-spacing: 4px; text-transform: lowercase; margin-bottom: 5px; }
+    
+    .header-grid { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; padding: 10px 0; background: #080808; }
+    .h-col { font-size: 10px; color: #FFF; text-align: center; font-weight: 800; }
+    
+    .row-container { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; align-items: center; padding: 12px 0 2px 0; }
+    .w-col { text-align: center; font-family: 'monospace'; font-size: 17px; font-weight: 800; color: #FFF; }
+    .vision-block { display: flex; justify-content: center; gap: 60px; padding: 2px 0 12px 0; border-bottom: 3px solid #333; margin-bottom: 2px; }
+    
+    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
     </style>
     """, unsafe_allow_html=True)
-
-# Lógica de Inicialização e Reset Automático Binance (00:00 UTC)
-utc_now = datetime.now(pytz.utc)
-if 'last_reset_utc' not in st.session_state:
-    st.session_state['last_reset_utc'] = utc_now.day
-
-if utc_now.day != st.session_state['last_reset_utc']:
-    for t in COINS_CONFIG:
-        try:
-            val = yf.Ticker(t).fast_info['last_price']
-            st.session_state[f'rv_{t}'] = val
-            st.session_state[f'mp_{t}'] = val
-        except: pass
-    st.session_state['last_reset_utc'] = utc_now.day
 
 for t in COINS_CONFIG:
     if f'rv_{t}' not in st.session_state:
@@ -96,38 +106,68 @@ placeholder = st.empty()
 
 while True:
     try:
-        now_br = datetime.now(pytz.timezone('America/Sao_Paulo'))
+        tz_br, tz_ny, tz_ld = pytz.timezone('America/Sao_Paulo'), pytz.timezone('America/New_York'), pytz.timezone('Europe/London')
+        now_br, now_ny, now_ld = datetime.now(tz_br), datetime.now(tz_ny), datetime.now(tz_ld)
+
         with placeholder.container():
+            # CABEÇALHO TRAVADO (SÓ APARECE UMA VEZ NO TOPO DO CONTAINER)
             st.markdown(f"""
                 <div class="top-header-fixed">
-                    <div class="title-gold">ALPHA VISION</div>
-                    <div style="color:#FFF; font-size:14px; font-family:monospace;">{now_br.strftime('%H:%M:%S')}</div>
-                    <div style="color:#F00; font-size:10px; animation: blink 1s infinite;">● LIVE</div>
+                    <div class="top-bar">
+                        <div class="live-indicator"><span class="dot"></span> LIVESTREAM</div>
+                        <div class="clocks">
+                            <div class="clock-item">BRASÍLIA: <b>{now_br.strftime('%H:%M:%S')}</b></div>
+                            <div class="clock-item">NEW YORK: <b>{now_ny.strftime('%H:%M:%S')}</b></div>
+                            <div class="clock-item">LONDON: <b>{now_ld.strftime('%H:%M:%S')}</b></div>
+                        </div>
+                    </div>
+                    <div class="title-gold">ALPHA VISION CRYPTO</div>
+                    <div class="subtitle-white">visão de tubarão</div>
+                    <div class="header-grid">
+                        <div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div>
+                        <div class="h-col" style="color:#FF4444;">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div>
+                        <div class="h-col" style="color:#FFFF00;">DECISÃO</div><div class="h-col">RESPIRO</div>
+                        <div class="h-col">PRÓX. AO F.</div><div class="h-col" style="color:#00FF00;">EXAUSTÃO F.</div>
+                    </div>
                 </div>
             """, unsafe_allow_html=True)
 
             for t, info in COINS_CONFIG.items():
-                try:
-                    price = yf.Ticker(t).fast_info['last_price']
-                    mp = st.session_state.get(f'mp_{t}', price)
-                    
-                    if t in ["BTC-USD", "ETH-USD"]: g_ex, g_dec = 1.35, 1.0061
-                    else: g_ex, g_dec = 13.5, 1.061
-                    
-                    st.markdown(f"""
-                        <div class="mobile-card">
-                            <div class="card-header">
-                                <span class="coin-name">{info['label']}</span>
-                                <span class="coin-price">{f"{price:,.{info['dec']}f}"}</span>
-                            </div>
-                            <div class="data-grid">
-                                <div class="data-item"><div class="val-label" style="color:#F44;">Exaustão T.</div><div class="val-price" style="color:#F44;">{f"{(mp * (1 + (g_ex/100))):,.{info['dec']}f}"}</div></div>
-                                <div class="data-item"><div class="val-label" style="color:#0F0;">Exaustão F.</div><div class="val-price" style="color:#0F0;">{f"{(mp * (1 - (g_ex/100))):,.{info['dec']}f}"}</div></div>
-                                <div class="data-item"><div class="val-label" style="color:#FF0;">Decisão</div><div class="val-price" style="color:#FF0;">{f"{(mp * g_dec):,.{info['dec']}f}"}</div></div>
-                                <div class="data-item"><div class="val-label" style="color:#0EF;">ÂncoVision</div><div class="val-price" style="color:#0EF;">{f"{mp:,.{info['dec']}f}"}</div></div>
-                            </div>
+                price = yf.Ticker(t).fast_info['last_price']
+                mp, rv = st.session_state[f'mp_{t}'], st.session_state[f'rv_{t}']
+                
+                if t in ["BTC-USD", "ETH-USD"]: g_ex, g_mov, g_dec, g_res, label_regua = 1.35, 1.0122, 1.0061, 1.0040, "1.22%"
+                else: g_ex, g_mov, g_dec, g_res, label_regua = 13.5, 1.122, 1.061, 1.040, "12.2%"
+                
+                var_escada = ((price / mp) - 1) * 100
+                if var_escada >= g_ex: st.session_state[f'mp_{t}'] = mp * g_mov
+                elif var_escada <= -g_ex: st.session_state[f'mp_{t}'] = mp * (2 - g_mov)
+                
+                var_reset = ((price / rv) - 1) * 100
+                cor_v, seta_v = ("#00FF00", "▲") if var_reset >= 0 else ("#FF4444", "▼")
+                abs_v = abs(var_escada)
+                fundo_d = "background: rgba(255, 255, 0, 0.15);" if (g_ex*0.44 <= abs_v <= g_ex*0.48) else ""
+                blink_t = "animation: blink 0.4s infinite;" if (g_ex*0.88 <= var_escada < g_ex) else ""
+                blink_f = "animation: blink 0.4s infinite;" if (-g_ex < var_escada <= -g_ex*0.88) else ""
+
+                st.markdown(f"""
+                    <div class="row-container">
+                        <div class="w-col" style="color:#D4AF37;">{info['label']}</div>
+                        <div class="w-col">
+                            <div style="font-weight: bold;">{f"{price:,.{info['dec']}f}"}</div>
+                            <div style="color:{cor_v}; font-size:10px;">{seta_v} {var_reset:+.2f}%</div>
                         </div>
-                    """, unsafe_allow_html=True)
-                except: continue
+                        <div class="w-col" style="color:#FF4444; {blink_t}">{f"{(mp * (1 + (g_ex/100))):,.{info['dec']}f}"}</div>
+                        <div class="w-col" style="color:#FFA500;">{f"{(mp * g_mov):,.{info['dec']}f}"}</div>
+                        <div class="w-col" style="{fundo_d} color:#FFFF00;">{f"{(mp * g_dec):,.{info['dec']}f}"}</div>
+                        <div class="w-col" style="color:#00CED1;">{f"{(mp * g_res):,.{info['dec']}f}"}</div>
+                        <div class="w-col" style="color:#FFA500;">{f"{(mp * (2 - g_mov)):,.{info['dec']}f}"}</div>
+                        <div class="w-col" style="color:#00FF00; {blink_f}">{f"{(mp * (1 - (g_ex/100))):,.{info['dec']}f}"}</div>
+                    </div>
+                    <div class="vision-block">
+                        <div class="v-item"><div style="color:#666; font-size:8px;">RESETVISION</div><div style="color:#BBB; font-size:14px; font-weight:bold;">{f"{rv:,.{info['dec']}f}"}</div></div>
+                        <div class="v-item"><div style="color:#666; font-size:8px;">ÂNCOVISION ({label_regua})</div><div style="color:#00e6ff; font-size:14px; font-weight:bold;">{f"{mp:,.{info['dec']}f}"}</div></div>
+                    </div>
+                """, unsafe_allow_html=True)
         time.sleep(1)
     except: time.sleep(5)
