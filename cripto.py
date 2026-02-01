@@ -137,7 +137,7 @@ while True:
                 mp, rv = st.session_state[f'mp_{t}'], st.session_state[f'rv_{t}']
                 
                 if t in ["BTC-USD", "ETH-USD"]: g_ex, g_mov, g_dec, g_res, label_regua = 1.35, 1.0122, 1.0061, 1.0040, "1.22%"
-                else: g_ex, g_mov, g_dec, g_res, label_regua = 13.5, 1.122, 1.061, 1.040, "12.2%"
+                else: g_ex, g_mov, g_dec, g_res, label_regua = 1.0270, 1.244, 1.0122, 1.0080, "2.44%"
                 
                 var_escada = ((price / mp) - 1) * 100
                 if var_escada >= g_ex: st.session_state[f'mp_{t}'] = mp * g_mov
