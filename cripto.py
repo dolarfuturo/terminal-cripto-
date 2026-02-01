@@ -55,23 +55,30 @@ def get_alpha_midpoint(ticker):
         return yf.Ticker(ticker).fast_info['last_price']
     except: return 0
 
-# CSS VISUAL - CORRIGIDO E FECHADO
+# CSS VISUAL - COMPACTO + CLOCKS + DOT PULSATING
 st.markdown("""
     <style>
     .stApp { background-color: #000000; }
-    .title-gold { color: #D4AF37; font-size: 34px; font-weight: 900; text-align: center; letter-spacing: 2px; }
-    .subtitle-white { color: #FFFFFF; font-size: 16px; text-align: center; letter-spacing: 5.5px; text-transform: lowercase; margin-bottom: 20px; }
-    .header-container { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background: #080808; position: sticky; top: 0; z-index: 999; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 5px 20px; background: #050505; border-bottom: 1px solid #1a1a1a; }
+    .clocks { display: flex; gap: 30px; color: #888; font-family: monospace; font-size: 12px; }
+    .clock-item b { color: #FFF; }
+    .live-indicator { display: flex; align-items: center; gap: 8px; color: #FFF; font-size: 12px; font-weight: bold; letter-spacing: 1px; }
+    .dot { height: 8px; width: 8px; background-color: #00FF00; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { transform: scale(0.9); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); } 70% { transform: scale(1); opacity: 0.6; box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); } 100% { transform: scale(0.9); opacity: 1; } }
+    
+    .title-gold { color: #D4AF37; font-size: 30px; font-weight: 900; text-align: center; margin-top: 10px; }
+    .subtitle-white { color: #FFFFFF; font-size: 14px; text-align: center; letter-spacing: 4px; text-transform: lowercase; margin-bottom: 10px; }
+    
+    .header-container { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; padding: 6px 0; border-bottom: 2px solid #D4AF37; background: #080808; position: sticky; top: 0; z-index: 999; }
     .h-col { font-size: 10px; color: #FFF; text-align: center; font-weight: 800; }
-    .row-container { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; align-items: center; padding: 15px 0; border-bottom: 1px solid #151515; }
-    .w-col { text-align: center; font-family: 'monospace'; font-size: 19px; font-weight: 800; color: #FFF; }
-    .vision-block { display: flex; justify-content: center; gap: 80px; padding: 10px 0 20px 0; border-bottom: 2px solid #111; }
+    .row-container { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; align-items: center; padding: 8px 0 2px 0; }
+    .w-col { text-align: center; font-family: 'monospace'; font-size: 17px; font-weight: 800; color: #FFF; }
+    .vision-block { display: flex; justify-content: center; gap: 60px; padding: 2px 0 8px 0; border-bottom: 1px solid #222; margin-bottom: 2px; }
     .v-item { text-align: center; }
     @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
     </style>
     """, unsafe_allow_html=True)
 
-# Inicialização de Memória
 for t in COINS_CONFIG:
     if f'rv_{t}' not in st.session_state:
         val = get_alpha_midpoint(t)
@@ -82,9 +89,15 @@ placeholder = st.empty()
 
 while True:
     try:
-        br_tz = pytz.timezone('America/Sao_Paulo')
-        now_br = datetime.now(br_tz)
+        # RELÓGIOS
+        tz_br = pytz.timezone('America/Sao_Paulo')
+        tz_ny = pytz.timezone('America/New_York')
+        tz_ld = pytz.timezone('Europe/London')
         
+        now_br = datetime.now(tz_br)
+        now_ny = datetime.now(tz_ny)
+        now_ld = datetime.now(tz_ld)
+
         if now_br.weekday() < 5 and now_br.hour == 18 and now_br.minute == 0 and now_br.second < 5:
             for t in COINS_CONFIG:
                 val = get_alpha_midpoint(t)
@@ -93,7 +106,20 @@ while True:
             st.rerun()
 
         with placeholder.container():
-            st.markdown('<div class="title-gold">ALPHA VISION CRYPTO</div><div class="subtitle-white">visão de tubarão</div>', unsafe_allow_html=True)
+            # TOP BAR COM CLOCKS E LIVE DOT
+            st.markdown(f"""
+                <div class="top-bar">
+                    <div class="live-indicator"><span class="dot"></span> LIVESTREAM</div>
+                    <div class="clocks">
+                        <div class="clock-item">BRASÍLIA: <b>{now_br.strftime('%H:%M:%S')}</b></div>
+                        <div class="clock-item">NEW YORK: <b>{now_ny.strftime('%H:%M:%S')}</b></div>
+                        <div class="clock-item">LONDON: <b>{now_ld.strftime('%H:%M:%S')}</b></div>
+                    </div>
+                </div>
+                <div class="title-gold">ALPHA VISION CRYPTO</div>
+                <div class="subtitle-white">visão de tubarão</div>
+            """, unsafe_allow_html=True)
+
             st.markdown('<div class="header-container"><div class="h-col">CÓDIGO</div><div class="h-col">PREÇO ATUAL</div><div class="h-col" style="color:#FF4444;">EXAUSTÃO T.</div><div class="h-col">PRÓX. TOPO</div><div class="h-col" style="color:#FFFF00;">DECISÃO</div><div class="h-col">RESPIRO</div><div class="h-col">PRÓX. AO F.</div><div class="h-col" style="color:#00FF00;">EXAUSTÃO F.</div></div>', unsafe_allow_html=True)
 
             for t, info in COINS_CONFIG.items():
@@ -114,19 +140,17 @@ while True:
                 
                 var_reset = ((price / rv) - 1) * 100
                 cor_v, seta_v = ("#00FF00", "▲") if var_reset >= 0 else ("#FF4444", "▼")
-                
                 abs_v = abs(var_escada)
-                fundo_d = "background: rgba(255, 255, 0, 0.2);" if (g_ex*0.44 <= abs_v <= g_ex*0.48) else ""
+                fundo_d = "background: rgba(255, 255, 0, 0.15);" if (g_ex*0.44 <= abs_v <= g_ex*0.48) else ""
                 blink_t = "animation: blink 0.4s infinite;" if (g_ex*0.88 <= var_escada < g_ex) else ""
                 blink_f = "animation: blink 0.4s infinite;" if (-g_ex < var_escada <= -g_ex*0.88) else ""
 
-                # BLOCO HTML DA LINHA - FECHADO CORRETAMENTE
                 st.markdown(f"""
                     <div class="row-container">
                         <div class="w-col" style="color:#D4AF37;">{info['label']}</div>
                         <div class="w-col">
                             <div style="font-weight: bold;">{f"{price:,.{info['dec']}f}"}</div>
-                            <div style="color:{cor_v}; font-size:11px;">{seta_v} {var_reset:+.2f}%</div>
+                            <div style="color:{cor_v}; font-size:10px;">{seta_v} {var_reset:+.2f}%</div>
                         </div>
                         <div class="w-col" style="color:#FF4444; {blink_t}">{f"{(mp * (1 + (g_ex/100))):,.{info['dec']}f}"}</div>
                         <div class="w-col" style="color:#FFA500;">{f"{(mp * g_mov):,.{info['dec']}f}"}</div>
@@ -136,10 +160,9 @@ while True:
                         <div class="w-col" style="color:#00FF00; {blink_f}">{f"{(mp * (1 - (g_ex/100))):,.{info['dec']}f}"}</div>
                     </div>
                     <div class="vision-block">
-                        <div class="v-item"><div style="color:#888; font-size:9px;">RESETVISION</div><div style="color:#FFF; font-size:16px; font-weight:bold;">{f"{rv:,.{info['dec']}f}"}</div></div>
-                        <div class="v-item"><div style="color:#888; font-size:9px;">ÂNCORAVISION ({label_regua})</div><div style="color:#00e6ff; font-size:16px; font-weight:bold;">{f"{mp:,.{info['dec']}f}"}</div></div>
+                        <div class="v-item"><div style="color:#666; font-size:8px;">RESETVISION</div><div style="color:#BBB; font-size:14px; font-weight:bold;">{f"{rv:,.{info['dec']}f}"}</div></div>
+                        <div class="v-item"><div style="color:#666; font-size:8px;">ÂNCOVISION ({label_regua})</div><div style="color:#00e6ff; font-size:14px; font-weight:bold;">{f"{mp:,.{info['dec']}f}"}</div></div>
                     </div>
                 """, unsafe_allow_html=True)
-        time.sleep(2)
-    except:
-        time.sleep(5)
+        time.sleep(1)
+    except: time.sleep(5)
