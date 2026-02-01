@@ -79,7 +79,7 @@ while True:
         br_tz = pytz.timezone('America/Sao_Paulo')
         now_br = datetime.now(br_tz)
         
-        # RESET OFICIAL: 18:00 BR (Segunda a Sexta)
+        # RESET 18:00 BR (Segunda a Sexta)
         if now_br.weekday() < 5 and now_br.hour == 18 and now_br.minute == 0 and now_br.second < 5:
             for t in COINS_CONFIG:
                 val = get_alpha_midpoint(t)
@@ -96,18 +96,28 @@ while True:
                 mp = st.session_state[f'mp_{t}']
                 rv = st.session_state[f'rv_{t}']
                 
-                # Lógica Escada
+                # --- CONFIGURAÇÃO DE ESCALA (BTC/ETH nos 1,22% | OUTRAS 12,2%) ---
+                if t in ["BTC-USD", "ETH-USD"]:
+                    g_ex, g_mov, g_dec, g_res = 1.35, 1.0122, 1.0061, 1.0040
+                    label_regua = "1.22%"
+                else:
+                    g_ex, g_mov, g_dec, g_res = 13.5, 1.122, 1.061, 1.040
+                    label_regua = "12.2%"
+                
                 var_escada = ((price / mp) - 1) * 100
-                if var_escada >= 1.35: st.session_state[f'mp_{t}'] = mp * 1.0122
-                elif var_escada <= -1.35: st.session_state[f'mp_{t}'] = mp * 0.9878
+                
+                if var_escada >= g_ex: 
+                    st.session_state[f'mp_{t}'] = mp * g_mov
+                elif var_escada <= -g_ex: 
+                    st.session_state[f'mp_{t}'] = mp * (2 - g_mov)
                 
                 var_reset = ((price / rv) - 1) * 100
                 cor_v, seta_v = ("#00FF00", "▲") if var_reset >= 0 else ("#FF4444", "▼")
-                abs_v = abs(var_escada)
                 
-                fundo_d = "background: rgba(255, 255, 0, 0.2);" if 0.59 <= abs_v <= 0.65 else ""
-                estilo_t = "color: #FF4444; animation: blink 0.4s infinite;" if (1.20 <= var_escada < 1.35) else "color: #FF4444;"
-                estilo_f = "color: #00FF00; animation: blink 0.4s infinite;" if (-1.35 < var_escada <= -1.20) else "color: #00FF00;"
+                abs_v = abs(var_escada)
+                fundo_d = "background: rgba(255, 255, 0, 0.2);" if (g_ex*0.44 <= abs_v <= g_ex*0.48) else ""
+                blink_t = "animation: blink 0.4s infinite;" if (g_ex*0.88 <= var_escada < g_ex) else ""
+                blink_f = "animation: blink 0.4s infinite;" if (-g_ex < var_escada <= -g_ex*0.88) else ""
 
                 st.markdown(f"""
                     <div class="row-container">
@@ -116,16 +126,16 @@ while True:
                             <div style="font-weight: bold;">{f"{price:,.{info['dec']}f}"}</div>
                             <div style="color:{cor_v}; font-size:11px;">{seta_v} {var_reset:+.2f}%</div>
                         </div>
-                        <div class="w-col" style="{estilo_t}">{f"{(mp * 1.0135):,.{info['dec']}f}"}</div>
-                        <div class="w-col" style="color:#FFA500;">{f"{(mp * 1.0122):,.{info['dec']}f}"}</div>
-                        <div class="w-col" style="{fundo_d}">{f"{(mp * 1.0061):,.{info['dec']}f}"}</div>
-                        <div class="w-col" style="color:#00CED1;">{f"{(mp * 0.9939):,.{info['dec']}f}"}</div>
-                        <div class="w-col" style="color:#FFA500;">{f"{(mp * 0.9878):,.{info['dec']}f}"}</div>
-                        <div class="w-col" style="{estilo_f}">{f"{(mp * 0.9865):,.{info['dec']}f}"}</div>
+                        <div class="w-col" style="color:#FF4444; {blink_t}">{f"{(mp * (1 + (g_ex/100))):,.{info['dec']}f}"}</div>
+                        <div class="w-col" style="color:#FFA500;">{f"{(mp * g_mov):,.{info['dec']}f}"}</div>
+                        <div class="w-col" style="{fundo_d} color:#FFFF00;">{f"{(mp * g_dec):,.{info['dec']}f}"}</div>
+                        <div class="w-col" style="color:#00CED1;">{f"{(mp * g_res):,.{info['dec']}f}"}</div>
+                        <div class="w-col" style="color:#FFA500;">{f"{(mp * (2 - g_mov)):,.{info['dec']}f}"}</div>
+                        <div class="w-col" style="color:#00FF00; {blink_f}">{f"{(mp * (1 - (g_ex/100))):,.{info['dec']}f}"}</div>
                     </div>
                     <div class="vision-block">
-                        <div class="v-item"><div style="color:#888; font-size:9px;">RESETVISION (MÁX+MÍN/2)</div><div style="color:#FFF; font-size:16px; font-weight:bold;">{f"{rv:,.{info['dec']}f}"}</div></div>
-                        <div class="v-item"><div style="color:#888; font-size:9px;">ÂNCORAVISION (ESCADA)</div><div style="color:#00e6ff; font-size:16px; font-weight:bold;">{f"{mp:,.{info['dec']}f}"}</div></div>
+                        <div class="v-item"><div style="color:#888; font-size:9px;">RESETVISION</div><div style="color:#FFF; font-size:16px; font-weight:bold;">{f"{rv:,.{info['dec']}f}"}</div></div>
+                        <div class="v-item"><div style="color:#888; font-size:9px;">ÂNCORAVISION ({label_regua})</div><div style="color:#00e6ff; font-size:16px; font-weight:bold;">{f"{mp:,.{info['dec']}f}"}</div></div>
                     </div>
                 """, unsafe_allow_html=True)
         time.sleep(1)
