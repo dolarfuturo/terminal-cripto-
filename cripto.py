@@ -119,51 +119,50 @@ def get_midpoint_v13():
         df.index = df.index.tz_convert(br_tz)
         df_window = df.between_time('11:30', '18:00')
         if not df_window.empty:
-            return int((float(df_window['High'].max()) + float(df_window['Low'].min())) / 2)
-        return 82632
-    except:
-        return 82632
-
-# 3. INTERFACE REAL-TIME
-st.markdown("""
-    <div class="title-container">
-        <div class="title-gold">ALPHA VISION CRYPTO</div>
-        <div class="subtitle-white">visão de tubarão</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-if 'mp_current' not in st.session_state:
-     valor_base = get_midpoint_v13()
-     st.session_state.mp_current = valor_base
-     st.session_state.rv_fixed = valor_base
-
-
-placeholder = st.empty()
-
-while True:
-    try:
-        br_tz, ny_tz, lon_tz = pytz.timezone('America/Sao_Paulo'), pytz.timezone('America/New_York'), pytz.timezone('Europe/London')
-        now_br, now_ny, now_lon = datetime.now(br_tz), datetime.now(ny_tz), datetime.now(lon_tz)
-        
-        # Auto-Reset Binance (18:00 BR)
-        if now_br.hour == 18 and now_br.minute == 0 and now_br.second < 2:
-           novo_valor = get_midpoint_v13()
-           st.session_state.mp_current = novo_valor
-           st.session_state.rv_fixed = novo_valor
-           st.rerun()
-
-        ticker = yf.Ticker("BTC-USD")
-        price = ticker.fast_info['last_price']
-        mp = st.session_state.mp_current
-        var = ((price / mp) - 1) * 100
-                    # --- LÓGICA DE ESCADA: GATILHO 1.35% | MOVIMENTO 1.22% ---
-        if var >= 1.35:
-            st.session_state.mp_current = int(mp * 1.0122)
-             
+                    for ticker, info in COINS_CONFIG.items():
+            price = yf.Ticker(ticker).fast_info['last_price']
+            mp = st.session_state[f'mp_{ticker}']
+            rv = st.session_state[f'rv_{ticker}']
             
-        elif var <= -1.35:
-            st.session_state.mp_current = int(mp * 0.9878)
+            # Cálculos rápidos
+            var_escada = ((price / mp) - 1) * 100
+            if var_escada >= 1.35: st.session_state[f'mp_{ticker}'] = mp * 1.0122
+            elif var_escada <= -1.35: st.session_state[f'mp_{ticker}'] = mp * 0.9878
             
+            abs_var = abs(var_escada)
+            var_reset = ((price / rv) - 1) * 100
+            cor_v, seta_v = ("#00FF00", "▲") if var_reset >= 0 else ("#FF4444", "▼")
+            
+            # Estilos de Alarme
+            fundo_p = "background: rgba(255, 255, 0, 0.3);" if 0.59 <= abs_var <= 0.65 else ""
+            estilo_t = 'color: #FF4444; animation: blink 0.4s infinite;' if 1.20 <= abs_var <= 1.35 else "color: #FF4444;"
+            estilo_f = 'color: #00FF00; animation: blink 0.4s infinite;' if -1.35 <= var_escada <= -1.20 else "color: #00FF00;"
+
+            st.markdown(f"""
+                <div class="row-container">
+                    <div class="w-col">{info['label']}</div>
+                    <div class="w-col" style="{fundo_p}">
+                        <div style="font-size: 20px;">{f"{price:,.{info['dec']}f}"}</div>
+                        <div style="font-size: 13px; color: {cor_v};">{seta_v} {var_reset:.2f}%</div>
+                    </div>
+                    <div class="w-col" style="{estilo_t}">{f"{(mp * 1.0135):,.{info['dec']}f}"}</div>
+                    <div class="w-col">{f"{(mp * 1.0122):,.{info['dec']}f}"}</div>
+                    <div class="w-col" style="color: #FFFF00;">{f"{(mp * 1.0062):,.{info['dec']}f}"}</div>
+                    <div class="w-col">{f"{(mp * 0.9938):,.{info['dec']}f}"}</div>
+                    <div class="w-col">{f"{(mp * 0.9878):,.{info['dec']}f}"}</div>
+                    <div class="w-col" style="{estilo_f}">{f"{(mp * 0.9865):,.{info['dec']}f}"}</div>
+                </div>
+                <div style="display: flex; justify-content: center; gap: 80px; padding: 10px; border-bottom: 2px solid #111;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 10px; color: #666;">RESETVISION</div>
+                        <div style="font-size: 15px; font-weight: bold; color: {cor_v};">{f"{rv:,.{info['dec']}f}"}</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 10px; color: #666;">ÂNCORAVISION</div>
+                        <div style="font-size: 15px; font-weight: bold; color: #00FFFF;">{f"{mp:,.{info['dec']}f}"}</div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
 
         cor_var = "#00FF00" if var >= 0 else "#FF0000"
         seta = "▲" if var >= 0 else "▼"
