@@ -107,63 +107,63 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. MOTOR DE CÁLCULO
-    # 2. MOTOR DO SISTEMA
-    placeholder = st.empty()
+# 2. MOTOR DE CÁLCULO E RESET (BINANCE 00:00 UTC)
+placeholder = st.empty()
 
-    while True:
-        placeholder.empty()
-        with placeholder.container():
-            # Cabeçalho Fixo
-            st.markdown("""
-                <div class="header-container">
-                    <div class="h-col">CÓDIGO</div>
-                    <div class="h-col">PREÇO ATUAL</div>
-                    <div class="h-col" style="color: #FF4444;">EXAUSTÃO T.</div>
-                    <div class="h-col">PRÓX. TOPO</div>
-                    <div class="h-col" style="color: #FFFF00;">DECISÃO</div>
-                    <div class="h-col">RESPIRO</div>
-                    <div class="h-col">PRÓX. AO F.</div>
-                    <div class="h-col" style="color: #00FF00;">EXAUSTÃO F.</div>
+while True:
+    # Reset Automático às 00:00 UTC
+    agora_utc = datetime.now(pytz.utc)
+    if agora_utc.hour == 0 and agora_utc.minute == 0 and agora_utc.second < 5:
+        for t in COINS_CONFIG:
+            st.session_state[f'mp_{t}'] = yf.Ticker(t).fast_info['last_price']
+            st.session_state[f'rv_{t}'] = st.session_state[f'mp_{t}']
+        st.rerun()
+
+    placeholder.empty()
+    with placeholder.container():
+        st.markdown("""
+            <div class="header-container">
+                <div class="h-col">CÓDIGO</div>
+                <div class="h-col">PREÇO ATUAL</div>
+                <div class="h-col" style="color: #FF4444;">EXAUSTÃO T.</div>
+                <div class="h-col">PRÓX. TOPO</div>
+                <div class="h-col" style="color: #FFFF00;">DECISÃO</div>
+                <div class="h-col">RESPIRO</div>
+                <div class="h-col">PRÓX. AO F.</div>
+                <div class="h-col" style="color: #00FF00;">EXAUSTÃO F.</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+        for ticker, info in COINS_CONFIG.items():
+            price = yf.Ticker(ticker).fast_info['last_price']
+            mp = st.session_state[f'mp_{ticker}']
+            rv = st.session_state[f'rv_{ticker}']
+            var_reset = ((price / rv) - 1) * 100
+            cor_v, seta_v = ("#00FF00", "▲") if var_reset >= 0 else ("#FF4444", "▼")
+
+            st.markdown(f"""
+                <div class="row-container">
+                    <div class="w-col" style="font-size: 20px;">{info['label']}</div>
+                    <div class="w-col">
+                        <div style="font-size: 22px; font-weight: bold;">{f"{price:,.{info['dec']}f}"}</div>
+                        <div style="font-size: 13px; color: {cor_v};">{seta_v} {var_reset:.2f}%</div>
+                    </div>
+                    <div class="w-col" style="color: #FF4444;">{f"{(mp * 1.0135):,.{info['dec']}f}"}</div>
+                    <div class="w-col">{f"{(mp * 1.0122):,.{info['dec']}f}"}</div>
+                    <div class="w-col" style="color: #FFFF00;">{f"{(mp * 1.0062):,.{info['dec']}f}"}</div>
+                    <div class="w-col">{f"{(mp * 0.9938):,.{info['dec']}f}"}</div>
+                    <div class="w-col">{f"{(mp * 0.9878):,.{info['dec']}f}"}</div>
+                    <div class="w-col" style="color: #00FF00;">{f"{(mp * 0.9865):,.{info['dec']}f}"}</div>
+                </div>
+                <div style="display: flex; justify-content: center; gap: 100px; padding: 10px 0 25px 0; border-bottom: 2px solid #111; width: 100%;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 10px; color: #666;">RESETVISION</div>
+                        <div style="font-size: 16px; font-weight: bold; color: #FFF;">{f"{rv:,.{info['dec']}f}"}</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 10px; color: #666;">ÂNCORAVISION</div>
+                        <div style="font-size: 16px; font-weight: bold; color: #00FFFF;">{f"{mp:,.{info['dec']}f}"}</div>
+                    </div>
                 </div>
             """, unsafe_allow_html=True)
-
-            for ticker, info in COINS_CONFIG.items():
-                # Dados em Tempo Real
-                price = yf.Ticker(ticker).fast_info['last_price']
-                mp = st.session_state[f'mp_{ticker}']
-                rv = st.session_state[f'rv_{ticker}']
-                
-                # Cálculos de Variação
-                var_reset = ((price / rv) - 1) * 100
-                abs_var = abs(((price / mp) - 1) * 100)
-                cor_v, seta_v = ("#00FF00", "▲") if var_reset >= 0 else ("#FF4444", "▼")
-                
-                # Layout da Linha
-                st.markdown(f"""
-                    <div class="row-container">
-                        <div class="w-col" style="font-size: 20px;">{info['label']}</div>
-                        <div class="w-col">
-                            <div style="font-size: 22px; font-weight: bold;">{f"{price:,.{info['dec']}f}"}</div>
-                            <div style="font-size: 13px; color: {cor_v};">{seta_v} {var_reset:.2f}%</div>
-                        </div>
-                        <div class="w-col" style="color: #FF4444;">{f"{(mp * 1.0135):,.{info['dec']}f}"}</div>
-                        <div class="w-col">{f"{(mp * 1.0122):,.{info['dec']}f}"}</div>
-                        <div class="w-col" style="color: #FFFF00;">{f"{(mp * 1.0062):,.{info['dec']}f}"}</div>
-                        <div class="w-col">{f"{(mp * 0.9938):,.{info['dec']}f}"}</div>
-                        <div class="w-col">{f"{(mp * 0.9878):,.{info['dec']}f}"}</div>
-                        <div class="w-col" style="color: #00FF00;">{f"{(mp * 0.9865):,.{info['dec']}f}"}</div>
-                    </div>
-                    <div style="display: flex; justify-content: center; gap: 100px; padding: 10px 0 25px 0; border-bottom: 2px solid #111; width: 100%;">
-                        <div style="text-align: center;">
-                            <div style="font-size: 10px; color: #666;">RESETVISION</div>
-                            <div style="font-size: 16px; font-weight: bold; color: #FFF;">{f"{rv:,.{info['dec']}f}"}</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 10px; color: #666;">ÂNCORAVISION</div>
-                            <div style="font-size: 16px; font-weight: bold; color: #00FFFF;">{f"{mp:,.{info['dec']}f}"}</div>
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
-            
-            time.sleep(1) # Atualização a cada 1 segundo
+    time.sleep(1)
