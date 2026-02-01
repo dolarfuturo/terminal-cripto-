@@ -5,7 +5,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pytz
 
-# 1. SETUP ALPHA - TOP 20 ATIVOS
+# 1. SETUP ALPHA
 st.set_page_config(page_title="ALPHA VISION LIVE", layout="wide", initial_sidebar_state="collapsed")
 
 COINS_CONFIG = {
@@ -60,27 +60,6 @@ st.markdown("""
     .stApp { background-color: #000000; }
     .title-gold { color: #D4AF37; font-size: 34px; font-weight: 900; text-align: center; letter-spacing: 2px; }
     .subtitle-white { color: #FFFFFF; font-size: 16px; text-align: center; letter-spacing: 5.5px; text-transform: lowercase; margin-bottom: 20px; }
-    .header-container { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background: #080808; position: sticky; top: 0; z-index: 99; }
+    .header-container { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; padding: 12px 0; border-bottom: 2px solid #D4AF37; background: #080808; position: sticky; top: 0; z-index: 999; }
     .h-col { font-size: 10px; color: #FFF; text-align: center; font-weight: 800; }
-    .row-container { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; align-items: center; padding: 15px 0; border-bottom: 1px solid #151515; }
-    .w-col { text-align: center; font-family: 'monospace'; font-size: 19px; font-weight: 800; color: #FFF; }
-    .vision-block { display: flex; justify-content: center; gap: 80px; padding: 10px 0 20px 0; border-bottom: 2px solid #111; }
-    .v-item { text-align: center; }
-    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
-    </style>
-    """, unsafe_allow_html=True)
-
-for t in COINS_CONFIG:
-    if f'rv_{t}' not in st.session_state:
-        val = get_alpha_midpoint(t)
-        st.session_state[f'rv_{t}'] = val
-        st.session_state[f'mp_{t}'] = val
-
-placeholder = st.empty()
-
-while True:
-    try:
-        br_tz = pytz.timezone('America/Sao_Paulo')
-        now_br = datetime.now(br_tz)
-        if now_br.weekday() < 5 and now_br.hour == 18 and now_br.minute == 0 and now_br.second < 5:
-            for t in COINS_
+    .row-container { display: grid; grid-template-columns: 1.5fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr; width: 100%; align-items: center; padding: 15px 0; border-bottom: 1px solid #151
