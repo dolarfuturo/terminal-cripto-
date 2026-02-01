@@ -102,6 +102,18 @@ for t in COINS_CONFIG:
         st.session_state[f'rv_{t}'] = val
         st.session_state[f'mp_{t}'] = val
 
+# Lógica de Automobilismo: Reset de VWAP/ResetVision às 00:00 UTC (Binance)
+utc_now = datetime.now(pytz.utc)
+if 'last_reset_utc' not in st.session_state:
+    st.session_state['last_reset_utc'] = utc_now.day
+
+if utc_now.day != st.session_state['last_reset_utc']:
+    for t in COINS_CONFIG:
+        val = yf.Ticker(t).fast_info['last_price']
+        st.session_state[f'rv_{t}'] = val
+        st.session_state[f'mp_{t}'] = val
+    st.session_state['last_reset_utc'] = utc_now.day
+
 placeholder = st.empty()
 
 while True:
@@ -110,7 +122,6 @@ while True:
         now_br, now_ny, now_ld = datetime.now(tz_br), datetime.now(tz_ny), datetime.now(tz_ld)
 
         with placeholder.container():
-            # CABEÇALHO TRAVADO (SÓ APARECE UMA VEZ NO TOPO DO CONTAINER)
             st.markdown(f"""
                 <div class="top-header-fixed">
                     <div class="top-bar">
