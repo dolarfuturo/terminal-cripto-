@@ -183,8 +183,8 @@ while True:
         """, unsafe_allow_html=True)
         
         time.sleep(1) # Delay de atualização
-
-             except Exception as e:
+      
+    except Exception as e:
         st.error(f"Erro na atualização: {e}")
    
             
